@@ -1,0 +1,6 @@
+node_modules/
+DOH_Covid_Data/
+token.json
+credentials.json
+tmp/
+old/
