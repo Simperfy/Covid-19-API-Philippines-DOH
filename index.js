@@ -16,6 +16,7 @@ async function verifyGoogleToken(res) {
             access_type: 'offline',
             scope: auth.scopes,
         });
+        console.log("Redirecting TO: " + url);
 
         res.redirect(url);
         return;
