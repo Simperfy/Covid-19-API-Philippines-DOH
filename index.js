@@ -4,7 +4,6 @@ const GoogleDriveApi = googleDriveApi.GoogleDriveApi;
 
 let GDriveApi = new GoogleDriveApi();
 
-GDriveApi.getAuth();
 // @TODO Move this function inside GoogleDriveAPI
 async function downloadLatestFiles() {
     await GDriveApi.getAuth();
