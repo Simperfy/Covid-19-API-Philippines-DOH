@@ -95,6 +95,7 @@ class GoogleDriveApi {
         // console.log(credentials);
         return new Promise(resolve => {
             const { client_secret, client_id, redirect_uris } = credentials.web
+            console.log(credentials.web);
             console.log(redirect_uris[process.env.NODE_ENV == 'production' ? 1 : 0]);
             this.oAuth2Client = new google.auth.OAuth2(
                 client_id, client_secret, redirect_uris[process.env.NODE_ENV == 'production' ? 1 : 0]);
