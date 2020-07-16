@@ -43,8 +43,8 @@ class GoogleDriveApi {
     async getAuth() {
     
         return new Promise(resolve => {
-            if (fs.existsSync('./.env')) {
-                // load client secrets from .env file=
+            if (!fs.existsSync('./credentials.json')) {
+                // load client secrets from .env file
                 console.log("Crafting new json");
                 let credentials = {
                     "web": {
