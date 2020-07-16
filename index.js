@@ -6,7 +6,7 @@ async function downloadLatestFiles() {
     let auth = await GDriveApi.getAuth();
     // GDriveApi.listFiles();
     let data = await GDriveApi.searchFiles('name contains \'DOH COVID Data Drop_ 2020\' and name contains \'Case Information\'');
-    GDriveApi.downloadFile(await GDriveApi.getLatestFolderContents(), 'Latest.csv');
+    GDriveApi.downloadFile(await GDriveApi.getLatestFolderContents(), 'Data.csv');
 }
 
 const express = require('express')
