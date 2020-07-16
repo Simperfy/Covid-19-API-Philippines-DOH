@@ -94,7 +94,8 @@ class GoogleDriveApi {
     async authorize(credentials, callback) {
         // console.log(credentials);
         return new Promise(resolve => {
-            const { client_secret, client_id, redirect_uris } = credentials.web;
+            const { client_secret, client_id, redirect_uris } = credentials.web
+            console.log(redirect_uris[process.env.NODE_ENV == 'production' ? 1 : 0]);
             this.oAuth2Client = new google.auth.OAuth2(
                 client_id, client_secret, redirect_uris[process.env.NODE_ENV == 'production' ? 1 : 0]);
 
@@ -110,10 +111,6 @@ class GoogleDriveApi {
                 };
                 this.oAuth2Client.setCredentials(JSON.parse(token));
                 resolve(this.oAuth2Client);
-                // console.log('\n WRITING credentials');
-                // console.log(this.oAuth2Client);
-                // console.log(JSON.parse(token));
-                // callback(oAuth2Client);
             });
         });
     }
