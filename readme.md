@@ -1,6 +1,6 @@
 # Covid-19-API-Philippines-DOH (Pre-Alpha)
 
-Covid-19 Web API for Philippines from data collected by DOH using Node.js that updates itself regularly as soon as DOH posted new data.     
+**Covid-19 Web API for Philippines from data collected by DOH using Node.js that updates itself regularly as soon as DOH posted new data.**     
 
 <br>
 
@@ -32,15 +32,16 @@ node index.js
 Then open your web browser and go to the following link
 
 ```
-http://localhost:3000
+http://localhost:3000/api/downloadLatestFiles
 ```
 
 The output should be:
 
 ```
-Hello World!
+Downloaded Latest Files
 ```
 
+Congrats now you have successfully installed the Web API
 <br>
 
 ## Docs
