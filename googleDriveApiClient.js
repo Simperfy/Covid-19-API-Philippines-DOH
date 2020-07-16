@@ -19,14 +19,7 @@ class GoogleDriveApi {
     oAuth2Client = null;
     // make this a singleton    
     constructor() {
-        if(!process.env.CLIENT_ID && 
-            !process.env.PROJECT_ID &&
-            !process.env.AUTH_URI &&
-            !process.env.TOKEN_URI &&
-            !process.env.AUTH_PROVIDER_X509_CERT_URL &&
-            !process.env.CLIENT_SECRET &&
-            !process.env.REDIRECT_URIS
-            ) {
+        if(process.env.NODE_ENV == 'production') {
             console.log("checking credentials.json");
             if (!fs.existsSync('./credentials.json'))
                 throw 'MISSING credentials.json, Get one at https://developers.google.com/drive/api/v3/quickstart/go';
@@ -54,7 +47,8 @@ class GoogleDriveApi {
                         "token_uri": "",
                         "auth_provider_x509_cert_url": "",
                         "client_secret": "",
-                        "redirect_uris": []
+                        "redirect_uris": [],
+                        "javascript_origins": []
                     }
                 }
                 let json = credentials.web;
@@ -71,8 +65,14 @@ class GoogleDriveApi {
                     json.auth_provider_x509_cert_url = process.env.AUTH_PROVIDER_X509_CERT_URL;
                 if (process.env.CLIENT_SECRET)
                     json.client_secret = process.env.CLIENT_SECRET;
-                if (process.env.REDIRECT_URIS)
-                    json.redirect_uris[0] = process.env.REDIRECT_URIS;
+                if (process.env.REDIRECT_URIS1)
+                    json.redirect_uris[0] = process.env.REDIRECT_URIS1;
+                if (process.env.REDIRECT_URIS2)
+                    json.redirect_uris[1] = process.env.REDIRECT_URIS2;
+                if (process.env.JAVASCRIPT_ORIGINS1)
+                    json.javascript_origins[0] = process.env.JAVASCRIPT_ORIGINS1;
+                if (process.env.JAVASCRIPT_ORIGINS2)
+                    json.javascript_origins[1] = process.env.JAVASCRIPT_ORIGINS2;
                 // console.log(credentials);
                 resolve(this.authorize(credentials, (_) => { }));
             } else {
@@ -96,11 +96,18 @@ class GoogleDriveApi {
         return new Promise(resolve => {
             const { client_secret, client_id, redirect_uris } = credentials.web;
             this.oAuth2Client = new google.auth.OAuth2(
-                client_id, client_secret, redirect_uris[0]);
+                client_id, client_secret, redirect_uris[process.env.NODE_ENV == 'production' ? 1 : 0]);
 
             // Check if we have previously stored a token.
             fs.readFile(TOKEN_PATH, (err, token) => {
-                if (err) return this.getAccessToken(this.oAuth2Client, callback);
+                // if (err) return this.getAccessToken(this.oAuth2Client, callback);
+                if (err) {
+                    let obj = {
+                        "err": "no access token: " + err,
+                        "scopes": SCOPES
+                    }
+                    return resolve(obj)
+                };
                 this.oAuth2Client.setCredentials(JSON.parse(token));
                 resolve(this.oAuth2Client);
                 // console.log('\n WRITING credentials');
@@ -123,21 +130,34 @@ class GoogleDriveApi {
             scope: SCOPES,
         });
         console.log('Authorize this app by visiting this url:', authUrl);
-        const rl = readline.createInterface({
-            input: process.stdin,
-            output: process.stdout,
-        });
-        rl.question('Enter the code from that page here: ', (code) => {
-            rl.close();
-            oAuth2Client.getToken(code, (err, token) => {
-                if (err) return console.error('Error retrieving access token', err);
-                oAuth2Client.setCredentials(token);
-                // Store the token to disk for later program executions
-                fs.writeFile(TOKEN_PATH, JSON.stringify(token), (err) => {
-                    if (err) return console.error(err);
-                    console.log('Token stored to', TOKEN_PATH);
-                });
-                // callback(oAuth2Client);
+        
+        // const rl = readline.createInterface({
+        //     input: process.stdin,
+        //     output: process.stdout,
+        // });
+        // rl.question('Enter the code from that page here: ', (code) => {
+        //     rl.close();
+        //     oAuth2Client.getToken(code, (err, token) => {
+        //         if (err) return console.error('Error retrieving access token', err);
+        //         oAuth2Client.setCredentials(token);
+        //         // Store the token to disk for later program executions
+        //         fs.writeFile(TOKEN_PATH, JSON.stringify(token), (err) => {
+        //             if (err) return console.error(err);
+        //             console.log('Token stored to', TOKEN_PATH);
+        //         });
+        //         // callback(oAuth2Client);
+        //     });
+        // });
+    }
+
+    storeTokenCode(code) {
+        this.oAuth2Client.getToken(code, (err, token) => {
+            if (err) return console.error('Error retrieving access token', err);
+            this.oAuth2Client.setCredentials(token);
+            // Store the token to disk for later program executions
+            fs.writeFile(TOKEN_PATH, JSON.stringify(token), (err) => {
+                if (err) throw err;
+                console.log('Token stored to', TOKEN_PATH);
             });
         });
     }

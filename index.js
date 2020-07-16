@@ -1,14 +1,30 @@
 require('dotenv').config();
 const googleDriveApi = require('./googleDriveApiClient');
 const GoogleDriveApi = googleDriveApi.GoogleDriveApi;
-
 let GDriveApi = new GoogleDriveApi();
+
+/**
+ * verify token.json exists on application start
+ * @param {import('express').RequestParamHandler} res 
+ */
+
+async function verifyGoogleToken(res) {
+    let auth = await GDriveApi.getAuth();
+    if (auth.err) {
+        console.log("GETTING NEW TOKEN");
+        const url = GDriveApi.oAuth2Client.generateAuthUrl({
+            access_type: 'offline',
+            scope: auth.scopes,
+        });
+
+        res.redirect(url);
+        return;
+    }   
+    return true;
+}
 
 // @TODO Move this function inside GoogleDriveAPI
 async function downloadLatestFiles() {
-    await GDriveApi.getAuth();
-    // GDriveApi.listFiles();
-    // let data = await GDriveApi.searchFiles('name contains \'DOH COVID Data Drop_ 2020\' and name contains \'Case Information\'');
     let latestFolderObject = await GDriveApi.getLatestFolderContentsObject();
     let latestFolderID = latestFolderObject.id;
     let latestFolderName = latestFolderObject.name;
@@ -16,6 +32,7 @@ async function downloadLatestFiles() {
     return latestFolderName;
 }
 
+//SERVER VARS
 const express = require('express')
 const app = express()
 const port = process.env.PORT || 3000
@@ -50,6 +67,24 @@ router.get('/getAll/:count?', async (req, res) => {
 
 app.use('/api', router); // Add prefix "/api" to routes above
 
-app.get('/', (req, res) => res.send('Hello World!'))
+app.get('/googleAuth', (req, res) => {
+    try {
+        GDriveApi.storeTokenCode(req.query.code)
+        res.redirect('/verified');
+    } catch (error) {
+        res.send("ERROR SAVING TOKEN: " + error);
+    }
+});
+
+app.get('/verified', (req, res) => res.send('Token Created! <html><a href="/">Go back to home</a><html>'))
+
+app.get('/', async (req, res) => {
+    try {
+        if (await verifyGoogleToken(res) === true)
+            res.send('Hello World!');  
+    } catch (error) {
+        res.send("ERROR Verifying Google Token");
+    }
+})
 
 app.listen(port, () => console.log(`Started Server at http://localhost:${port}`))
