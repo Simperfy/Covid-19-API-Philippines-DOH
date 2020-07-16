@@ -41,7 +41,7 @@ class GoogleDriveApi {
 
     // Entry point for the class
     async getAuth() {
-    
+        console.log('Authorizing');
         return new Promise(resolve => {
             if (!fs.existsSync('./credentials.json')) {
                 // load client secrets from .env file
@@ -79,7 +79,6 @@ class GoogleDriveApi {
                 // Load client secrets from a local file.
                 fs.readFile('credentials.json', (err, content) => {
                     if (err) return console.log('Error loading client secret file:', err);
-                    console.log('Authorizing');
                     // Authorize a client with credentials, then call the Google Drive API.
                     resolve(this.authorize(JSON.parse(content), (_) => { }));
                 });
@@ -101,7 +100,7 @@ class GoogleDriveApi {
 
             // Check if we have previously stored a token.
             fs.readFile(TOKEN_PATH, (err, token) => {
-                if (err) return getAccessToken(this.oAuth2Client, callback);
+                if (err) return this.getAccessToken(this.oAuth2Client, callback);
                 this.oAuth2Client.setCredentials(JSON.parse(token));
                 resolve(this.oAuth2Client);
                 // console.log('\n WRITING credentials');
