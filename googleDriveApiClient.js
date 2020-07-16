@@ -13,15 +13,16 @@ const SCOPES = ['https://www.googleapis.com/auth/drive.metadata.readonly', 'http
 // The file token.json stores the user's access and refresh tokens, and is
 // created automatically when the authorization flow completes for the first
 // time.
-const TOKEN_PATH = 'token.json';
+const TOKEN_PATH = path.join(__dirname, 'token.json');
+const CREDENTIALS_PATH  = path.join(__dirname, 'credentials.json');
 
 class GoogleDriveApi {
     oAuth2Client = null;
     // make this a singleton    
     constructor() {
         if(process.env.NODE_ENV == 'development') {
-            console.log("checking credentials.json");
-            if (!fs.existsSync('./credentials.json'))
+            console.log("checking credentials.json in " + CREDENTIALS_PATH);
+            if (!fs.existsSync(CREDENTIALS_PATH))
                 throw 'MISSING credentials.json, Get one at https://developers.google.com/drive/api/v3/quickstart/go';
         } else {
             console.log("Process Port detected skipping verification of credentials.json");
@@ -36,7 +37,7 @@ class GoogleDriveApi {
     async getAuth() {
         console.log('Authorizing');
         return new Promise(resolve => {
-            if (!fs.existsSync('./credentials.json')) {
+            if (!fs.existsSync(CREDENTIALS_PATH)) {
                 // load client secrets from .env file
                 console.log("Crafting new json");
                 let credentials = {
@@ -77,7 +78,7 @@ class GoogleDriveApi {
                 resolve(this.authorize(credentials, (_) => { }));
             } else {
                 // Load client secrets from a local file.
-                fs.readFile('credentials.json', (err, content) => {
+                fs.readFile(CREDENTIALS_PATH, (err, content) => {
                     if (err) return console.log('Error loading client secret file:', err);
                     // Authorize a client with credentials, then call the Google Drive API.
                     resolve(this.authorize(JSON.parse(content), (_) => { }));
@@ -95,7 +96,7 @@ class GoogleDriveApi {
         // console.log(credentials);
         return new Promise(resolve => {
             const { client_secret, client_id, redirect_uris } = credentials.web
-            console.log(credentials.web);
+            // console.log(credentials.web);
             console.log(redirect_uris[process.env.NODE_ENV == 'production' ? 1 : 0]);
             this.oAuth2Client = new google.auth.OAuth2(
                 client_id, client_secret, redirect_uris[process.env.NODE_ENV == 'production' ? 1 : 0]);
@@ -225,18 +226,19 @@ class GoogleDriveApi {
 
     /**
      * @param {google.auth.OAuth2} auth An authorized OAuth2 client.
-     * @param {String} fileId File ID of the file
-     * @param {String} name (Optional) Name of the file
+     * @param {Object} fileObj File Object containing ID and name of the file
      */
-    async downloadFile(fileId, name = 'Data.csv') {
-        console.log("DOWNLOADING LATEST FILE");
+    async downloadFile(fileObj, name = 'Data.csv') {
+        console.log("DOWNLOADING LATEST FILE: " + fileObj.name);
+
         const auth = this.oAuth2Client;
         const drive = google.drive({ version: 'v3', auth });
         const res = await drive.files
-            .get({ fileId, alt: 'media' }, { responseType: 'stream' });
-        return fs.promises.mkdir(path.dirname("tmp/test.txt"), {recursive: true}).then(data => {
+            .get({ fileId: fileObj.id, alt: 'media' }, { responseType: 'stream' }).catch(err => console.log(err));
+        return fs.promises.mkdir(path.dirname("tmp/Data.csv"), {recursive: true}).then(data => {
             // const filePath = path.join(os.tmpdir(), uuid.v4());
-            const filePath = path.relative(process.cwd(), `tmp/${name}`);
+            // const filePath = path.relative(process.cwd(), `tmp/${name}`);
+            const filePath = path.join(__dirname, `tmp/${name}`);
 
             console.log(`writing to ${filePath}`);
             const dest = fs.createWriteStream(filePath);
@@ -401,7 +403,7 @@ exports.GoogleDriveApi = GoogleDriveApi;
 // async function test() {
 //     let G = new GoogleDriveApi();
 //     let auth = await G.getAuth();
-//     // G.downloadFile(await G.getLatestFolderContents(), 'Latest.csv');
+//     G.downloadFile(await G.getLatestFolderContentsObject(), 'Latest.csv');
 // }
 
 // test();

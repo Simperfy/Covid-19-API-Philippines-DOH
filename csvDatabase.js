@@ -1,4 +1,5 @@
 const csv = require('csvtojson');
+const path = require('path');
 const caseInformation = require('./CaseInformation');
 const fs = require('fs')
 
@@ -27,11 +28,12 @@ class CSVDatabase {
     }
 
     convertCsvToJson() {
+        let p = path.join(__dirname, 'tmp/Data.csv');
         try {
-            if (fs.existsSync('./tmp/Data.csv')) {
+            if (fs.existsSync(p)) {
                 // Invoking csv returns a promise
                 return this.converter = csv()
-                .fromFile('./tmp/Data.csv')
+                .fromFile(p)
                 .then((json) => {
                     let c;
                     json.forEach((row) => {

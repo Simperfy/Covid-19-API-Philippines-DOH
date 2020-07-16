@@ -27,10 +27,8 @@ async function verifyGoogleToken(res) {
 // @TODO Move this function inside GoogleDriveAPI
 async function downloadLatestFiles() {
     let latestFolderObject = await GDriveApi.getLatestFolderContentsObject();
-    let latestFolderID = latestFolderObject.id;
-    let latestFolderName = latestFolderObject.name;
-    await GDriveApi.downloadFile(latestFolderID, 'Data.csv');
-    return latestFolderName;
+    await GDriveApi.downloadFile(latestFolderObject, 'Data.csv');
+    return latestFolderObject.name;
 }
 
 //SERVER VARS
