@@ -4,3 +4,5 @@ token.json
 credentials.json
 tmp/
 old/
+covid-api-test2.json
+serviceAccountKey.json

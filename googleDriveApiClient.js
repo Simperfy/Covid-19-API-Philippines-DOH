@@ -1,7 +1,11 @@
+// REFERENCES:s
+// GOOGLE DRIVE API V3 DOCS https://developers.google.com/drive/api/v3/
+// Metadata of file https://developers.google.com/drive/api/v3/reference/files
 const fs = require('fs');
 const readline = require('readline');
 const { google } = require('googleapis');
 const path = require('path');
+const DOH_DATA_DROP_FOLDER_ID = '1w_O-vweBFbqCgzgmCpux2F0HVB4P6ni2';
 
 // If modifying these scopes, delete token.json.
 const SCOPES = ['https://www.googleapis.com/auth/drive.metadata.readonly', 'https://www.googleapis.com/auth/drive.file', 'https://www.googleapis.com/auth/drive'];
@@ -12,7 +16,7 @@ const TOKEN_PATH = 'token.json';
 
 class GoogleDriveApi {
     oAuth2Client = null;
-    // make this a singleton
+    // make this a singleton    
     constructor() {
         if (!GoogleDriveApi.instance) {
             GoogleDriveApi.instance = this;
@@ -20,14 +24,8 @@ class GoogleDriveApi {
         return GoogleDriveApi.instance;
     }
 
-    async getAuth() {
-        return new Promise((resolve) =>  {
-            resolve(this.run());
-        });
-    }
-
     // Entry point for the class
-    async run() {
+    async getAuth() {
         // Load client secrets from a local file.
         return new Promise(resolve => {
             fs.readFile('credentials.json', (err, content) => {
@@ -161,15 +159,16 @@ class GoogleDriveApi {
     /**
      * @param {google.auth.OAuth2} auth An authorized OAuth2 client.
      * @param {String} fileId File ID of the file
+     * @param {String} name (Optional) Name of the file
      */
-    async downloadFile(fileId) {
+    async downloadFile(fileId, name = 'Data.csv') {
         const auth = this.oAuth2Client;
         const drive = google.drive({ version: 'v3', auth });
         const res = await drive.files
             .get({ fileId, alt: 'media' }, { responseType: 'stream' });
         return new Promise((resolve, reject) => {
             // const filePath = path.join(os.tmpdir(), uuid.v4());
-            const filePath = path.relative(process.cwd(), 'tmp/Data.csv');
+            const filePath = path.relative(process.cwd(), `tmp/${name}`);
             console.log(`writing to ${filePath}`);
             const dest = fs.createWriteStream(filePath);
             let progress = 0;
@@ -193,28 +192,142 @@ class GoogleDriveApi {
                 })
                 .pipe(dest);
         });
-
     }
+
+    /**
+     * @return {JSON} a json containing name and id of folders in the root folder 
+     */
+    async getFilesInRootFolder() {
+        return new Promise((resolve)=> {
+            const auth = this.oAuth2Client;
+            const drive = google.drive({ version: 'v3', auth });
+            drive.files.list({
+                q: `'${DOH_DATA_DROP_FOLDER_ID}' in parents`,
+                fields: 'nextPageToken, files(id, name)',
+            }, (err, res) => {
+                if (err) return console.log('The API returned an error: ' + err);
+                const files = res.data.files;
+                if (files.length) {
+                    console.log('\nFiles in root folder:');
+                    files.map((file) => {
+                        console.log(`${file.name} ${file.id}`);
+                    });
+                    
+                    resolve(files);
+                } else {
+                    console.log('No files found.');
+                }
+            });
+        });
+    }
+
+    /**
+     * @return {String} ID of the folder this month 
+     */
+    async getGFolderIDThisMonth() {
+        let date = new Date();
+        let month = (date.getMonth()) + 1;
+        let searchString = "(0" + month + "/20)";
+
+        let folders = await this.getFilesInRootFolder();
+
+        console.log(`\nFiltering "${searchString}": `)
+        let res = folders.filter((file) => {
+            console.log((-1 != (file.name.search(searchString))) + " : " + file.name);
+            return (-1 != (file.name.search(searchString)));
+        })
+
+        if (res.length == 1)
+            return res[0].id
+        
+        throw "[googleDriveApiClient.js] Folder this month couldn't be found";
+    }
+
+    /**
+     * We get the latest folder by ordering the result by name in descending order
+     * therefore the first element in result is the latest
+     * we cannot use date modified/create date because DOH create/modify these folders from time to time. 
+     * @return {String} ID of the latest folder inside this month's folder
+     */
+    async getLatestGFolderID() {
+        const id = await this.getGFolderIDThisMonth();
+        console.log("\nThis month folder id: " + id);
+        
+        const auth = this.oAuth2Client;
+        const drive = google.drive({ version: 'v3', auth });
+
+        return new Promise((resolve) => {
+            drive.files.list({
+                q: `'${id}' in parents`,
+                orderBy: 'name desc',
+                fields: 'nextPageToken, files(id, name)',
+            }, (err, res) => {
+                if (err) return console.log('The API returned an error: ' + err);
+                const files = res.data.files;
+                if (files.length) {
+                    console.log(`\nFiles inside this month's folder:`);
+                    files.map((file) => {
+                        console.log(`${file.name} ${file.id}`);
+                    });
+
+                    resolve(files[0].id);
+                } else {
+                    console.log('No files found.');
+                    throw "[googleDriveApiClient.js] No files found in this month's folder";
+                }
+            });
+        });
+    }
+
+    async getLatestFolderContents() {
+        const id = await this.getLatestGFolderID();
+        console.log("\nLatest folder id: " + id);
+        
+        const auth = this.oAuth2Client;
+        const drive = google.drive({ version: 'v3', auth });
+        const searchString = 'Case Information.csv';
+
+        return new Promise((resolve) => {
+            drive.files.list({
+                q: `'${id}' in parents`,
+                orderBy: 'name',
+                fields: 'nextPageToken, files(id, name)',
+            }, (err, res) => {
+                if (err) return console.log('The API returned an error: ' + err);
+                const files = res.data.files;
+                if (files.length) {
+                    // console.log(`\nFiles inside latest folder:`);
+                    // files.map((file) => {
+                    //     console.log(`${file.name} ${file.id}`);
+                    // });
+
+                    console.log(`\nFiltering "${searchString}":`);
+                    let res = files.filter((file) => {
+                        console.log((-1 != (file.name.search(searchString))) + " : " + file.name);
+                        return (-1 != (file.name.search(searchString)));
+                    });
+
+                    if (res.length == 1)
+                        resolve(res[0].id)
+                    else 
+                        throw "[googleDriveApiClient.js] No results from search. Search String = " + searchString;
+                } else {
+                    console.log('No files found.');
+                    throw "[googleDriveApiClient.js] No files found in latest folder";
+                }
+            });
+        });
+    }
+    
 }
 
 exports.GoogleDriveApi = GoogleDriveApi;
 
-// /**
-// * @param {google.auth.OAuth2} auth An authorized OAuth2 client.
-// */
-
-// async function entryPoint() {
-//     let GApi = new GoogleDriveApi();
-//     GApi.listFiles(auth);
-//     await GApi.searchFiles(auth, 'name contains \'DOH COVID Data Drop_ 2020\' and name contains \'Case Information\'').then(covidData => {
-//         console.log(covidData[0]);
-
-//         GApi.downloadFile(auth, covidData[0].id);
-
-//     }).catch(err => console.log("\nERROR: " + err));
+// download Case Information latest csv
+// async function test() {
+//     let G = new GoogleDriveApi();
+//     let auth = await G.getAuth();
+//     G.downloadFile(await G.getLatestFolderContents(), 'Latest.csv');
 // }
 
-
-// exports async function getOAuth2Client(auth) {
-//     return auth();
-// }
+// test();

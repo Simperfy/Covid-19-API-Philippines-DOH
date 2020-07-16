@@ -1,187 +1,165 @@
 class CaseInformation {
-    set CaseCode(CaseCode) {
-        this._CaseCode = CaseCode;
+    set CaseCode(caseCode) {
+        this.caseCode = caseCode;
     }
 
     get CaseCode() {
-        return this._CaseCode
+        return this.caseCode
     }
 
-    set Age(Age) {
-        this._Age = Age;
+    set Age(age) {
+        this.age = age;
     }
 
     get Age() {
-        return this._Age
+        return this.age
     }
 
-    set AgeGroup(AgeGroup) {
-        this._AgeGroup = AgeGroup;
+    set AgeGroup(ageGroup) {
+        this.ageGroup = ageGroup;
     }
 
     get AgeGroup() {
-        return this._AgeGroup
+        return this.ageGroup
     }
 
-    set Sex(Sex) {
-        this._Sex = Sex;
+    set Sex(sex) {
+        this.sex = sex;
     }
 
     get Sex() {
-        return this._Sex
+        return this.sex
     }
 
-    set DateSpecimen(DateSpecimen) {
-        this._DateSpecimen = DateSpecimen;
+    set DateSpecimen(dateSpecimen) {
+        this.dateSpecimen = dateSpecimen;
     }
 
     get DateSpecimen() {
-        return this._DateSpecimen
+        return this.dateSpecimen
     }
 
-    set DateResultRelease(DateResultRelease) {
-        this._DateResultRelease = DateResultRelease;
+    set DateResultRelease(dateResultRelease) {
+        this.dateResultRelease = dateResultRelease;
     }
 
     get DateResultRelease() {
-        return this._DateResultRelease
+        return this.dateResultRelease
     }
 
-    set DateRepConf(DateRepConf) {
-        this._DateRepConf = DateRepConf;
+    set DateRepConf(dateRepConf) {
+        this.dateRepConf = dateRepConf;
     }
 
     get DateRepConf() {
-        return this._DateRepConf
+        return this.dateRepConf
     }
 
-    set DateDied(DateDied) {
-        this._DateDied = DateDied;
+    set DateDied(dateDied) {
+        this.dateDied = dateDied;
     }
 
     get DateDied() {
-        return this._DateDied
+        return this.dateDied
     }
 
-    set DateRecover(DateRecover) {
-        this._DateRecover = DateRecover;
+    set DateRecover(dateRecover) {
+        this.dateRecover = dateRecover;
     }
 
     get DateRecover() {
-        return this._DateRecover
+        return this.dateRecover
     }
 
-    set RcsovalType(RcsovalType) {
-        this._RcsovalType = RcsovalType;
+    set RemovalType(removalType) {
+        this.removalType = removalType;
     }
 
-    get RcsovalType() {
-        return this._RcsovalType
+    get RemovalType() {
+        return this.removalType
     }
 
-    set Admitted(Admitted) {
-        this._Admitted = Admitted;
+    set Admitted(admitted) {
+        this.admitted = admitted;
     }
 
     get Admitted() {
-        return this._Admitted
+        return this.admitted
     }
 
-    set RegionRes(RegionRes) {
-        this._RegionRes = RegionRes;
+    set RegionRes(regionRes) {
+        this.regionRes = regionRes;
     }
 
     get RegionRes() {
-        return this._RegionRes
+        return this.regionRes
     }
 
-    set ProvRes(ProvRes) {
-        this._ProvRes = ProvRes;
+    set ProvRes(provRes) {
+        this.provRes = provRes;
     }
 
     get ProvRes() {
-        return this._ProvRes
+        return this.provRes
     }
 
-    set CityMunRes(CityMunRes) {
-        this._CityMunRes = CityMunRes;
+    set CityMunRes(cityMunRes) {
+        this.cityMunRes = cityMunRes;
     }
 
     get CityMunRes() {
-        return this._CityMunRes
+        return this.cityMunRes
     }
 
-    set CityMuniPSGC(CityMuniPSGC) {
-        this._CityMuniPSGC = CityMuniPSGC;
+    set CityMuniPSGC(cityMuniPSGC) {
+        this.cityMuniPSGC = cityMuniPSGC;
     }
 
     get CityMuniPSGC() {
-        return this._CityMuniPSGC
+        return this.cityMuniPSGC
     }
 
-    set HealthStatus(HealthStatus) {
-        this._HealthStatus = HealthStatus;
+    set HealthStatus(healthStatus) {
+        this.healthStatus = healthStatus;
     }
 
     get HealthStatus() {
-        return this._HealthStatus
+        return this.healthStatus
     }
 
-    set Quarantined(Quarantined) {
-        this._Quarantined = Quarantined;
+    set Quarantined(quarantined) {
+        this.quarantined = quarantined;
     }
 
     get Quarantined() {
-        return this._Quarantined
+        return this.quarantined
     }
 
-    set DateOnset(DateOnset) {
-        this._DateOnset = DateOnset;
+    set DateOnset(dateOnset) {
+        this.dateOnset = dateOnset;
     }
 
     get DateOnset() {
-        return this._DateOnset
+        return this.dateOnset
     }
 
-    set Pregnanttab(Pregnanttab) {
-        this._Pregnanttab = Pregnanttab;
+    set Pregnanttab(pregnanttab) {
+        this.pregnanttab = pregnanttab;
     }
 
     get Pregnanttab() {
-        return this._Pregnanttab
+        return this.pregnanttab
     }
 
-    set ValidationStatus(ValidationStatus) {
-        this._ValidationStatus = ValidationStatus;
+    set ValidationStatus(validationStatus) {
+        this.validationStatus = validationStatus;
     }
 
     get ValidationStatus() {
-        return this._ValidationStatus
+        return this.validationStatus
     }
 
     constructor() {}
 }
 
-let CaseInformations = [];
-
-const csv = require('csvtojson')
-// Invoking csv returns a promise
-const converter = csv()
-    .fromFile('./tmp/Data.csv')
-    .then((json) => {
-        let c;
-        let i = 0;
-        json.forEach((row) => {
-            if (i > 100) return;
-            console.log(row);
-            c = new CaseInformation();
-            Object.assign(c, row);
-            CaseInformations.push(c);
-            i++;
-        });
-    }).then(() => {
-        // Output the names of the CaseInformationss
-        CaseInformations.forEach((cs) => {
-            console.log(cs.CaseCode);// Invoke the Name getter
-        });
-    });
+exports.CaseInformation = CaseInformation;
