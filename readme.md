@@ -38,7 +38,7 @@ http://localhost:3000/api/downloadLatestFiles
 The output should be:
 
 ```
-Downloaded Latest Files
+Downloaded Latest Files - [file name.csv]
 ```
 
 Congrats now you have successfully installed the Web API

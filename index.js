@@ -1,12 +1,17 @@
 const googleDriveApi = require('./googleDriveApiClient');
 const GoogleDriveApi = googleDriveApi.GoogleDriveApi;
 
+// @TODO Move this function inside GoogleDriveAPI
 async function downloadLatestFiles() {
     let GDriveApi = new GoogleDriveApi();
-    let auth = await GDriveApi.getAuth();
+    await GDriveApi.getAuth();
     // GDriveApi.listFiles();
-    let data = await GDriveApi.searchFiles('name contains \'DOH COVID Data Drop_ 2020\' and name contains \'Case Information\'');
-    GDriveApi.downloadFile(await GDriveApi.getLatestFolderContents(), 'Data.csv');
+    // let data = await GDriveApi.searchFiles('name contains \'DOH COVID Data Drop_ 2020\' and name contains \'Case Information\'');
+    let latestFolderObject = await GDriveApi.getLatestFolderContentsObject();
+    let latestFolderID = latestFolderObject.id;
+    let latestFolderName = latestFolderObject.name;
+    await GDriveApi.downloadFile(latestFolderID, 'Data.csv');
+    return latestFolderName;
 }
 
 const express = require('express')
@@ -20,12 +25,11 @@ let csvD = new CSVDatabase()
 let router = express.Router()
 
 router.get('/downloadLatestFiles', async (req, res) => {
-    try {
-        downloadLatestFiles();
-        res.send("Downloaded Latest Files");   
-    } catch (error) {
+    downloadLatestFiles().then((data) => {
+        res.send("Downloaded Latest Files - " + data);   
+    }).catch((err) => {
         res.send("Error Downloading Latest Files");
-    }
+    })
 })
 
 router.get('/filter/:field/:value', async (req, res) => {
@@ -46,4 +50,4 @@ app.use('/api', router); // Add prefix "/api" to routes above
 
 app.get('/', (req, res) => res.send('Hello World!'))
 
-app.listen(port, () => console.log(`Example app listening at http://localhost:${port}`))
+app.listen(port, () => console.log(`Started Server at http://localhost:${port}`))

@@ -162,35 +162,41 @@ class GoogleDriveApi {
      * @param {String} name (Optional) Name of the file
      */
     async downloadFile(fileId, name = 'Data.csv') {
+        console.log("DOWNLOADING LATEST FILE");
         const auth = this.oAuth2Client;
         const drive = google.drive({ version: 'v3', auth });
         const res = await drive.files
             .get({ fileId, alt: 'media' }, { responseType: 'stream' });
-        return new Promise((resolve, reject) => {
+        return fs.promises.mkdir(path.dirname("tmp/test.txt"), {recursive: true}).then(data => {
             // const filePath = path.join(os.tmpdir(), uuid.v4());
             const filePath = path.relative(process.cwd(), `tmp/${name}`);
+
             console.log(`writing to ${filePath}`);
             const dest = fs.createWriteStream(filePath);
             let progress = 0;
 
             res.data
                 .on('end', () => {
-                    console.log('Done downloading file.');
-                    resolve(filePath);
+                    console.log('\nDone downloading file. ' + this.latestFolderName);
+                    return filePath;
                 })
                 .on('error', err => {
                     console.error('Error downloading file.');
-                    reject(err);
+                    throw err;
                 })
                 .on('data', d => {
                     progress += d.length;
                     if (process.stdout.isTTY) {
                         process.stdout.clearLine();
                         process.stdout.cursorTo(0);
-                        process.stdout.write(`\nDownloaded ${progress} bytes`);
+                        process.stdout.write(`Downloaded ${progress} bytes`);
                     }
                 })
                 .pipe(dest);
+
+            dest.on('finish', () => {
+                dest.close();
+            })
         });
     }
 
@@ -247,9 +253,9 @@ class GoogleDriveApi {
      * We get the latest folder by ordering the result by name in descending order
      * therefore the first element in result is the latest
      * we cannot use date modified/create date because DOH create/modify these folders from time to time. 
-     * @return {String} ID of the latest folder inside this month's folder
+     * @return {Object} Contains ID and Name of the latest folder inside this month's folder
      */
-    async getLatestGFolderID() {
+    async getLatestGFolderObject() {
         const id = await this.getGFolderIDThisMonth();
         console.log("\nThis month folder id: " + id);
         
@@ -269,8 +275,7 @@ class GoogleDriveApi {
                     files.map((file) => {
                         console.log(`${file.name} ${file.id}`);
                     });
-
-                    resolve(files[0].id);
+                    resolve(files[0]);
                 } else {
                     console.log('No files found.');
                     throw "[googleDriveApiClient.js] No files found in this month's folder";
@@ -279,8 +284,10 @@ class GoogleDriveApi {
         });
     }
 
-    async getLatestFolderContents() {
-        const id = await this.getLatestGFolderID();
+    async getLatestFolderContentsObject() {
+        const latestFolder = await this.getLatestGFolderObject();
+        const id = latestFolder.id;
+        this.latestFolderName = latestFolder.name;
         console.log("\nLatest folder id: " + id);
         
         const auth = this.oAuth2Client;
@@ -308,7 +315,7 @@ class GoogleDriveApi {
                     });
 
                     if (res.length == 1)
-                        resolve(res[0].id)
+                        resolve(res[0])
                     else 
                         throw "[googleDriveApiClient.js] No results from search. Search String = " + searchString;
                 } else {

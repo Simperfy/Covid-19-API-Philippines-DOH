@@ -1,10 +1,11 @@
 const csv = require('csvtojson');
 const caseInformation = require('./CaseInformation');
+const fs = require('fs')
 
 const CaseInformation = caseInformation.CaseInformation;
 
-
 class CSVDatabase {
+    isCSLoaded = false;
     CaseInformations = [];
 
     // make this a singleton
@@ -17,18 +18,36 @@ class CSVDatabase {
         return CSVDatabase.instance;
     }
 
+    assureCSIsLoaded() {
+        if(!this.isCSLoaded) {
+            console.log("CSV is not loaded, attempting to load now");
+            this.convertCsvToJson();
+            this.isCSLoaded = true;
+        }
+    }
+
     convertCsvToJson() {
-        // Invoking csv returns a promise
-        return this.converter = csv()
-            .fromFile('./tmp/Data.csv')
-            .then((json) => {
-                let c;
-                json.forEach((row) => {
-                    c = new CaseInformation();
-                    Object.assign(c, row);
-                    this.CaseInformations.push(c);
+        try {
+            if (fs.existsSync('./tmp/Data.csv')) {
+                // Invoking csv returns a promise
+                return this.converter = csv()
+                .fromFile('./tmp/Data.csv')
+                .then((json) => {
+                    let c;
+                    json.forEach((row) => {
+                        c = new CaseInformation();
+                        Object.assign(c, row);
+                        this.CaseInformations.push(c);
+                    });
+                }).then(() => {
+                    console.log('Case Information loaded');
                 });
-            });
+            } else {
+                console.error("Cannot find Data.csv, Did you visit http://localhost:3000/api/downloadLatestFiles ?");
+            }
+        } catch(err) {
+            console.error(err);
+        }
     }
 
     // /**
@@ -74,6 +93,7 @@ class CSVDatabase {
      * @param {*} value 
      */
     async filter(field, value) {
+        this.assureCSIsLoaded();
         await this.converter;
         return this.CaseInformations.filter(ci => ci[field] == value);
     }
@@ -84,6 +104,7 @@ class CSVDatabase {
      * @return {CaseInformation} 
      */
     async all(size=this.CaseInformations.length) {
+        this.assureCSIsLoaded();
         await this.converter;
         return this.CaseInformations.slice(0, size);
     }
