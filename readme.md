@@ -1,6 +1,6 @@
 # Covid-19-API-Philippines-DOH (Pre-Alpha)
 
-*Covid-19 Web API for Philippines from data collected by DOH using Node.js that updates itself regularly as soon as DOH posted new data.*
+*Covid-19 Web API for Philippines from data collected by DOH using Node.js that updates itself regularly as soon as DOH posted new data.* (Half implemented atm.)
 
 *This Web API is still on it's early age and is not suitable for production yet.*
 
