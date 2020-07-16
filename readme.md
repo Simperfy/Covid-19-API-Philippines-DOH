@@ -2,6 +2,8 @@
 
 *Covid-19 Web API for Philippines from data collected by DOH using Node.js that updates itself regularly as soon as DOH posted new data.* (Half implemented atm.)
 
+*The data could be 1 - 3 days late(based on how often DOH updates the DATA DROP archives)*
+
 *This Web API is still on it's early age and is not suitable for production yet.*
 
 Preview: [Actual Website](https://covid19-api-philippines.herokuapp.com/api/getall/100) - returns 100 covid cases from records of DOH 
