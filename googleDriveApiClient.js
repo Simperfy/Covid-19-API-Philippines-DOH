@@ -19,7 +19,7 @@ class GoogleDriveApi {
     oAuth2Client = null;
     // make this a singleton    
     constructor() {
-        if(process.env.NODE_ENV == 'production') {
+        if(process.env.NODE_ENV == 'development') {
             console.log("checking credentials.json");
             if (!fs.existsSync('./credentials.json'))
                 throw 'MISSING credentials.json, Get one at https://developers.google.com/drive/api/v3/quickstart/go';
