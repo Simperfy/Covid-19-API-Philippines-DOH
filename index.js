@@ -1,9 +1,10 @@
 const googleDriveApi = require('./googleDriveApiClient');
 const GoogleDriveApi = googleDriveApi.GoogleDriveApi;
 
+let GDriveApi = new GoogleDriveApi();
+
 // @TODO Move this function inside GoogleDriveAPI
 async function downloadLatestFiles() {
-    let GDriveApi = new GoogleDriveApi();
     await GDriveApi.getAuth();
     // GDriveApi.listFiles();
     // let data = await GDriveApi.searchFiles('name contains \'DOH COVID Data Drop_ 2020\' and name contains \'Case Information\'');
