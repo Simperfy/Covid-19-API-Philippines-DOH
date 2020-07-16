@@ -1,6 +1,7 @@
 // REFERENCES:s
 // GOOGLE DRIVE API V3 DOCS https://developers.google.com/drive/api/v3/
 // Metadata of file https://developers.google.com/drive/api/v3/reference/files
+
 const fs = require('fs');
 const readline = require('readline');
 const { google } = require('googleapis');
@@ -29,14 +30,49 @@ class GoogleDriveApi {
 
     // Entry point for the class
     async getAuth() {
-        // Load client secrets from a local file.
+    
         return new Promise(resolve => {
-            fs.readFile('credentials.json', (err, content) => {
-                if (err) return console.log('Error loading client secret file:', err);
-                console.log('Authorizing');
-                // Authorize a client with credentials, then call the Google Drive API.
-                resolve(this.authorize(JSON.parse(content), (_) => { }));
-            });
+            if (fs.existsSync('./.env')) {
+                // load client secrets from .env file=
+                console.log("Crafting new json");
+                let credentials = {
+                    "web": {
+                        "client_id": "",
+                        "project_id": "",
+                        "auth_uri": "",
+                        "token_uri": "",
+                        "auth_provider_x509_cert_url": "",
+                        "client_secret": "",
+                        "redirect_uris": []
+                    }
+                }
+                let json = credentials.web;
+                console.log("Replacing credentials.json with environment values");
+                if(process.env.CLIENT_ID)
+                    json.client_id = process.env.CLIENT_ID
+                if (process.env.PROJECT_ID)
+                    json.project_id = process.env.PROJECT_ID;
+                if (process.env.AUTH_URI)
+                    json.auth_uri = process.env.AUTH_URI;
+                if (process.env.TOKEN_URI)
+                    json.token_uri = process.env.TOKEN_URI;
+                if (process.env.AUTH_PROVIDER_X509_CERT_URL)
+                    json.auth_provider_x509_cert_url = process.env.AUTH_PROVIDER_X509_CERT_URL;
+                if (process.env.CLIENT_SECRET)
+                    json.client_secret = process.env.CLIENT_SECRET;
+                if (process.env.REDIRECT_URIS)
+                    json.redirect_uris[0] = process.env.REDIRECT_URIS;
+                // console.log(credentials);
+                resolve(this.authorize(credentials, (_) => { }));
+            } else {
+                // Load client secrets from a local file.
+                fs.readFile('credentials.json', (err, content) => {
+                    if (err) return console.log('Error loading client secret file:', err);
+                    console.log('Authorizing');
+                    // Authorize a client with credentials, then call the Google Drive API.
+                    resolve(this.authorize(JSON.parse(content), (_) => { }));
+                });
+            }
         });
     }
     /**
@@ -337,7 +373,7 @@ exports.GoogleDriveApi = GoogleDriveApi;
 // async function test() {
 //     let G = new GoogleDriveApi();
 //     let auth = await G.getAuth();
-//     G.downloadFile(await G.getLatestFolderContents(), 'Latest.csv');
+//     // G.downloadFile(await G.getLatestFolderContents(), 'Latest.csv');
 // }
 
 // test();

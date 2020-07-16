@@ -1,8 +1,10 @@
+require('dotenv').config();
 const googleDriveApi = require('./googleDriveApiClient');
 const GoogleDriveApi = googleDriveApi.GoogleDriveApi;
 
 let GDriveApi = new GoogleDriveApi();
 
+GDriveApi.getAuth();
 // @TODO Move this function inside GoogleDriveAPI
 async function downloadLatestFiles() {
     await GDriveApi.getAuth();
@@ -17,7 +19,7 @@ async function downloadLatestFiles() {
 
 const express = require('express')
 const app = express()
-const port = 3000
+const port = process.env.PORT || 3000
 const csvDatabase = require('./csvDatabase')
 const CSVDatabase = csvDatabase.CSVDatabase
 

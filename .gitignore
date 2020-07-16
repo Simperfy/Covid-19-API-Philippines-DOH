@@ -6,3 +6,4 @@ tmp/
 old/
 covid-api-test2.json
 serviceAccountKey.json
+.env
