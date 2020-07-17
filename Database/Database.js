@@ -10,12 +10,16 @@ class Database {
       // we only need to change this class wtih same methods
       console.log('Connecting to datbase');
       const mySQLDatabase = new MySQLDatabase();
-      this.connection = mySQLDatabase;
-      if (this.connection) {
-        console.log('Successfully connected to the Database');
-      } else {
-        console.log('Failed to connect to the Database');
-      }
+      this.db = mySQLDatabase;
+      this.connection = mySQLDatabase.connection;
+
+      this.connection.connect((err) => {
+        if (!err) {
+          console.log('Successfully connected to the Database');
+        } else {
+          console.log('Failed to connect to the Database: ' + err);
+        }
+      });
     }
 
     return Database.instance;
@@ -43,7 +47,7 @@ class Database {
   }
 
   endConnection() {
-    this.connection.endConnection();
+    this.db.endConnection();
   }
 }
 

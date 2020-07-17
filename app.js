@@ -98,4 +98,7 @@ app.get('/', async (req, res) => {
   }
 });
 
-app.listen(port, () => console.log(`Started Server at http://localhost:${port}`));
+app.listen(port, () => console.log(`Started Server at http://localhost:${port}`)).on('close', () => {
+  console.log('Terminating Datebase connection.');
+  db.endConnection();
+});
