@@ -20,7 +20,7 @@ What things you need to install the software and how to install them
 
 ### Installing
 
-Select [Enable Drive API](https://developers.google.com/drive/api/v3/quickstart/go) and download the credentials.json and place the credentials.json at the root folder of the project.
+Select [Enable Drive API](https://developers.google.com/drive/api/v3/quickstart/go) and download the `credentials.json` and place the json file at the root folder of the project.
 
 Make sure you have [Node.js](https://nodejs.org) & run the command
 
@@ -34,16 +34,16 @@ Run the project
 node index.js
 ```
 
-Then open your web browser and go to the following link
+Then open your web browser and go to the following links:
 
+1. Get token.json (must have `credentials.json`)
 ```
-http://localhost:3000/api/downloadLatestFiles
+    http://localhost:3000/
 ```
 
-The output should be:
-
+2. Download latest files:
 ```
-Downloaded Latest Files - [file name.csv]
+    http://localhost:3000/api/downloadLatestFiles
 ```
 
 Congrats now you have successfully installed the Web API
