@@ -1,7 +1,7 @@
 require('dotenv').config();
 
 // GOOGLE DRIVE VARS
-const googleDriveApi = require('./googleDriveApiClient');
+const googleDriveApi = require('./GoogleDriveApiClient');
 const GoogleDriveApi = googleDriveApi.GoogleDriveApi;
 
 // SERVER VARS
@@ -11,13 +11,24 @@ const app = express();
 
 const port = process.env.PORT || 3000;
 
-const csvDatabase = require('./csvDatabase');
-const CSVDatabase = csvDatabase.CSVDatabase;
+// Database vars
+const database = require('./Database/Database');
+const Database = database.Database;
+
+// const csvDatabase = require('./CSVDatabase');
+// const CSVDatabase = csvDatabase.CSVDatabase;
 
 const GDriveApi = new GoogleDriveApi();
-const csvD = new CSVDatabase();
+// const csvD = new CSVDatabase();
 // eslint-disable-next-line new-cap
 const router = express.Router();
+
+const db = new Database();
+// (async () => {
+//   // console.log(await db.count({field: 'age', value: '18'}));
+//   console.log(await db.get());
+// })();
+// return;
 
 /**
  * verify token.json exists on application start
@@ -43,7 +54,7 @@ router.get('/downloadLatestFiles', async (req, res) => {
   GDriveApi.downloadLatestFiles().then((data) => {
     res.send('Downloaded Latest Files - ' + data);
   }).catch((err) => {
-    res.send('Error Downloading Latest Files');
+    res.send('Error Downloading Latest Files: ' + err);
   });
 });
 
@@ -55,11 +66,11 @@ router.get('/filter/:field/:value', async (req, res) => {
     value = parseInt(value);
   }
 
-  res.json(await csvD.filter(field, value));
+  res.json(await db.filter(field, value));
 });
 
-router.get('/getAll/:count?', async (req, res) => {
-  res.json(await csvD.all(req.params.count));
+router.get('/get/:count?', async (req, res) => {
+  res.json(await db.get(req.params.count));
 });
 
 app.use('/api', router); // Add prefix "/api" to routes above

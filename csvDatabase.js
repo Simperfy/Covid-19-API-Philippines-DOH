@@ -79,8 +79,8 @@ class CSVDatabase {
 
   /**
      * An all purpose filter instead of having a filter function for every field
-     * @param {*} field
-     * @param {*} value
+     * @param {String} field
+     * @param {String} value
      */
   async filter(field, value) {
     this.assureCSIsLoaded();
@@ -93,7 +93,7 @@ class CSVDatabase {
      * @param {int} size Max number of entries to return
      * @return {CaseInformation}
      */
-  async all(size=this.CaseInformations.length) {
+  async get(size=this.CaseInformations.length) {
     this.assureCSIsLoaded();
     await this.converter;
     return this.CaseInformations.slice(0, size);
