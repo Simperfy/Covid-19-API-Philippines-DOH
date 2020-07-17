@@ -1,165 +1,166 @@
+/* eslint-disable require-jsdoc */
 class CaseInformation {
-    set CaseCode(caseCode) {
-        this.caseCode = caseCode;
-    }
+  set CaseCode(caseCode) {
+    this.caseCode = caseCode;
+  }
 
-    get CaseCode() {
-        return this.caseCode
-    }
+  get CaseCode() {
+    return this.caseCode;
+  }
 
-    set Age(age) {
-        this.age = age;
-    }
+  set Age(age) {
+    this.age = age;
+  }
 
-    get Age() {
-        return this.age
-    }
+  get Age() {
+    return this.age;
+  }
 
-    set AgeGroup(ageGroup) {
-        this.ageGroup = ageGroup;
-    }
+  set AgeGroup(ageGroup) {
+    this.ageGroup = ageGroup;
+  }
 
-    get AgeGroup() {
-        return this.ageGroup
-    }
+  get AgeGroup() {
+    return this.ageGroup;
+  }
 
-    set Sex(sex) {
-        this.sex = sex;
-    }
+  set Sex(sex) {
+    this.sex = sex;
+  }
 
-    get Sex() {
-        return this.sex
-    }
+  get Sex() {
+    return this.sex;
+  }
 
-    set DateSpecimen(dateSpecimen) {
-        this.dateSpecimen = dateSpecimen;
-    }
+  set DateSpecimen(dateSpecimen) {
+    this.dateSpecimen = dateSpecimen;
+  }
 
-    get DateSpecimen() {
-        return this.dateSpecimen
-    }
+  get DateSpecimen() {
+    return this.dateSpecimen;
+  }
 
-    set DateResultRelease(dateResultRelease) {
-        this.dateResultRelease = dateResultRelease;
-    }
+  set DateResultRelease(dateResultRelease) {
+    this.dateResultRelease = dateResultRelease;
+  }
 
-    get DateResultRelease() {
-        return this.dateResultRelease
-    }
+  get DateResultRelease() {
+    return this.dateResultRelease;
+  }
 
-    set DateRepConf(dateRepConf) {
-        this.dateRepConf = dateRepConf;
-    }
+  set DateRepConf(dateRepConf) {
+    this.dateRepConf = dateRepConf;
+  }
 
-    get DateRepConf() {
-        return this.dateRepConf
-    }
+  get DateRepConf() {
+    return this.dateRepConf;
+  }
 
-    set DateDied(dateDied) {
-        this.dateDied = dateDied;
-    }
+  set DateDied(dateDied) {
+    this.dateDied = dateDied;
+  }
 
-    get DateDied() {
-        return this.dateDied
-    }
+  get DateDied() {
+    return this.dateDied;
+  }
 
-    set DateRecover(dateRecover) {
-        this.dateRecover = dateRecover;
-    }
+  set DateRecover(dateRecover) {
+    this.dateRecover = dateRecover;
+  }
 
-    get DateRecover() {
-        return this.dateRecover
-    }
+  get DateRecover() {
+    return this.dateRecover;
+  }
 
-    set RemovalType(removalType) {
-        this.removalType = removalType;
-    }
+  set RemovalType(removalType) {
+    this.removalType = removalType;
+  }
 
-    get RemovalType() {
-        return this.removalType
-    }
+  get RemovalType() {
+    return this.removalType;
+  }
 
-    set Admitted(admitted) {
-        this.admitted = admitted;
-    }
+  set Admitted(admitted) {
+    this.admitted = admitted;
+  }
 
-    get Admitted() {
-        return this.admitted
-    }
+  get Admitted() {
+    return this.admitted;
+  }
 
-    set RegionRes(regionRes) {
-        this.regionRes = regionRes;
-    }
+  set RegionRes(regionRes) {
+    this.regionRes = regionRes;
+  }
 
-    get RegionRes() {
-        return this.regionRes
-    }
+  get RegionRes() {
+    return this.regionRes;
+  }
 
-    set ProvRes(provRes) {
-        this.provRes = provRes;
-    }
+  set ProvRes(provRes) {
+    this.provRes = provRes;
+  }
 
-    get ProvRes() {
-        return this.provRes
-    }
+  get ProvRes() {
+    return this.provRes;
+  }
 
-    set CityMunRes(cityMunRes) {
-        this.cityMunRes = cityMunRes;
-    }
+  set CityMunRes(cityMunRes) {
+    this.cityMunRes = cityMunRes;
+  }
 
-    get CityMunRes() {
-        return this.cityMunRes
-    }
+  get CityMunRes() {
+    return this.cityMunRes;
+  }
 
-    set CityMuniPSGC(cityMuniPSGC) {
-        this.cityMuniPSGC = cityMuniPSGC;
-    }
+  set CityMuniPSGC(cityMuniPSGC) {
+    this.cityMuniPSGC = cityMuniPSGC;
+  }
 
-    get CityMuniPSGC() {
-        return this.cityMuniPSGC
-    }
+  get CityMuniPSGC() {
+    return this.cityMuniPSGC;
+  }
 
-    set HealthStatus(healthStatus) {
-        this.healthStatus = healthStatus;
-    }
+  set HealthStatus(healthStatus) {
+    this.healthStatus = healthStatus;
+  }
 
-    get HealthStatus() {
-        return this.healthStatus
-    }
+  get HealthStatus() {
+    return this.healthStatus;
+  }
 
-    set Quarantined(quarantined) {
-        this.quarantined = quarantined;
-    }
+  set Quarantined(quarantined) {
+    this.quarantined = quarantined;
+  }
 
-    get Quarantined() {
-        return this.quarantined
-    }
+  get Quarantined() {
+    return this.quarantined;
+  }
 
-    set DateOnset(dateOnset) {
-        this.dateOnset = dateOnset;
-    }
+  set DateOnset(dateOnset) {
+    this.dateOnset = dateOnset;
+  }
 
-    get DateOnset() {
-        return this.dateOnset
-    }
+  get DateOnset() {
+    return this.dateOnset;
+  }
 
-    set Pregnanttab(pregnanttab) {
-        this.pregnanttab = pregnanttab;
-    }
+  set Pregnanttab(pregnanttab) {
+    this.pregnanttab = pregnanttab;
+  }
 
-    get Pregnanttab() {
-        return this.pregnanttab
-    }
+  get Pregnanttab() {
+    return this.pregnanttab;
+  }
 
-    set ValidationStatus(validationStatus) {
-        this.validationStatus = validationStatus;
-    }
+  set ValidationStatus(validationStatus) {
+    this.validationStatus = validationStatus;
+  }
 
-    get ValidationStatus() {
-        return this.validationStatus
-    }
+  get ValidationStatus() {
+    return this.validationStatus;
+  }
 
-    constructor() {}
+  constructor() {}
 }
 
 exports.CaseInformation = CaseInformation;

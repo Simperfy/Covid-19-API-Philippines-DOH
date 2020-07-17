@@ -2,19 +2,25 @@
   "name": "covid_api_ph",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js"
+    "start": "node app.js"
   },
   "keywords": [],
-    "author": "",
+  "author": "",
   "license": "ISC",
   "dependencies": {
+    "aws-sdk": "^2.714.2",
     "csvtojson": "^2.0.10",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "firebase-admin": "^8.13.0",
-    "googleapis": "^39.2.0"
+    "googleapis": "^39.2.0",
+    "mysql": "^2.18.1"
+  },
+  "devDependencies": {
+    "eslint": "^7.4.0",
+    "eslint-config-google": "^0.14.0"
   }
 }
