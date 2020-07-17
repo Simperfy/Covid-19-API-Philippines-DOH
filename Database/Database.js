@@ -11,9 +11,8 @@ class Database {
       console.log('Connecting to datbase');
       const mySQLDatabase = new MySQLDatabase();
       this.db = mySQLDatabase;
-      this.connection = mySQLDatabase.connection;
 
-      this.connection.connect((err) => {
+      mySQLDatabase.connection.connect((err) => {
         if (!err) {
           console.log('Successfully connected to the Database');
         } else {
@@ -26,7 +25,7 @@ class Database {
   }
 
   get(numEntries) {
-    return this.connection.get(numEntries);
+    return this.db.get(numEntries);
   }
 
   /**
@@ -34,7 +33,7 @@ class Database {
    * @return {Promise} contains the result of the query
    */
   count(objFilters) {
-    return this.connection.count(objFilters);
+    return this.db.count(objFilters);
   }
 
   /**
@@ -43,7 +42,7 @@ class Database {
    * @return {Promise} Contains JSON
    */
   filter(field, value) {
-    return this.connection.filter(field, value);
+    return this.db.filter(field, value);
   }
 
   endConnection() {

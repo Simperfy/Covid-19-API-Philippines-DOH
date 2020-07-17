@@ -92,7 +92,7 @@ class MySQLDatabase {
    * @return  {QueryFunction} returns the function of the execute query
    */
   executeQuery(connectionQuery) {
-    console.log(`Query: ${connectionQuery.sql}`);
+    // console.log(`Query: ${connectionQuery.sql}`);
     return connectionQuery;
   }
 }
