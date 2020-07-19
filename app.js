@@ -38,11 +38,22 @@ async function verifyGoogleToken(res) {
   return true;
 }
 
-router.get('/downloadLatestFiles', async (req, res) => {
-  GDriveApi.downloadLatestFiles().then((data) => {
-    res.send('Downloaded Latest Files - ' + data);
+router.get('/updateDatabase', async (req, res) => {
+  await GDriveApi.downloadLatestFile().then((data) => {
+    // res.send('Downloaded Latest Files - ' + data);
+    console.log('Downloaded Latest Files - ' + data.latestFolderName);
   }).catch((err) => {
     res.send('Error Downloading Latest Files: ' + err);
+  });
+
+  await db.updateDatabaseFromCSV().then((data) => {
+    if (data === true) {
+      res.send('Database Updated Successfully');
+    } else {
+      res.send('Something went wrong while updating database');
+    }
+  }).catch((err) => {
+    res.send('Error Updating Database: ' + err);
   });
 });
 

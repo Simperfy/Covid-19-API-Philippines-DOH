@@ -45,7 +45,7 @@ class GoogleDriveApi {
     return new Promise((resolve) => {
       if (!fs.existsSync(CREDENTIALS_PATH)) {
         // load client secrets from .env file
-        console.log('Crafting new json');
+        console.log('Credentials.json not found, using values in .env instead.');
         const credentials = {
           'web': {
             'client_id': '',
@@ -205,7 +205,7 @@ class GoogleDriveApi {
   /**
      * @param {Object} fileObj File Object containing ID and name of the file
      * @param {String} name Name of the file that will be downloaded
-     * @return {String} filePath to the downloaded file
+     * @return {Promise<String>} filePath to the downloaded file
      */
   async downloadFile(fileObj, name = 'Data.csv') {
     console.log('DOWNLOADING LATEST FILE: ' + fileObj.name);
@@ -214,19 +214,53 @@ class GoogleDriveApi {
     const drive = google.drive({version: 'v3', auth});
     const res = await drive.files
         .get({fileId: fileObj.id, alt: 'media'}, {responseType: 'stream'}).catch((err) => console.log(err));
-    return fs.promises.mkdir(path.dirname('tmp/Data.csv'), {recursive: true}).then((data) => {
-      // const filePath = path.join(os.tmpdir(), uuid.v4());
-      // const filePath = path.relative(process.cwd(), `tmp/${name}`);
-      const filePath = path.join(__dirname, `tmp/${name}`);
+    // return fs.promises.mkdir(path.dirname('tmp/Data.csv'), {recursive: true}).then((data) => {
+    //   // const filePath = path.join(os.tmpdir(), uuid.v4());
+    //   // const filePath = path.relative(process.cwd(), `tmp/${name}`);
+    //   const filePath = path.join(__dirname, `tmp/${name}`);
 
-      console.log(`writing to ${filePath}`);
-      const dest = fs.createWriteStream(filePath);
-      let progress = 0;
+    //   console.log(`writing to ${filePath}`);
+    //   const dest = fs.createWriteStream(filePath);
+    //   let progress = 0;
 
+    //   res.data
+    //       .on('end', () => {
+    //         console.log('\nDone downloading file. ' + this.latestFolderName);
+    //         return filePath;
+    //       })
+    //       .on('error', (err) => {
+    //         console.error('Error downloading file.');
+    //         throw err;
+    //       })
+    //       .on('data', (d) => {
+    //         progress += d.length;
+    //         if (process.stdout.isTTY) {
+    //           process.stdout.clearLine();
+    //           process.stdout.cursorTo(0);
+    //           process.stdout.write(`Downloaded ${progress} bytes`);
+    //         }
+    //       })
+    //       .pipe(dest);
+
+    //   dest.on('finish', () => {
+    //     dest.close();
+    //   });
+    // });
+
+    await fs.promises.mkdir(path.dirname('tmp/Data.csv'), {recursive: true});
+    // const filePath = path.join(os.tmpdir(), uuid.v4());
+    // const filePath = path.relative(process.cwd(), `tmp/${name}`);
+    const filePath = path.join(__dirname, `tmp/${name}`);
+
+    console.log(`writing to ${filePath}`);
+    const dest = fs.createWriteStream(filePath);
+    let progress = 0;
+
+    return new Promise((resolve) => {
       res.data
           .on('end', () => {
             console.log('\nDone downloading file. ' + this.latestFolderName);
-            return filePath;
+            resolve(filePath);
           })
           .on('error', (err) => {
             console.error('Error downloading file.');
@@ -375,12 +409,21 @@ class GoogleDriveApi {
   }
 
   /**
-     * @return {String} name of the latest downloaded csv
+     * @return {Promise<Object>} ibject containing name of folder file and file path of downloaded file
      */
-  async downloadLatestFiles() {
+  async downloadLatestFile() {
     const latestFolderObject = await this.getLatestFolderContentsObject();
-    await this.downloadFile(latestFolderObject, 'Data.csv');
-    return latestFolderObject.name;
+    const filePath = await this.downloadFile(latestFolderObject, 'Data.csv');
+    return new Promise((resolve) => {
+      const data = {
+        latestFolderName: null,
+        downloadedFilePath: null,
+      };
+
+      data.latestFolderName = latestFolderObject.name;
+      data.downloadedFilePath = filePath;
+      resolve(data);
+    });
   }
 }
 
@@ -388,9 +431,10 @@ exports.GoogleDriveApi = GoogleDriveApi;
 
 // download Case Information latest csv
 // async function test() {
-//     let G = new GoogleDriveApi();
-//     let auth = await G.getAuth();
-//     G.downloadFile(await G.getLatestFolderContentsObject(), 'Latest.csv');
+// const G = new GoogleDriveApi();
+// await G.getAuth();
+// G.listFiles();
+// G.downloadFile(await G.getLatestFolderContentsObject(), 'Latest.csv');
 // }
 
 // test();

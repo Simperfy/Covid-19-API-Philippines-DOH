@@ -26,14 +26,28 @@ class MySQLDatabase {
    */
   get(numEntries = null) {
     return new Promise((resolve) => {
-      let query = 'SELECT * from case_informations';
+      let query = 'SELECT * from case_informations ORDER BY CaseCode ASC';
       if (numEntries !== null) {
         let limit = parseInt(numEntries);
         limit = this.connection.escape(limit);
         query += ` LIMIT ${limit}`;
       }
 
-      this.executeQuery(this.connection.query(query, function(err, rows, fields) {
+      this.executeAndLogQuery(this.connection.query(query, function(err, rows, fields) {
+        if (err) throw err;
+        resolve(rows);
+      }));
+    });
+  }
+
+  /**
+   * @return {Promise}
+   */
+  getLastRow() {
+    return new Promise((resolve) => {
+      const query = 'SELECT * from case_informations ORDER BY CaseCode DESC LIMIT 1';
+
+      this.executeAndLogQuery(this.connection.query(query, function(err, rows, fields) {
         if (err) throw err;
         resolve(rows);
       }));
@@ -53,7 +67,7 @@ class MySQLDatabase {
         query += ` where ${field}=${value}`;
       }
 
-      this.executeQuery(this.connection.query(query, function(err, rows, fields) {
+      this.executeAndLogQuery(this.connection.query(query, function(err, rows, fields) {
         if (err) throw err;
         const dataArray = Object.values(JSON.parse(JSON.stringify(rows)));
         dataArray.forEach(function(d) {
@@ -75,7 +89,7 @@ class MySQLDatabase {
       value = this.connection.escape(value);
       query += ` where ${field}=${value}`;
 
-      this.executeQuery(this.connection.query(query, function(err, rows, fields) {
+      this.executeAndLogQuery(this.connection.query(query, function(err, rows, fields) {
         if (err) throw err;
         resolve(rows);
       }));
@@ -90,9 +104,22 @@ class MySQLDatabase {
    * @param {QueryFunction} connectionQuery contains the function of the execute query
    * @return  {QueryFunction} returns the function of the execute query
    */
-  executeQuery(connectionQuery) {
+  executeAndLogQuery(connectionQuery) {
     // console.log(`Query: ${connectionQuery.sql}`);
     return connectionQuery;
+  }
+
+  /**
+   * @param {String} query
+   * @return {Promise}
+   */
+  executeRaw(query) {
+    return new Promise((resolve) => {
+      this.executeAndLogQuery(this.connection.query(query, function(err, rows, fields) {
+        if (err) throw err;
+        resolve(rows);
+      }));
+    });
   }
 }
 

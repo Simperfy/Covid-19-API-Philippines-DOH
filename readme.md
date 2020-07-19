@@ -87,7 +87,7 @@ These are the currently available API endpoints:
 * http://localhost:3000/api/get/ - returns all records
 * http://localhost:3000/api/get/100 - returns 100 records
 * http://localhost:3000/api/filter/{field}/{value} - returns records that matches the filter
-* http://localhost:3000/api/downloadLatestFiles - downloads latest files from DOH - Philippines
+* http://localhost:3000/api/downloadLatestFile - downloads latest files from DOH - Philippines
 
 These are all the valid value for field in "http://localhost:3000/api/filter/{field}/{value}":
 ```
@@ -109,6 +109,11 @@ http://localhost:3000/api/filter/regionRes/NCR
 ```
 http://localhost:3000/api/filter/ageGroup/15 to 19
 ```
+
+<br>
+
+*If you get the error: `"The API returned an error: Error: Daily Limit for Unauthenticated Use Exceeded. Continued use requires signup."` just delete the token.json and repeat step 1 to get a new one.* 
+
 <br>
 
 ## About the Data
