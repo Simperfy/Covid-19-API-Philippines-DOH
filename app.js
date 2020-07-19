@@ -16,7 +16,8 @@ const Database = database.Database;
 const db = new Database();
 
 // eslint-disable-next-line new-cap
-// const router = express.Router();
+const router = express.Router();
+
 // (
 //   async () => {
 //     await db.compareDatabaseFromCSV();
