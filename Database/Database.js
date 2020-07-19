@@ -116,6 +116,41 @@ ${this.db.connection.escape(data.ValidationStatus)})`;
     return isSuccess;
   }
 
+  // For inspecting purposes only
+  // async compareDatabaseFromCSV() {
+  //   console.log(`\nPerforming Comparison`);
+
+  //   const csvDatabase = new CSVDatabase();
+  //   const cs = await csvDatabase.get();
+
+  //   // let query = `SELECT MAX(datediff(DateResultRelease, DateSpecimen)) AS DateDiff FROM case_informations`;
+  //   let query = `SELECT CaseCode FROM case_informations WHERE CaseCode NOT IN (`;
+
+  //   // BUG RESOLVE Lesson learned, ALWAYS ESCAPE CHARS BEFORE INSERTING TO DB EVEN FROM A CSV!!!
+  //   cs.forEach((data, ind) => {
+  //     query += `${this.db.connection.escape(data.CaseCode)} `;
+
+  //     if ((ind+1) != cs.length) {
+  //       query+= ', ';
+  //     } else {
+  //       query+= ')';
+  //     }
+  //   });
+
+  //   // console.log(query);
+
+  //   await this.executeRaw(query).then((data) => {
+  //     // console.log(data);
+  //     const parseData = JSON.parse(JSON.stringify(data));
+  //     console.log(parseData);
+  //   }).catch((err) => {
+  //     if (err) throw err;
+  //   });
+
+  //   console.log('Done');
+  // }
+
+
   async updateDatabaseFromCSV() {
     const csvDatabase = new CSVDatabase();
     const cs = await csvDatabase.get();
@@ -123,8 +158,6 @@ ${this.db.connection.escape(data.ValidationStatus)})`;
     console.log('\nBefore Updating Database: ');
     console.log('cs length in csv: ' + cs.length);
     console.log('cs length mysql: ' + await this.count());
-
-    // let query = 'Select * from case_informations LIMIT 10';
     const res = await this.batchInsertDatabaseFromCSV(cs);
     console.log('\nAfter Updating Database: ');
     console.log('cs length in csv: ' + cs.length);
