@@ -6,7 +6,11 @@
 
 *This Web API is still on it's early age and is not suitable for production yet.*
 
-Preview: [Actual Website](https://covid19-api-philippines.herokuapp.com/api/getall/100) - returns 100 covid cases from records of DOH 
+Preview: 
+<br>
+[return 100 covid cases from records of DOH](https://covid19-api-philippines.herokuapp.com/api/get/100)
+<br>
+[return all covid cases in NCR](https://covid19-api-philippines.herokuapp.com/api/filter/regionRes/NCR)
 <br>
 
 ## Getting Started
@@ -41,13 +45,14 @@ Then open your web browser and go to the following links:
     http://localhost:3000/
 ```
 
-2. Download latest files:
+2. Download latest csv file:
 ```
     http://localhost:3000/api/downloadLatestFiles
 ```
 
-Congrats now you have successfully installed the Web API
-<br>
+3. import the csv to your database
+
+4. create and configure ".env" file (see `env.example`)
 
 ## Docs
 
@@ -77,8 +82,8 @@ Sample json return by the API:
     }
 ```
 These are the currently available API endpoints:
-* http://localhost:3000/api/getAll/ - returns all records
-* http://localhost:3000/api/getAll/100 - returns 100 records
+* http://localhost:3000/api/get/ - returns all records
+* http://localhost:3000/api/get/100 - returns 100 records
 * http://localhost:3000/api/filter/{field}/{value} - returns records that matches the filter
 * http://localhost:3000/api/downloadLatestFiles - downloads latest files from DOH - Philippines
 
@@ -90,10 +95,18 @@ caseCode, age, ageGroup, sex, dateSpecimen, dateResultRelease, dateRepConf, date
 For valid value for each field in "http://localhost:3000/api/filter/{field}/{value}" please refer to the sample json above.
 
 Example:
-* API that returns all covid cases with age of 30
+* returns all covid cases with age of 30
 ```
 http://localhost:3000/api/filter/age/30
 ``` 
+* returns all covid cases in NCR
+```
+http://localhost:3000/api/filter/regionRes/NCR
+```
+* returns all covid cases between 15 to 19 years old
+```
+http://localhost:3000/api/filter/ageGroup/15 to 19
+```
 <br>
 
 ## About the Data
@@ -110,7 +123,7 @@ http://localhost:3000/api/filter/age/30
 * [Node.js](https://nodejs.org) - open source server environment.
 * [ExpressJS](http://www.dropwizard.io/1.0.2/docs/) - The web framework used
 * [Google Drive API v3](https://developers.google.com/drive/api/v3/about-sdk) - Used to download files from DOH
-
+* [Amazon Web Services](https://aws.amazon.com/)
 <br>
 
 ## Authors

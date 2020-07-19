@@ -3,32 +3,20 @@ require('dotenv').config();
 // GOOGLE DRIVE VARS
 const googleDriveApi = require('./GoogleDriveApiClient');
 const GoogleDriveApi = googleDriveApi.GoogleDriveApi;
+const GDriveApi = new GoogleDriveApi();
 
 // SERVER VARS
 const express = require('express');
-
 const app = express();
-
 const port = process.env.PORT || 3000;
 
 // Database vars
 const database = require('./Database/Database');
 const Database = database.Database;
+const db = new Database();
 
-// const csvDatabase = require('./CSVDatabase');
-// const CSVDatabase = csvDatabase.CSVDatabase;
-
-const GDriveApi = new GoogleDriveApi();
-// const csvD = new CSVDatabase();
 // eslint-disable-next-line new-cap
 const router = express.Router();
-
-const db = new Database();
-// (async () => {
-//   // console.log(await db.count({field: 'age', value: '18'}));
-//   console.log(await db.get());
-// })();
-// return;
 
 /**
  * verify token.json exists on application start
@@ -97,6 +85,7 @@ app.get('/', async (req, res) => {
     res.send('ERROR Verifying Google Token');
   }
 });
+
 
 app.listen(port, () => console.log(`Started Server at http://localhost:${port}`)).on('close', () => {
   console.log('Terminating Datebase connection.');
