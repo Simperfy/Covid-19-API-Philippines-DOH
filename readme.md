@@ -6,11 +6,11 @@
 
 *This Web API is still on it's early age and is not suitable for production yet.*
 
-Preview: 
-<br>
+## Website: 
 [return 100 covid cases from records of DOH](https://covid19-api-philippines.herokuapp.com/api/get/100)
-<br>
+
 [return all covid cases in NCR](https://covid19-api-philippines.herokuapp.com/api/filter/regionRes/NCR)
+
 <br>
 
 ## Getting Started
@@ -54,7 +54,9 @@ Then open your web browser and go to the following links:
 
 4. create and configure ".env" file (see `env.example`)
 
-## Docs
+<br>
+
+## DOCS
 
 Sample json return by the API:
 ```
@@ -115,7 +117,7 @@ http://localhost:3000/api/filter/ageGroup/15 to 19
 * The data was not tampered and was directly converted to json from csv without heavy modification.
 
 ### How often does the data get updated?
-* As of the current version, the data needs to be manually updated using the endpoint "/api/downloadLatestFiles"
+* As of the current version, the data needs to be manually downloaded using the endpoint "/api/downloadLatestFiles" and imported to database.
 
 <br>
 
@@ -124,6 +126,7 @@ http://localhost:3000/api/filter/ageGroup/15 to 19
 * [ExpressJS](http://www.dropwizard.io/1.0.2/docs/) - The web framework used
 * [Google Drive API v3](https://developers.google.com/drive/api/v3/about-sdk) - Used to download files from DOH
 * [Amazon Web Services](https://aws.amazon.com/)
+
 <br>
 
 ## Authors
