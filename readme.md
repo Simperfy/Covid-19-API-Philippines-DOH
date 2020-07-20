@@ -6,11 +6,11 @@
 ![Forks](https://img.shields.io/github/forks/Simperfy/Covid-19-API-Philippines-DOH?style=plastic&logo=github)
 ![](https://img.shields.io/twitter/url?url=https%3A%2F%2Fgithub.com%2FSimperfy%2FCovid-19-API-Philippines-DOH)
 
-*Covid-19 Web API for Philippines from data collected by DOH using Node.js that updates itself regularly as soon as DOH posted new data.* (Half implemented atm.)
+###### Covid-19 Web API for Philippines from data collected by DOH using Node.js that updates itself regularly as soon as DOH posted new data. (Half implemented atm.)
 
-*The data could be 1 - 3 days late(based on how often DOH updates the DATA DROP archives)*
+>The data could be 1 - 3 days late(based on how often DOH updates the DATA DROP archives
 
-*This Web API is still on it's early age and is not suitable for production yet.*
+>This Web API is still on it's early age and is not suitable for production yet.
 
 ## Website: 
 [return 100 covid cases from records of DOH](https://covid19-api-philippines.herokuapp.com/api/get/100)
