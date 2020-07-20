@@ -1,5 +1,11 @@
 # Covid-19-API-Philippines-DOH (Pre-Alpha)
 
+![License](https://img.shields.io/github/license/simperfy/Covid-19-API-Philippines-DOH?style=plastic&logo=github)
+![Last Commit](https://img.shields.io/github/last-commit/simperfy/Covid-19-API-Philippines-DOH?style=plastic&logo=github)
+![Stars](https://img.shields.io/github/stars/simperfy/Covid-19-API-Philippines-DOH?style=plastic&logo=github)
+![Forks](https://img.shields.io/github/forks/Simperfy/Covid-19-API-Philippines-DOH?style=plastic&logo=github)
+![](https://img.shields.io/twitter/url?url=https%3A%2F%2Fgithub.com%2FSimperfy%2FCovid-19-API-Philippines-DOH)
+
 *Covid-19 Web API for Philippines from data collected by DOH using Node.js that updates itself regularly as soon as DOH posted new data.* (Half implemented atm.)
 
 *The data could be 1 - 3 days late(based on how often DOH updates the DATA DROP archives)*
@@ -59,7 +65,8 @@ Then open your web browser and go to the following links:
 ## DOCS
 
 Sample json return by the API:
-```
+```JSON
+[
     {
         "caseCode": "C480562",
         "age": "18.0",
@@ -82,6 +89,7 @@ Sample json return by the API:
         "pregnanttab": "",
         "validationStatus": "Case has Lab Result, but Result Date is blank"
     }
+]
 ```
 These are the currently available API endpoints:
 * http://localhost:3000/api/get/ - returns all records
@@ -98,16 +106,16 @@ For valid value for each field in "http://localhost:3000/api/filter/{field}/{val
 
 Example:
 * returns all covid cases with age of 30
-```
-http://localhost:3000/api/filter/age/30
+```http
+GET http://localhost:3000/api/filter/age/30
 ``` 
 * returns all covid cases in NCR
-```
-http://localhost:3000/api/filter/regionRes/NCR
+```http
+GET http://localhost:3000/api/filter/regionRes/NCR
 ```
 * returns all covid cases between 15 to 19 years old
-```
-http://localhost:3000/api/filter/ageGroup/15 to 19
+```http
+GET http://localhost:3000/api/filter/ageGroup/15 to 19
 ```
 
 <br>
