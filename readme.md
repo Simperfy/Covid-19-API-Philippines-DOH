@@ -53,7 +53,7 @@ Then open your web browser and go to the following links:
 
 2. Download latest csv file:
 ```
-    http://localhost:3000/api/downloadLatestFiles
+    http://localhost:3000/api/downloadLatestFile
 ```
 
 3. import the csv to your database
