@@ -6,7 +6,7 @@
 ![Forks](https://img.shields.io/github/forks/Simperfy/Covid-19-API-Philippines-DOH?style=plastic&logo=github)
 ![](https://img.shields.io/twitter/url?url=https%3A%2F%2Fgithub.com%2FSimperfy%2FCovid-19-API-Philippines-DOH)
 
-#### Covid-19 Web API for Philippines from data collected by DOH using Node.js that updates itself regularly as soon as DOH posted new data. (Half implemented atm.)
+#### Covid-19 Web API for Philippines from data collected by DOH using Node.js that updates itself every 24 hours.
 
 >The data could be 1 - 3 days late(based on how often DOH updates the DATA DROP archives
 
@@ -27,6 +27,7 @@ What things you need to install the software and how to install them
 
 * [credentials.json](https://developers.google.com/drive/api/v3/quickstart/go) - Google Drive API
 * [Node.js](https://nodejs.org/en/)
+* MySQL
 
 ### Installing
 
@@ -53,7 +54,7 @@ Then open your web browser and go to the following links:
 
 2. Download latest csv file:
 ```
-    http://localhost:3000/api/downloadLatestFile
+    http://localhost:3000/api/updateDatabase
 ```
 
 3. import the csv to your database
@@ -95,7 +96,7 @@ These are the currently available API endpoints:
 * http://localhost:3000/api/get/ - returns all records
 * http://localhost:3000/api/get/100 - returns 100 records
 * http://localhost:3000/api/filter/{field}/{value} - returns records that matches the filter
-* http://localhost:3000/api/downloadLatestFile - downloads latest files from DOH - Philippines
+* http://localhost:3000/api/updateDatabase - downloads latest files from DOH - Philippines
 
 These are all the valid value for field in "http://localhost:3000/api/filter/{field}/{value}":
 ```
@@ -130,7 +131,7 @@ GET http://localhost:3000/api/filter/ageGroup/15 to 19
 * The data was not tampered and was directly converted to json from csv without heavy modification.
 
 ### How often does the data get updated?
-* As of the current version, the data needs to be manually downloaded using the endpoint "/api/downloadLatestFiles" and imported to database.
+* As of the current version, the data needs to be manually downloaded using the endpoint "/api/updateDatabase" and imported to database.
 
 <br>
 

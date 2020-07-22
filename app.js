@@ -1,3 +1,4 @@
+/* eslint-disable require-jsdoc */
 require('dotenv').config();
 
 // GOOGLE DRIVE VARS
@@ -18,11 +19,34 @@ const db = new Database();
 // eslint-disable-next-line new-cap
 const router = express.Router();
 
-// (
-//   async () => {
-//     await db.compareDatabaseFromCSV();
-//   }
-// )();
+(
+  // Initialize Google Auth Token
+  async () => {
+    await GDriveApi.getAuth();
+    await autoUpdate();
+    setInterval(await autoUpdate, (60000 * 60) * 24 ); // update every 24 hours
+  }
+)();
+
+async function autoUpdate() {
+  console.log('Auto Update Initialized');
+  await GDriveApi.downloadLatestFile().then((data) => {
+    // res.send('Downloaded Latest Files - ' + data);
+    console.log('Downloaded Latest Files - ' + data.latestFolderName);
+  }).catch((err) => {
+    console.log('Error Downloading Latest Files: ' + err);
+  });
+
+  await db.updateDatabaseFromCSV().then((data) => {
+    if (data === true) {
+      console.log('Database Updated Successfully');
+    } else {
+      console.log('Something went wrong while updating database');
+    }
+  }).catch((err) => {
+    console.log('Error Updating Database: ' + err);
+  });
+}
 
 // return;
 

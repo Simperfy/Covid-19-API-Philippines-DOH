@@ -118,6 +118,8 @@ class GoogleDriveApi {
       this.oAuth2Client = new google.auth.OAuth2(
           clientId, clientSecret, redirectUris[process.env.NODE_ENV == 'production' ? 1 : 0]);
 
+      // Delete Token if expired
+      this.deleteExpiredToken();
       // Check if we have previously stored a token.
       fs.readFile(TOKEN_PATH, (err, token) => {
         if (err) {
@@ -146,6 +148,30 @@ class GoogleDriveApi {
         if (err) throw err;
         console.log('Token stored to', TOKEN_PATH);
       });
+    });
+  }
+
+  deleteExpiredToken() {
+    console.log('Checking if token is expired');
+
+    fs.readFile(TOKEN_PATH, (err, token) => {
+      if (err) {
+        console.log('Token not found');
+        return false;
+      }
+
+      token = JSON.parse(token);
+      console.log(token.expiry_date);
+      const expiryDate = new Date(token.expiry_date);
+      const currentDate = new Date();
+
+      if (currentDate > expiryDate) {
+        console.log('Token expired, deleting...');
+        fs.unlinkSync(TOKEN_PATH);
+      } else {
+        console.log('Token not expired.');
+      }
+      return true;
     });
   }
 
