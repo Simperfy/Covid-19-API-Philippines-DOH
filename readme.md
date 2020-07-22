@@ -1,4 +1,4 @@
-# Covid-19-API-Philippines-DOH (Pre-Alpha)
+# Covid-19-API-Philippines-DOH (Alpha)
 
 ![License](https://img.shields.io/github/license/simperfy/Covid-19-API-Philippines-DOH?style=plastic&logo=github)
 ![Last Commit](https://img.shields.io/github/last-commit/simperfy/Covid-19-API-Philippines-DOH?style=plastic&logo=github)
