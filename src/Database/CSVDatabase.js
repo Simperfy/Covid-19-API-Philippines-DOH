@@ -7,7 +7,7 @@ const fs = require('fs');
 // eslint-disable-next-line no-unused-vars
 const {Converter} = require('csvtojson/v2/Converter');
 const CaseInformation = caseInformation.CaseInformation;
-const CSV_FILE_PATH = '../tmp/Data.csv';
+const CSV_FILE_PATH = path.join(__dirname, '../../tmp/Data.csv');
 
 class CSVDatabase {
   // make this a singleton
@@ -36,7 +36,7 @@ class CSVDatabase {
   convertCsvToJson() {
     if (!this.isConverting) { // prevent multiple attempts to convert the json
       this.isConverting = true;
-      const pathToCSV = path.join(__dirname, CSV_FILE_PATH);
+      const pathToCSV = CSV_FILE_PATH;
 
       if (fs.existsSync(pathToCSV)) {
         // Invoking csv returns a promise

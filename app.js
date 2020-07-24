@@ -2,7 +2,7 @@
 require('dotenv').config();
 
 // GOOGLE DRIVE VARS
-const googleDriveApi = require('./GoogleDriveApiClient');
+const googleDriveApi = require('./src/GoogleDriveApiClient');
 const GoogleDriveApi = googleDriveApi.GoogleDriveApi;
 const GDriveApi = new GoogleDriveApi();
 
@@ -12,7 +12,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 // Database vars
-const database = require('./Database/Database');
+const database = require('./src/Database/Database');
 const Database = database.Database;
 const db = new Database();
 

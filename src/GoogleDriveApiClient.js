@@ -15,8 +15,9 @@ const SCOPES = ['https://www.googleapis.com/auth/drive.metadata.readonly', 'http
 // The file token.json stores the user's access and refresh tokens, and is
 // created automatically when the authorization flow completes for the first
 // time.
-const TOKEN_PATH = path.join(__dirname, 'token.json');
-const CREDENTIALS_PATH = path.join(__dirname, 'credentials.json');
+const TMP_PATH = path.join(__dirname, '/../tmp');
+const TOKEN_PATH = path.join(__dirname, '../token.json');
+const CREDENTIALS_PATH = path.join(__dirname, '../credentials.json');
 
 // @TODO @DOGGO this class violates SRP
 // we should create TokenManager class for handling token.json
@@ -160,7 +161,7 @@ class GoogleDriveApi {
 
     fs.readFile(TOKEN_PATH, (err, token) => {
       if (err) {
-        console.log('Token not found');
+        console.log('Token not found. Get one at localhost:3000');
         return false;
       }
 
@@ -244,43 +245,8 @@ class GoogleDriveApi {
     const drive = google.drive({version: 'v3', auth});
     const res = await drive.files
         .get({fileId: fileObj.id, alt: 'media'}, {responseType: 'stream'}).catch((err) => console.log(err));
-    // return fs.promises.mkdir(path.dirname('tmp/Data.csv'), {recursive: true}).then((data) => {
-    //   // const filePath = path.join(os.tmpdir(), uuid.v4());
-    //   // const filePath = path.relative(process.cwd(), `tmp/${name}`);
-    //   const filePath = path.join(__dirname, `tmp/${name}`);
-
-    //   console.log(`writing to ${filePath}`);
-    //   const dest = fs.createWriteStream(filePath);
-    //   let progress = 0;
-
-    //   res.data
-    //       .on('end', () => {
-    //         console.log('\nDone downloading file. ' + this.latestFolderName);
-    //         return filePath;
-    //       })
-    //       .on('error', (err) => {
-    //         console.error('Error downloading file.');
-    //         throw err;
-    //       })
-    //       .on('data', (d) => {
-    //         progress += d.length;
-    //         if (process.stdout.isTTY) {
-    //           process.stdout.clearLine();
-    //           process.stdout.cursorTo(0);
-    //           process.stdout.write(`Downloaded ${progress} bytes`);
-    //         }
-    //       })
-    //       .pipe(dest);
-
-    //   dest.on('finish', () => {
-    //     dest.close();
-    //   });
-    // });
-
-    await fs.promises.mkdir(path.dirname('tmp/Data.csv'), {recursive: true});
-    // const filePath = path.join(os.tmpdir(), uuid.v4());
-    // const filePath = path.relative(process.cwd(), `tmp/${name}`);
-    const filePath = path.join(__dirname, `tmp/${name}`);
+    await fs.promises.mkdir(TMP_PATH, {recursive: true});
+    const filePath = `${TMP_PATH}/${name}`;
 
     console.log(`writing to ${filePath}`);
     const dest = fs.createWriteStream(filePath);
