@@ -21,10 +21,6 @@ const SCOPES = ['https://www.googleapis.com/auth/drive.metadata.readonly', 'http
 const TOKEN_PATH = path.join(__dirname, '../token.json');
 const CREDENTIALS_PATH = path.join(__dirname, '../credentials.json');
 
-// @TODO @DOGGO this class violates SRP
-// we should create TokenManager class for handling token.json
-// and create GoogleFileManager class for downloading files
-// This makes the GoogleDriveApi purely responsible for handling the auth state alone
 class GoogleDriveApi {
   // make this a singleton
   constructor() {

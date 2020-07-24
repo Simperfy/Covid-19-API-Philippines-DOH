@@ -136,25 +136,6 @@ class CSVDatabase {
   findIndex(csArr, caseCode) {
     return csArr.findIndex((cs) => cs.CaseCode == caseCode);
   }
-
-  // testing ground
-  // async start() {
-  // await this.assureCSIsLoaded();
-  // const temp = await this.get(5);
-  // console.log(temp);
-
-  // console.log('after sort: ');
-  // const sortedByCasecode = await this.sort('caseCode');
-  // console.log('Total case: ' + sortedByCasecode.length);
-  // console.log(this.findIndex(sortedByCasecode, 'C999994'));
-
-  // const a = await this.filter('ageGroup', '15 to 19');
-  // console.log(a);
-  // this.orderByCasecode().groupBy((data) => data.caseCode);
-  // }
 }
 
 exports.CSVDatabase = CSVDatabase;
-
-// const c = new CSVDatabase();
-// c.start();
