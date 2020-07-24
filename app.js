@@ -23,14 +23,15 @@ const router = express.Router();
   // Initialize Google Auth Token
   async () => {
     await GDriveApi.getAuth();
-    await autoUpdate();
-    setInterval(await autoUpdate, (60000 * 60) * 24 ); // update every 24 hours
+    await GDriveApi.downloadLatestFile();
+    // await autoUpdate();
+    // setInterval(await autoUpdate, (60000 * 60) * 24 ); // update every 24 hours
   }
 )();
 
 async function autoUpdate() {
   console.log('Auto Update Initialized');
-  await GDriveApi.downloadLatestFile().then((data) => {
+  await GDriveApi.downloadLatestFileFromArchives().then((data) => {
     // res.send('Downloaded Latest Files - ' + data);
     console.log('Downloaded Latest Files - ' + data.latestFolderName);
   }).catch((err) => {
@@ -47,8 +48,6 @@ async function autoUpdate() {
     console.log('Error Updating Database: ' + err);
   });
 }
-
-// return;
 
 /**
  * verify token.json exists on application start
@@ -71,7 +70,7 @@ async function verifyGoogleToken(res) {
 }
 
 router.get('/updateDatabase', async (req, res) => {
-  await GDriveApi.downloadLatestFile().then((data) => {
+  await GDriveApi.downloadLatestFileFromArchives().then((data) => {
     // res.send('Downloaded Latest Files - ' + data);
     console.log('Downloaded Latest Files - ' + data.latestFolderName);
   }).catch((err) => {

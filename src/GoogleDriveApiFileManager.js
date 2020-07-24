@@ -1,8 +1,9 @@
 /* eslint-disable max-len,require-jsdoc,no-throw-literal */
 const fs = require('fs');
-const path = require('path')
+const path = require('path');
 const {google} = require('googleapis');
 const TMP_PATH = path.join(__dirname, '/../tmp');
+const urlExpander = require('expand-url');
 
 class GoogleDriveApiFileManager {
   constructor(oAuth2Client, rootFolderID) {
@@ -61,14 +62,18 @@ class GoogleDriveApiFileManager {
   }*/
 
   /**
-   * @return {JSON} a json containing name and id of folders in the root folder
+   * @typedef {Object} files
+   * @property {String} id - id of the file
+   * @property {String} name - file name when saved
+   * @param {String} folderID
+   * @return {[files]} - contains name and id of folders in the root folder
    */
-  async getFilesInRootFolder() {
+  async getFilesInRootFolder(folderID = this.rootFolderID) {
     return new Promise((resolve)=> {
       const auth = this.oAuth2Client;
       const drive = google.drive({version: 'v3', auth});
       drive.files.list({
-        q: `'${this.rootFolderID}' in parents`,
+        q: `'${folderID}' in parents`,
         fields: 'nextPageToken, files(id, name)',
       }, (err, res) => {
         if (err) return console.log('The API returned an error: ' + err);
@@ -187,7 +192,9 @@ class GoogleDriveApiFileManager {
   }
 
   /**
-   * @param {Object} fileObj File Object containing ID and name of the file
+   * @param {Object} fileObj File Object containing ID and name of the file when saved
+   * @param {String} fileObj.id id of the file
+   * @param {String} fileObj.name name of the file when saved
    * @param {String} name Name of the file that will be downloaded
    * @return {Promise<String>} filePath to the downloaded file
    */
@@ -234,7 +241,7 @@ class GoogleDriveApiFileManager {
   /**
    * @return {Promise<Object>} ibject containing name of folder file and file path of downloaded file
    */
-  async downloadLatestFile() {
+  async downloadLatestFileFromArchives() {
     const latestFolderObject = await this.getLatestFolderContentsObject();
     const filePath = await this.downloadFile(latestFolderObject, 'Data.csv');
     return new Promise((resolve) => {
@@ -246,6 +253,18 @@ class GoogleDriveApiFileManager {
       data.latestFolderName = latestFolderObject.name;
       data.downloadedFilePath = filePath;
       resolve(data);
+    });
+  }
+
+  async downloadLatestFile() {
+    const t = this;
+    urlExpander.expand('http://bit.ly/DataDropPH', async (err, longUrl) => {
+      // https://drive.google.com/drive/folders/1ZPPcVU4M7T-dtRyUceb0pMAd8ickYf8o?usp=sharing
+      const folderID = longUrl.split('/')[5].split('?')[0];
+      console.log(folderID);
+      const files = await t.getFilesInRootFolder(folderID);
+      console.log(files);
+      await t.downloadFile(files[0], 'latest.pdf');
     });
   }
 }

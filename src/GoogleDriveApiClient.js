@@ -156,17 +156,13 @@ class GoogleDriveApi {
     });
   }
 
-  /**
-   // eslint-disable-next-line valid-jsdoc
-   * @return {boolean}
-   */
   deleteExpiredToken() {
     console.log('Checking if token is expired');
 
     fs.readFile(TOKEN_PATH, (err, token) => {
       if (err) {
         console.log('Token not found. Get one at localhost:3000');
-        return false;
+        return;
       }
 
       token = JSON.parse(token);
@@ -180,8 +176,11 @@ class GoogleDriveApi {
       } else {
         console.log('Token still valid.');
       }
-      return true;
     });
+  }
+
+  downloadLatestFileFromArchives() {
+    return this.googleDriveApiFileManager.downloadLatestFileFromArchives();
   }
 
   downloadLatestFile() {
