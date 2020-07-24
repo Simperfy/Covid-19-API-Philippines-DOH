@@ -4,15 +4,15 @@
 ![Last Commit](https://img.shields.io/github/last-commit/simperfy/Covid-19-API-Philippines-DOH?style=plastic&logo=github)
 ![Stars](https://img.shields.io/github/stars/simperfy/Covid-19-API-Philippines-DOH?style=plastic&logo=github)
 ![Forks](https://img.shields.io/github/forks/Simperfy/Covid-19-API-Philippines-DOH?style=plastic&logo=github)
-![](https://img.shields.io/twitter/url?url=https%3A%2F%2Fgithub.com%2FSimperfy%2FCovid-19-API-Philippines-DOH)
+![Tweet](https://img.shields.io/twitter/url?url=https%3A%2F%2Fgithub.com%2FSimperfy%2FCovid-19-API-Philippines-DOH)
 
 #### Covid-19 Web API for Philippines from data collected by DOH using Node.js that updates itself every 24 hours.
 
->The data could be 1 - 3 days late(based on how often DOH updates the DATA DROP archives
+>The data could be 1 - 3 days late(based on how often DOH updates the [DATA DROP](https://drive.google.com/drive/folders/1UelgRGmUGNMKH1Q3nzqTj57V41bjmnxg) archives
 
 >This Web API is still on it's early age and is not suitable for production yet.
 
-## Example: 
+## Example:
 [return 100 covid cases from records of DOH](https://covid19-api-philippines.herokuapp.com/api/get/100)
 
 [return all covid cases in NCR](https://covid19-api-philippines.herokuapp.com/api/filter/regionRes/NCR)
@@ -22,9 +22,6 @@
 ## Getting Started
 
 ### Prerequisites
-
-What things you need to install the software and how to install them
-
 * [credentials.json](https://developers.google.com/drive/api/v3/quickstart/go) - Google Drive API
 * [Node.js](https://nodejs.org/en/)
 * MySQL
@@ -42,7 +39,7 @@ npm install
 Run the project
 
 ```
-node index.js
+node .
 ```
 
 Then open your web browser and go to the following links:
@@ -52,14 +49,7 @@ Then open your web browser and go to the following links:
     http://localhost:3000/
 ```
 
-2. Download latest csv file:
-```
-    http://localhost:3000/api/updateDatabase
-```
-
-3. import the csv to your database
-
-4. create and configure ".env" file (see `env.example`)
+2. create and configure ".env" file (see `env.example`)
 
 <br>
 
@@ -128,10 +118,7 @@ GET http://localhost:3000/api/filter/ageGroup/15 to 19
 ## About the Data
 ### Where does the data come from?
 * The data comes from [DOH DATA DROP](https://drive.google.com/drive/folders/1UelgRGmUGNMKH1Q3nzqTj57V41bjmnxg)
-* The data was not tampered and was directly converted to json from csv without heavy modification.
-
-### How often does the data get updated?
-* As of the current version, the data needs to be manually downloaded using the endpoint "/api/updateDatabase" and imported to database.
+* The data wasn't tampered and was directly converted to json from csv without heavy modification.
 
 <br>
 
@@ -139,7 +126,7 @@ GET http://localhost:3000/api/filter/ageGroup/15 to 19
 * [Node.js](https://nodejs.org) - open source server environment.
 * [ExpressJS](http://www.dropwizard.io/1.0.2/docs/) - The web framework used
 * [Google Drive API v3](https://developers.google.com/drive/api/v3/about-sdk) - Used to download files from DOH
-* [Amazon Web Services](https://aws.amazon.com/)
+* [Amazon Web Services](https://aws.amazon.com/) - Provides MySQL in Deployment
 
 <br>
 
