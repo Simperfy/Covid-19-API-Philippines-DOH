@@ -24,7 +24,7 @@
 * [Node.js](https://nodejs.org/en/)
 * MySQL
 
-### Installing
+### 🔨 Installation
 
 Select [Enable Drive API](https://developers.google.com/drive/api/v3/quickstart/go) and download the `credentials.json` and place the json file at the root folder of the project.
 
@@ -50,20 +50,20 @@ npm start
 
 <br>
 
-## Endpoints
+## 📌 Endpoints
 These are the currently available API endpoints:
 
 return all records
 ```http
-   api/get/
+GET api/get/
 ```
 return 100 records
 ```http
-   api/get/100
+GET api/get/100
 ```
 return records that matches the filter
 ```http
-   api/filter/{field}/{value}
+GET api/filter/{field}/{value}
 ```
 
 <br>
@@ -125,14 +125,14 @@ Sample json return by the API:
 
 <br>
 
-## About the Data
+## 📄 About the Data
 ### Where does the data come from?
 * The data comes from [DOH DATA DROP](https://drive.google.com/drive/folders/1UelgRGmUGNMKH1Q3nzqTj57V41bjmnxg)
 * The data wasn't tampered and was directly converted to json from csv without heavy modification.
 
 <br>
 
-## Built With
+## 🔧 Built With
 * [Node.js](https://nodejs.org) - open source server environment.
 * [ExpressJS](http://www.dropwizard.io/1.0.2/docs/) - The web framework used
 * [Google Drive API v3](https://developers.google.com/drive/api/v3/about-sdk) - Used to download files from DOH
@@ -142,10 +142,10 @@ Sample json return by the API:
 
 ## Authors
 
-* **Simperfy(The Doggo)** - [Github](https://github.com/Simperfy)
+* 🐶 **Simperfy(The Doggo)** - [Github](https://github.com/Simperfy)
 
 <br>
 
 ## Acknowledgments
 
-* [DOH - Philippines](https://www.doh.gov.ph/) - Data Source
+* 💗 [DOH - Philippines](https://www.doh.gov.ph/) - Data Source
