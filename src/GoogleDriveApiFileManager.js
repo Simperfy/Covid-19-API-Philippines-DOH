@@ -1,4 +1,4 @@
-/* eslint-disable max-len,no-throw-literal */
+/* eslint-disable max-len*/
 const fs = require('fs');
 const path = require('path');
 const {google} = require('googleapis');
@@ -50,7 +50,7 @@ class GoogleDriveApiFileManager {
    * @return {Promise} contains files object with name and id
    */
   /* searchFiles(query, pageSize = 10) {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       const auth = this.oAuth2Client;
       const drive = google.drive({version: 'v3', auth});
       drive.files.list({
@@ -81,14 +81,14 @@ class GoogleDriveApiFileManager {
    * @return {Promise<[files]>} - contains name and id of folders in the root folder
    */
   async getFilesInRootFolder(folderID = this.rootFolderID) {
-    return new Promise((resolve)=> {
+    return new Promise((resolve, reject)=> {
       const auth = this.oAuth2Client;
       const drive = google.drive({version: 'v3', auth});
       drive.files.list({
         q: `'${folderID}' in parents`,
         fields: 'nextPageToken, files(id, name)',
       }, (err, res) => {
-        if (err) return console.log('The API returned an error: ' + err);
+        if (err) return reject(new Error('The API returned an error: ' + err));
         const files = res.data.files;
         if (files.length) {
           console.log('\nFiles in root folder:');
@@ -124,7 +124,7 @@ class GoogleDriveApiFileManager {
       return res[0].id;
     }
 
-    throw '[googleDriveApiFileManager.js] Folder this month couldn\'t be found';
+    throw new Error('[googleDriveApiFileManager.js] Folder this month couldn\'t be found');
   }
 
   /**
@@ -140,7 +140,7 @@ class GoogleDriveApiFileManager {
     const auth = this.oAuth2Client;
     const drive = google.drive({version: 'v3', auth});
 
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       drive.files.list({
         q: `'${id}' in parents`,
         orderBy: 'name desc',
@@ -156,7 +156,7 @@ class GoogleDriveApiFileManager {
           resolve(files[0]);
         } else {
           console.log('No files found.');
-          throw '[googleDriveApiFileManager.js] No files found in this month\'s folder';
+          return reject(new Error('[googleDriveApiFileManager.js] No files found in this month\'s folder'));
         }
       });
     });
@@ -175,7 +175,7 @@ class GoogleDriveApiFileManager {
     const drive = google.drive({version: 'v3', auth});
     const searchString = 'Case Information.csv';
 
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       drive.files.list({
         q: `'${id}' in parents`,
         orderBy: 'name',
@@ -193,11 +193,11 @@ class GoogleDriveApiFileManager {
           if (res.length === 1) {
             resolve(res[0]);
           } else {
-            throw '[googleDriveApiFileManager.js] No results from search. Search String = ' + searchString;
+            return reject(new Error('[googleDriveApiFileManager.js] No results from search. Search String = ' + searchString));
           }
         } else {
           console.log('No files found.');
-          throw '[googleDriveApiFileManager.js] No files found in latest folder';
+          return reject(new Error('[googleDriveApiFileManager.js] No files found in latest folder'));
         }
       });
     });
@@ -224,7 +224,7 @@ class GoogleDriveApiFileManager {
     const dest = fs.createWriteStream(filePath);
     let progress = 0;
 
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       res.data
           .on('end', () => {
             console.log('\nDone downloading file. ' + fileObj.name);
@@ -232,7 +232,7 @@ class GoogleDriveApiFileManager {
           })
           .on('error', (err) => {
             console.error('Error downloading file.');
-            throw '[googleDriveApiFileManager.js] ' + err;
+            return reject(new Error('[googleDriveApiFileManager.js] ' + err));
           })
           .on('data', (d) => {
             progress += d.length;
@@ -256,7 +256,7 @@ class GoogleDriveApiFileManager {
   async downloadLatestFileFromArchives() {
     const latestFolderObject = await this.getLatestFolderContentsObject();
     const filePath = await this.downloadFile(latestFolderObject, 'Data.csv');
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       const data = {
         latestFolderName: null,
         downloadedFilePath: null,
@@ -274,9 +274,9 @@ class GoogleDriveApiFileManager {
    */
   async downloadLatestPDF() {
     const t = this;
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       urlExpander.expand(DATA_DROP_LINK, async (err, longUrl) => {
-        if (err) throw '[GoogleDriveApiFileManager.js] ' + err;
+        if (err) return reject(new Error('[GoogleDriveApiFileManager.js] ' + err));
         const folderID = this.extractFolderIDFromURL(longUrl);
         console.log(folderID);
         const files = await t.getFilesInRootFolder(folderID);
@@ -293,7 +293,7 @@ class GoogleDriveApiFileManager {
   async downloadLatestFileFromDataDrop() {
     const t = this;
 
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       this.downloadLatestPDF().then(async () => {
         // @TODO @DOGGO Couldn't think of a much better solution atm, Refactor this code in the future.
         let isErr = false;
@@ -307,7 +307,7 @@ class GoogleDriveApiFileManager {
 
         console.log('\nshortUrl: ' + shortLink);
         urlExpander.expand(shortLink, async (err, longUrl) => {
-          if (err) throw '[GoogleDriveApiFileManager.js] ' + err;
+          if (err) return reject(new Error('[GoogleDriveApiFileManager.js] ' + err));
           console.log('Long url: ' + longUrl);
           const folderID = this.extractFolderIDFromURL(longUrl);
           console.log(folderID);
@@ -317,7 +317,7 @@ class GoogleDriveApiFileManager {
             (-1 !== data.name.search('Case Information.csv')),
           );
           if (file.length < 0) {
-            throw '[GoogleDriveApiFileManager.js] Error Case information.csv not found';
+            return reject(new Error('[GoogleDriveApiFileManager.js] Error Case information.csv not found'));
           }
           console.log('Latest file info(From PDF): ' + file[0]);
           resolve(await t.downloadFile(file[0], 'Data.csv'));
@@ -330,8 +330,8 @@ class GoogleDriveApiFileManager {
    * Downloads Latest file from DataDrop or DataDrop Archives
    * @return {Promise<void>}
    */
-  // @TODO @DOGGO This code needs refactoring
   async downloadLatestFile() {
+    // @TODO @DOGGO This code needs refactoring
     const t = this;
     console.log('Downloading latest csv file from latest pdf');
     await this.downloadLatestFileFromDataDrop().then((data) => {

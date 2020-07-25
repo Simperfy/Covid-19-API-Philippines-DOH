@@ -23,10 +23,15 @@ const router = express.Router();
   // Initialize Google Auth Token
   async () => {
     await GDriveApi.getAuth();
-    await autoUpdate();
-    setInterval(await autoUpdate, (60000 * 60) * 24 ); // update every 24 hours
+    // await autoUpdate();
+    // setInterval(await autoUpdate, (60000 * 60) * 24 ); // update every 24 hours
   }
 )();
+
+const jsonStructure = {
+  'success': true,
+  'result': [],
+};
 
 /**
  * Auto update function
@@ -35,7 +40,6 @@ const router = express.Router();
 async function autoUpdate() {
   console.log('Auto Update Initialized');
   await GDriveApi.downloadLatestFileFromArchives().then((data) => {
-    // res.send('Downloaded Latest Files - ' + data);
     console.log('Downloaded Latest Files - ' + data.latestFolderName);
   }).catch((err) => {
     console.log('Error Downloading Latest Files: ' + err);
@@ -54,7 +58,7 @@ async function autoUpdate() {
 
 /**
  * verify token.json exists on application start
- * @param {express.RequestParamHandler} res
+ * @param {express.req} res
  */
 async function verifyGoogleToken(res) {
   const auth = await GDriveApi.getAuth();
@@ -90,11 +94,25 @@ router.get('/filter/:field/:value', async (req, res) => {
     value = parseInt(value);
   }
 
-  res.json(await db.filter(field, value));
+  await db.filter(field, value).then((result) => {
+    jsonStructure.result = result;
+    res.json(jsonStructure);
+  }).catch((err) => {
+    jsonStructure.success = false;
+    jsonStructure.reason = err.message;
+    res.json(jsonStructure);
+  });
 });
 
 router.get('/get/:count?', async (req, res) => {
-  res.json(await db.get(req.params.count));
+  await db.get(req.params.count).then((result) => {
+    jsonStructure.result = result;
+    res.json(jsonStructure);
+  }).catch((err) => {
+    jsonStructure.success = false;
+    jsonStructure.reason = err.message;
+    res.json(jsonStructure);
+  });
 });
 
 app.use('/api', router); // Add prefix "/api" to routes above
@@ -109,7 +127,7 @@ app.get('/googleAuth', (req, res) => {
 });
 
 app.get('/verified', (req, res) => res.send(
-    'Token Created! <html><a href="/">Go back to home</a><html>',
+    '<html>Token Created! <a href="/">Go back to home</a><html>',
 ));
 
 app.get('/', async (req, res) => {
@@ -124,6 +142,6 @@ app.get('/', async (req, res) => {
 
 
 app.listen(port, () => console.log(`Started Server at http://localhost:${port}`)).on('close', () => {
-  console.log('Terminating Datebase connection.');
+  console.log('Terminating Database connection.');
   db.endConnection();
 });

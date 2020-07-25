@@ -1,5 +1,4 @@
-/* eslint-disable max-len,no-throw-literal */
-/* eslint-disable require-jsdoc */
+/* eslint-disable max-len */
 const mySQLDatabase = require('./MySQLDatabase');
 const MySQLDatabase = mySQLDatabase.MySQLDatabase;
 
@@ -7,12 +6,19 @@ const csvDatabase = require('./CSVDatabase');
 const CSVDatabase = csvDatabase.CSVDatabase;
 const CaseInformation = require('../CaseInformation');
 
+/**
+ * Handles Database
+ */
 class Database {
+  /**
+   * Initialize Database and make this a singleton
+   * @return {Database}
+   */
   constructor() {
     if (!Database.instance) {
       Database.instance=this;
       // If we need to change database in the future
-      // we only need to change this class wtih same methods
+      // we only need to change this class with same methods
       console.log('Connecting to database');
       const mySQLDatabase = new MySQLDatabase();
       this.db = mySQLDatabase;
@@ -29,6 +35,10 @@ class Database {
     return Database.instance;
   }
 
+  /**
+   * @param {*} numEntries
+   * @return {Promise}
+   */
   get(numEntries) {
     return this.db.get(numEntries);
   }
@@ -43,7 +53,7 @@ class Database {
 
   /**
    * @param {String} field
-   * @param {String} value
+   * @param {String|Number} value
    * @return {Promise} Contains JSON
    */
   filter(field, value) {
@@ -110,7 +120,7 @@ ${this.db.connection.escape(data.ValidationStatus)})`;
       await this.executeRaw(query).then((data) => {
         console.log('Affected rows: ' + JSON.parse(JSON.stringify(data)).affectedRows);
       }).catch((err) => {
-        if (err) throw '[Database.js] ' + err;
+        if (err) throw new Error('[Database.js] ' + err);
         isSuccess = false;
       });
     }
@@ -153,6 +163,10 @@ ${this.db.connection.escape(data.ValidationStatus)})`;
   // }
 
 
+  /**
+   * Update database form csv
+   * @return {Promise<boolean>}
+   */
   async updateDatabaseFromCSV() {
     const csvDatabase = new CSVDatabase();
     const cs = await csvDatabase.get();
@@ -197,6 +211,9 @@ ${this.db.connection.escape(data.ValidationStatus)})`;
   //   console.log('index ' + csvDatabase.findIndex(sortedCSV, 'C999994'));
   // }
 
+  /**
+   * End Database connection
+   */
   endConnection() {
     this.db.endConnection();
   }

@@ -1,4 +1,4 @@
-/* eslint-disable require-jsdoc,no-throw-literal */
+/* eslint-disable require-jsdoc */
 /* eslint-disable max-len */
 const mysql = require('mysql');
 
@@ -21,11 +21,12 @@ class MySQLDatabase {
   }
 
   /**
-   * @param {int} numEntries number of records to return
+   * @param {*} numEntries number of records to return
    * @return {Promise} returns JSON of the result
    */
   get(numEntries = null) {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
+      if (isNaN(numEntries)) return reject(new Error('invalid values'));
       let query = 'SELECT * from case_informations ORDER BY case_code ASC';
       if (numEntries !== null) {
         let limit = parseInt(numEntries);
@@ -34,7 +35,7 @@ class MySQLDatabase {
       }
 
       this.executeAndLogQuery(this.connection.query(query, function(err, rows, fields) {
-        if (err) throw '[MySQLDatabase.js] ' + err;
+        if (err) return reject(new Error('[MySQLDatabase.js] ' + err));
         resolve(rows);
       }));
     });
@@ -44,11 +45,11 @@ class MySQLDatabase {
    * @return {Promise}
    */
   getLastRow() {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       const query = 'SELECT * from case_informations ORDER BY case_code DESC LIMIT 1';
 
       this.executeAndLogQuery(this.connection.query(query, function(err, rows, fields) {
-        if (err) throw '[MySQLDatabase.js] ' + err;
+        if (err) return reject(new Error('[MySQLDatabase.js] ' + err));
         resolve(rows);
       }));
     });
@@ -59,7 +60,7 @@ class MySQLDatabase {
    * @return {Promise} contains the result of the query
    */
   count(objFilters = null) {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       let query = 'SELECT count(*) AS count from case_informations';
       if (objFilters !== null) {
         const field = this.connection.escapeId(objFilters.field);
@@ -68,7 +69,7 @@ class MySQLDatabase {
       }
 
       this.executeAndLogQuery(this.connection.query(query, function(err, rows, fields) {
-        if (err) throw '[MySQLDatabase.js] ' + err;
+        if (err) return reject(new Error('[MySQLDatabase.js] ' + err));
         const dataArray = Object.values(JSON.parse(JSON.stringify(rows)));
         dataArray.forEach(function(d) {
           resolve(d.count);
@@ -83,14 +84,14 @@ class MySQLDatabase {
    * @return {Promise} Contains JSON
    */
   filter(field, value) {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       let query = 'SELECT * from case_informations';
       field = this.connection.escapeId(field);
       value = this.connection.escape(value);
       query += ` where ${field}=${value}`;
 
       this.executeAndLogQuery(this.connection.query(query, function(err, rows, fields) {
-        if (err) throw '[MySQLDatabase.js] ' + err;
+        if (err) return reject(new Error('[MySQLDatabase.js] ' + err));
         resolve(rows);
       }));
     });
@@ -114,9 +115,9 @@ class MySQLDatabase {
    * @return {Promise}
    */
   executeRaw(query) {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       this.executeAndLogQuery(this.connection.query(query, function(err, rows, fields) {
-        if (err) throw '[MySQLDatabase.js] ' + err;
+        if (err) return reject(new Error('[MySQLDatabase.js] ' + err));
         resolve(rows);
       }));
     });

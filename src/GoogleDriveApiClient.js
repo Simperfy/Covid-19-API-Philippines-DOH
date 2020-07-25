@@ -1,5 +1,4 @@
 /* eslint-disable max-len */
-/* eslint-disable no-throw-literal */
 
 // REFERENCES:
 // GOOGLE DRIVE API V3 DOCS https://developers.google.com/drive/api/v3/
@@ -32,7 +31,7 @@ class GoogleDriveApi {
     if (process.env.NODE_ENV === 'development') {
       console.log('checking credentials.json in ' + CREDENTIALS_PATH);
       if (!fs.existsSync(CREDENTIALS_PATH)) {
-        throw '[googleDriveApiClient.js] MISSING credentials.json, Get one at https://developers.google.com/drive/api/v3/quickstart/go';
+        throw new Error('[googleDriveApiClient.js] MISSING credentials.json, Get one at https://developers.google.com/drive/api/v3/quickstart/go');
       }
     } else {
       console.log('skipping verification of credentials.json');
@@ -156,7 +155,7 @@ class GoogleDriveApi {
       this.oAuth2Client.setCredentials(token);
       // Store the token to disk for later program executions
       fs.writeFile(TOKEN_PATH, JSON.stringify(token), (err) => {
-        if (err) throw '[googleDriveApiClient.js] ' + err;
+        if (err) throw new Error('[googleDriveApiClient.js] ' + err);
         console.log('Token stored to', TOKEN_PATH);
       });
     });
