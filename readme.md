@@ -31,7 +31,7 @@ Select [Enable Drive API](https://developers.google.com/drive/api/v3/quickstart/
 1. Make sure you have [Node.js](https://nodejs.org) & run the command
 
 ```
-npm install
+$ npm install
 ```
 
 2. Get token.json (must have `credentials.json`)
@@ -43,7 +43,7 @@ npm install
 5. Run the project
 
 ```
-npm start
+$ npm start
 ```
 
 6. visit `http://localhost:3000/` to initialize token.json (must have a properly configured google account)
@@ -70,7 +70,7 @@ GET api/filter/{field}/{value}
 
 These are all the valid value for field in "api/filter/{field}/{value}":
 ```
-caseCode, age, ageGroup, sex, dateSpecimen, dateResultRelease, dateRepConf, dateDied, dateRecover, removalType, admitted, regionRes, provRes, cityMunRes, cityMuniPSGC, healthStatus, quarantined, dateOnset, pregnanttab, validationStatus
+case_code, age, age_group, sex, date_specimen, date_result_release, date_rep_conf, date_died, date_recover, removal_type, admitted, region_res, prov_res, city_mun_res, city_muni_psgc, health_status, quarantined, date_onset, pregnant_tab, validation_status
 ```
 
 For valid value for each field in "api/filter/{field}/{value}" please refer to the sample json above.
