@@ -108,7 +108,7 @@ ${this.db.connection.escape(data.ValidationStatus)})`;
       await this.executeRaw(query).then((data) => {
         console.log('Affected rows: ' + JSON.parse(JSON.stringify(data)).affectedRows);
       }).catch((err) => {
-        if (err) throw err;
+        if (err) throw '[Database.js] ' + err;
         isSuccess = false;
       });
     }

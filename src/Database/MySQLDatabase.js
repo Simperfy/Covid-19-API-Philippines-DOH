@@ -34,7 +34,7 @@ class MySQLDatabase {
       }
 
       this.executeAndLogQuery(this.connection.query(query, function(err, rows, fields) {
-        if (err) throw err;
+        if (err) throw '[MySQLDatabase.js] ' + err;
         resolve(rows);
       }));
     });
@@ -48,7 +48,7 @@ class MySQLDatabase {
       const query = 'SELECT * from case_informations ORDER BY CaseCode DESC LIMIT 1';
 
       this.executeAndLogQuery(this.connection.query(query, function(err, rows, fields) {
-        if (err) throw err;
+        if (err) throw '[MySQLDatabase.js] ' + err;
         resolve(rows);
       }));
     });
@@ -68,7 +68,7 @@ class MySQLDatabase {
       }
 
       this.executeAndLogQuery(this.connection.query(query, function(err, rows, fields) {
-        if (err) throw err;
+        if (err) throw '[MySQLDatabase.js] ' + err;
         const dataArray = Object.values(JSON.parse(JSON.stringify(rows)));
         dataArray.forEach(function(d) {
           resolve(d.count);
@@ -90,7 +90,7 @@ class MySQLDatabase {
       query += ` where ${field}=${value}`;
 
       this.executeAndLogQuery(this.connection.query(query, function(err, rows, fields) {
-        if (err) throw err;
+        if (err) throw '[MySQLDatabase.js] ' + err;
         resolve(rows);
       }));
     });
@@ -116,7 +116,7 @@ class MySQLDatabase {
   executeRaw(query) {
     return new Promise((resolve) => {
       this.executeAndLogQuery(this.connection.query(query, function(err, rows, fields) {
-        if (err) throw err;
+        if (err) throw '[MySQLDatabase.js] ' + err;
         resolve(rows);
       }));
     });

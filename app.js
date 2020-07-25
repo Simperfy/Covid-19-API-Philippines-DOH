@@ -1,4 +1,4 @@
-/* eslint-disable require-jsdoc */
+/* eslint-disable max-len */
 require('dotenv').config();
 
 // GOOGLE DRIVE VARS
@@ -23,12 +23,15 @@ const router = express.Router();
   // Initialize Google Auth Token
   async () => {
     await GDriveApi.getAuth();
-    await GDriveApi.downloadLatestFile();
-    // await autoUpdate();
+    await autoUpdate();
     // setInterval(await autoUpdate, (60000 * 60) * 24 ); // update every 24 hours
   }
 )();
 
+/**
+ * Auto update function
+ * @returns {Promise<void>}
+ */
 async function autoUpdate() {
   console.log('Auto Update Initialized');
   await GDriveApi.downloadLatestFileFromArchives().then((data) => {
@@ -107,7 +110,7 @@ app.use('/api', router); // Add prefix "/api" to routes above
 
 app.get('/googleAuth', (req, res) => {
   try {
-    GDriveApi.getAndStoreTokenCode(req.query.code);
+    GDriveApi.getAndStoreToken(req.query.code);
     res.redirect('/verified');
   } catch (error) {
     res.send('ERROR SAVING TOKEN: ' + error);

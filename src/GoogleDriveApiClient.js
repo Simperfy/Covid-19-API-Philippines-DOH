@@ -1,6 +1,5 @@
 /* eslint-disable max-len */
 /* eslint-disable no-throw-literal */
-/* eslint-disable require-jsdoc */
 
 // REFERENCES:
 // GOOGLE DRIVE API V3 DOCS https://developers.google.com/drive/api/v3/
@@ -21,13 +20,19 @@ const SCOPES = ['https://www.googleapis.com/auth/drive.metadata.readonly', 'http
 const TOKEN_PATH = path.join(__dirname, '../token.json');
 const CREDENTIALS_PATH = path.join(__dirname, '../credentials.json');
 
+/**
+ * Handles Authorization to Google Drive
+ */
 class GoogleDriveApi {
-  // make this a singleton
+  /**
+   * Initialize variables and make this class a singleton
+   * @return {GoogleDriveApi}
+   */
   constructor() {
     if (process.env.NODE_ENV === 'development') {
       console.log('checking credentials.json in ' + CREDENTIALS_PATH);
       if (!fs.existsSync(CREDENTIALS_PATH)) {
-        throw 'MISSING credentials.json, Get one at https://developers.google.com/drive/api/v3/quickstart/go';
+        throw '[googleDriveApiClient.js] MISSING credentials.json, Get one at https://developers.google.com/drive/api/v3/quickstart/go';
       }
     } else {
       console.log('skipping verification of credentials.json');
@@ -142,20 +147,24 @@ class GoogleDriveApi {
   }
 
   /**
+   * Fetches and downloads token.json
    * @param {String} code Code returned by Google URL Callback
    */
-  getAndStoreTokenCode(code) {
+  getAndStoreToken(code) {
     this.oAuth2Client.getToken(code, (err, token) => {
       if (err) return console.error('Error retrieving access token', err);
       this.oAuth2Client.setCredentials(token);
       // Store the token to disk for later program executions
       fs.writeFile(TOKEN_PATH, JSON.stringify(token), (err) => {
-        if (err) throw err;
+        if (err) throw '[googleDriveApiClient.js] ' + err;
         console.log('Token stored to', TOKEN_PATH);
       });
     });
   }
 
+  /**
+   * Deletes Expired Token
+   */
   deleteExpiredToken() {
     console.log('Checking if token is expired');
 
@@ -179,10 +188,19 @@ class GoogleDriveApi {
     });
   }
 
+  /**
+   * Downloads the latest file from DOH DATA DROP ARCHIVES
+   * https://bit.ly/DataDropArchives
+   * @return {Promise<Object>}
+   */
   downloadLatestFileFromArchives() {
     return this.googleDriveApiFileManager.downloadLatestFileFromArchives();
   }
 
+  /**
+   * downloads latest file based from the latest pdf
+   * @return {Promise<void>}
+   */
   downloadLatestFile() {
     return this.googleDriveApiFileManager.downloadLatestFile();
   }
