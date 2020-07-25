@@ -13,7 +13,7 @@
 ## Example:
 [return 100 covid cases from records of DOH](https://covid19-api-philippines.herokuapp.com/api/get/100)
 
-[return all covid cases in NCR](https://covid19-api-philippines.herokuapp.com/api/filter/regionRes/NCR)
+[return all covid cases in NCR](https://covid19-api-philippines.herokuapp.com/api/filter/region_res/NCR)
 
 <br>
 
