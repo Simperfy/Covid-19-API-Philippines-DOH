@@ -44,7 +44,7 @@ node .
 
 4. create and configure ".env" file (see `env.example`)
 
-5. visit ```http://localhost:3000/``` to initialize token.json (must have a properly configured google account)
+5. visit `http://localhost:3000/` to initialize token.json (must have a properly configured google account)
 
 <br>
 
@@ -106,7 +106,7 @@ GET api/filter/ageGroup/15 to 19
 
 <br>
 
-*If you get the error: `"The API returned an error: Error: Daily Limit for Unauthenticated Use Exceeded. Continued use requires signup."` just delete the token.json and repeat step 1 to get a new one.* 
+*If you get the error: `"The API returned an error: Error: Daily Limit for Unauthenticated Use Exceeded. Continued use requires signup."` just visit the base url to get a new one.* 
 
 <br>
 
