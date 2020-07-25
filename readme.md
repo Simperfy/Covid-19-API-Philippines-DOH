@@ -34,17 +34,19 @@ Select [Enable Drive API](https://developers.google.com/drive/api/v3/quickstart/
 npm install
 ```
 
-2. Run the project
+2. Get token.json (must have `credentials.json`)
+
+3. create and configure ".env" file (see `env.example`)
+
+4. import .sql files inside the folder `./src/Database/sql`
+
+5. Run the project
 
 ```
-node .
+npm start
 ```
 
-3. Get token.json (must have `credentials.json`)
-
-4. create and configure ".env" file (see `env.example`)
-
-5. visit `http://localhost:3000/` to initialize token.json (must have a properly configured google account)
+6. visit `http://localhost:3000/` to initialize token.json (must have a properly configured google account)
 
 <br>
 
@@ -54,26 +56,26 @@ Sample json return by the API:
 ```JSON
 [
     {
-        "caseCode": "C480562",
-        "age": "18.0",
-        "ageGroup": "15 to 19",
-        "sex": "MALE",
-        "dateSpecimen": "2020-06-16",
-        "dateResultRelease": "",
-        "dateRepConf": "2020-06-21",
-        "dateDied": "",
-        "dateRecover": "",
-        "removalType": "",
-        "admitted": "YES",
-        "regionRes": "Region XI: Davao Region",
-        "provRes": "DAVAO DEL SUR",
-        "cityMunRes": "DAVAO CITY",
-        "cityMuniPSGC": "PH112402000",
-        "healthStatus": "MILD",
-        "quarantined": "",
-        "dateOnset": "2020-06-16",
-        "pregnanttab": "",
-        "validationStatus": "Case has Lab Result, but Result Date is blank"
+      "case_code": "C101356",
+      "age": 55,
+      "age_group": "55-59",
+      "sex": "female",
+      "date_specimen": "2020-07-13",
+      "date_result_release": "2020-07-15",
+      "date_rep_conf": "2020-07-19",
+      "date_died": "",
+      "date_recover": "",
+      "removal_type": "",
+      "admitted": "no",
+      "region_res": "NCR",
+      "prov_res": "ncr",
+      "city_mun_res": "city of malabon",
+      "city_muni_psgc": "PH137502000",
+      "health_status": "mild",
+      "quarantined": "no",
+      "date_onset": "",
+      "pregnant_tab": "no",
+      "validation_status": ""
     }
 ]
 ```
@@ -101,7 +103,7 @@ GET api/filter/regionRes/NCR
 ```
 * returns all covid cases between 15 to 19 years old
 ```http
-GET api/filter/ageGroup/15 to 19
+GET api/filter/ageGroup/15-19
 ```
 
 <br>

@@ -1,4 +1,4 @@
-/* eslint-disable require-jsdoc */
+/* eslint-disable require-jsdoc,no-throw-literal */
 /* eslint-disable max-len */
 const mysql = require('mysql');
 
@@ -26,7 +26,7 @@ class MySQLDatabase {
    */
   get(numEntries = null) {
     return new Promise((resolve) => {
-      let query = 'SELECT * from case_informations ORDER BY CaseCode ASC';
+      let query = 'SELECT * from case_informations ORDER BY case_code ASC';
       if (numEntries !== null) {
         let limit = parseInt(numEntries);
         limit = this.connection.escape(limit);
@@ -45,7 +45,7 @@ class MySQLDatabase {
    */
   getLastRow() {
     return new Promise((resolve) => {
-      const query = 'SELECT * from case_informations ORDER BY CaseCode DESC LIMIT 1';
+      const query = 'SELECT * from case_informations ORDER BY case_code DESC LIMIT 1';
 
       this.executeAndLogQuery(this.connection.query(query, function(err, rows, fields) {
         if (err) throw '[MySQLDatabase.js] ' + err;
@@ -79,7 +79,7 @@ class MySQLDatabase {
 
   /**
    * @param {String} field
-   * @param {String} value
+   * @param {String|Number} value
    * @return {Promise} Contains JSON
    */
   filter(field, value) {

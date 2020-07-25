@@ -1,10 +1,11 @@
-/* eslint-disable max-len */
+/* eslint-disable max-len,no-throw-literal */
 /* eslint-disable require-jsdoc */
 const mySQLDatabase = require('./MySQLDatabase');
 const MySQLDatabase = mySQLDatabase.MySQLDatabase;
 
 const csvDatabase = require('./CSVDatabase');
 const CSVDatabase = csvDatabase.CSVDatabase;
+const CaseInformation = require('../CaseInformation');
 
 class Database {
   constructor() {
@@ -12,7 +13,7 @@ class Database {
       Database.instance=this;
       // If we need to change database in the future
       // we only need to change this class wtih same methods
-      console.log('Connecting to datbase');
+      console.log('Connecting to database');
       const mySQLDatabase = new MySQLDatabase();
       this.db = mySQLDatabase;
 
@@ -33,10 +34,10 @@ class Database {
   }
 
   /**
-   * @param {Object} objFilters contains the field and value
+   * @param {Object|null} objFilters contains the field and value
    * @return {Promise} contains the result of the query
    */
-  count(objFilters) {
+  count(objFilters= null) {
     return this.db.count(objFilters);
   }
 
@@ -50,11 +51,11 @@ class Database {
   }
 
   /**
-   * @param {Array} csArr
+   * @param {[CaseInformation]} csArr
    * @param {int} batchSize
    */
   async batchInsertDatabaseFromCSV(csArr, batchSize=10000) {
-    console.log(`\nPerforming batch insert (batchsize: ${batchSize}):`);
+    console.log(`\nPerforming batch insert (batch size: ${batchSize}):`);
     let isSuccess = true;
     let lastRowIndex = 0;
     const csArrLength = csArr.length;
@@ -73,9 +74,10 @@ class Database {
       // console.log('csBatchArr.length: ' + csBatchArr.length + '\n');
       lastRowIndex = nextLastRowIndex;
 
-      let query = `INSERT IGNORE INTO case_informations (CaseCode, Age, AgeGroup, Sex, DateSpecimen, \
-        DateResultRelease, DateRepConf, DateDied, DateRecover, RemovalType, Admitted, RegionRes, ProvRes, \
-        CityMunRes, CityMuniPSGC, HealthStatus, Quarantined, DateOnset, Pregnanttab, ValidationStatus) VALUES`;
+      // Ignoring, reason possible duplication of data as stated in readme of DOH Data Drop
+      let query = `INSERT IGNORE INTO case_informations (case_code, age, age_group, sex, date_specimen, \
+        date_result_release, date_rep_conf, date_died, date_recover, removal_type, admitted, region_res, \
+        prov_res, city_mun_res, city_muni_psgc, health_status, quarantined, date_onset, pregnant_tab, validation_status) VALUES`;
 
       // BUG RESOLVE Lesson learned, ALWAYS ESCAPE CHARS BEFORE INSERTING TO DB EVEN FROM A CSV!!!
       csBatchArr.forEach((data, ind) => {
@@ -100,7 +102,7 @@ ${this.db.connection.escape(data.DateOnset)}, \
 ${this.db.connection.escape(data.Pregnanttab)}, \
 ${this.db.connection.escape(data.ValidationStatus)})`;
 
-        if ((ind+1) != csBatchArr.length) {
+        if ((ind+1) !== csBatchArr.length) {
           query+= ', ';
         }
       });

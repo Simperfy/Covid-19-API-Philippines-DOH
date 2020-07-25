@@ -30,7 +30,7 @@ const router = express.Router();
 
 /**
  * Auto update function
- * @returns {Promise<void>}
+ * @return {Promise<void>}
  */
 async function autoUpdate() {
   console.log('Auto Update Initialized');
@@ -95,7 +95,7 @@ router.get('/filter/:field/:value', async (req, res) => {
   const field = req.params.field.trim();
   let value = req.params.value.trim();
 
-  if (field == 'age') {
+  if (field === 'age') {
     value = parseInt(value);
   }
 

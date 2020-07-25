@@ -21,7 +21,7 @@ class CaseInformation {
   }
 
   get AgeGroup() {
-    return this.ageGroup;
+    return this.ageGroup.replace(' to ', '-');
   }
 
   set Sex(sex) {
@@ -29,7 +29,7 @@ class CaseInformation {
   }
 
   get Sex() {
-    return this.sex;
+    return this.sex.toLowerCase();
   }
 
   set DateSpecimen(dateSpecimen) {
@@ -77,7 +77,7 @@ class CaseInformation {
   }
 
   get RemovalType() {
-    return this.removalType;
+    return this.removalType.toLowerCase();
   }
 
   set Admitted(admitted) {
@@ -85,7 +85,7 @@ class CaseInformation {
   }
 
   get Admitted() {
-    return this.admitted;
+    return this.admitted.toLowerCase();
   }
 
   set RegionRes(regionRes) {
@@ -101,7 +101,7 @@ class CaseInformation {
   }
 
   get ProvRes() {
-    return this.provRes;
+    return this.provRes.toLowerCase();
   }
 
   set CityMunRes(cityMunRes) {
@@ -109,7 +109,7 @@ class CaseInformation {
   }
 
   get CityMunRes() {
-    return this.cityMunRes;
+    return this.cityMunRes.toLowerCase();
   }
 
   set CityMuniPSGC(cityMuniPSGC) {
@@ -125,7 +125,7 @@ class CaseInformation {
   }
 
   get HealthStatus() {
-    return this.healthStatus;
+    return this.healthStatus.toLowerCase();
   }
 
   set Quarantined(quarantined) {
@@ -133,7 +133,7 @@ class CaseInformation {
   }
 
   get Quarantined() {
-    return this.quarantined;
+    return this.quarantined.toLowerCase();
   }
 
   set DateOnset(dateOnset) {
@@ -149,7 +149,7 @@ class CaseInformation {
   }
 
   get Pregnanttab() {
-    return this.pregnanttab;
+    return this.pregnanttab.toLowerCase();
   }
 
   set ValidationStatus(validationStatus) {

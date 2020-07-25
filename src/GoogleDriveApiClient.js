@@ -164,6 +164,7 @@ class GoogleDriveApi {
 
   /**
    * Deletes Expired Token
+   * @return {void}
    */
   deleteExpiredToken() {
     console.log('Checking if token is expired');
