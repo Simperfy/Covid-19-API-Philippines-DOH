@@ -24,7 +24,7 @@ const router = express.Router();
   async () => {
     await GDriveApi.getAuth();
     await autoUpdate();
-    // setInterval(await autoUpdate, (60000 * 60) * 24 ); // update every 24 hours
+    setInterval(await autoUpdate, (60000 * 60) * 24 ); // update every 24 hours
   }
 )();
 
@@ -73,21 +73,12 @@ async function verifyGoogleToken(res) {
 }
 
 router.get('/updateDatabase', async (req, res) => {
-  await GDriveApi.downloadLatestFileFromArchives().then((data) => {
-    // res.send('Downloaded Latest Files - ' + data);
-    console.log('Downloaded Latest Files - ' + data.latestFolderName);
+  await autoUpdate().then((data) => {
+    res.json({'success': true});
+    console.log('Downloaded Latest Files ');
   }).catch((err) => {
-    res.send('Error Downloading Latest Files: ' + err);
-  });
-
-  await db.updateDatabaseFromCSV().then((data) => {
-    if (data === true) {
-      res.send('Database Updated Successfully');
-    } else {
-      res.send('Something went wrong while updating database');
-    }
-  }).catch((err) => {
-    res.send('Error Updating Database: ' + err);
+    res.json({'success': false});
+    console.log('Error Downloading Latest Files: ' + err);
   });
 });
 
