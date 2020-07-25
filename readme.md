@@ -8,7 +8,7 @@
 
 #### Covid-19 Web API for Philippines from data collected by DOH using Node.js that updates itself every 24 hours.
 > The Data is fetched from DOH DATA DROP by web scraping, in case of failure due to changes, the data will be fetched from 
-> [DATA DROP](https://drive.google.com/drive/folders/1UelgRGmUGNMKH1Q3nzqTj57V41bjmnxg) archives)
+> [DATA DROP](https://drive.google.com/drive/folders/1UelgRGmUGNMKH1Q3nzqTj57V41bjmnxg) archives instead
 
 ## Example:
 [return 100 covid cases from records of DOH](https://covid19-api-philippines.herokuapp.com/api/get/100)
@@ -28,26 +28,23 @@
 
 Select [Enable Drive API](https://developers.google.com/drive/api/v3/quickstart/go) and download the `credentials.json` and place the json file at the root folder of the project.
 
-Make sure you have [Node.js](https://nodejs.org) & run the command
+1. Make sure you have [Node.js](https://nodejs.org) & run the command
 
 ```
 npm install
 ```
 
-Run the project
+2. Run the project
 
 ```
 node .
 ```
 
-Then open your web browser and go to the following links:
+3. Get token.json (must have `credentials.json`)
 
-1. Get token.json (must have `credentials.json`)
-```
-    http://localhost:3000/
-```
+4. create and configure ".env" file (see `env.example`)
 
-2. create and configure ".env" file (see `env.example`)
+5. visit ```http://localhost:3000/``` to initialize token.json (must have a properly configured google account)
 
 <br>
 
@@ -81,30 +78,30 @@ Sample json return by the API:
 ]
 ```
 These are the currently available API endpoints:
-* http://localhost:3000/api/get/ - returns all records
-* http://localhost:3000/api/get/100 - returns 100 records
-* http://localhost:3000/api/filter/{field}/{value} - returns records that matches the filter
-* http://localhost:3000/api/updateDatabase - downloads latest files from DOH - Philippines
+* api/get/ - returns all records
+* api/get/100 - returns 100 records
+* api/filter/{field}/{value} - returns records that matches the filter
+* api/updateDatabase - downloads latest files from DOH - Philippines
 
-These are all the valid value for field in "http://localhost:3000/api/filter/{field}/{value}":
+These are all the valid value for field in "api/filter/{field}/{value}":
 ```
 caseCode, age, ageGroup, sex, dateSpecimen, dateResultRelease, dateRepConf, dateDied, dateRecover, removalType, admitted, regionRes, provRes, cityMunRes, cityMuniPSGC, healthStatus, quarantined, dateOnset, pregnanttab, validationStatus
 ```
 
-For valid value for each field in "http://localhost:3000/api/filter/{field}/{value}" please refer to the sample json above.
+For valid value for each field in "api/filter/{field}/{value}" please refer to the sample json above.
 
 Example:
 * returns all covid cases with age of 30
 ```http
-GET http://localhost:3000/api/filter/age/30
+GET api/filter/age/30
 ``` 
 * returns all covid cases in NCR
 ```http
-GET http://localhost:3000/api/filter/regionRes/NCR
+GET api/filter/regionRes/NCR
 ```
 * returns all covid cases between 15 to 19 years old
 ```http
-GET http://localhost:3000/api/filter/ageGroup/15 to 19
+GET api/filter/ageGroup/15 to 19
 ```
 
 <br>
