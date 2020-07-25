@@ -50,7 +50,50 @@ npm start
 
 <br>
 
-## DOCS
+## Endpoints
+These are the currently available API endpoints:
+
+return all records
+```http
+   api/get/
+```
+return 100 records
+```http
+   api/get/100
+```
+return records that matches the filter
+```http
+   api/filter/{field}/{value}
+```
+
+<br>
+
+These are all the valid value for field in "api/filter/{field}/{value}":
+```
+caseCode, age, ageGroup, sex, dateSpecimen, dateResultRelease, dateRepConf, dateDied, dateRecover, removalType, admitted, regionRes, provRes, cityMunRes, cityMuniPSGC, healthStatus, quarantined, dateOnset, pregnanttab, validationStatus
+```
+
+For valid value for each field in "api/filter/{field}/{value}" please refer to the sample json above.
+
+Example:
+* returns all covid cases with age of 30
+```http
+GET api/filter/age/30
+``` 
+* returns all covid cases in NCR
+```http
+GET api/filter/regionRes/NCR
+```
+* returns all covid cases between 15 to 19 years old
+```http
+GET api/filter/ageGroup/15-19
+```
+
+<br>
+
+*If you get the error: `"The API returned an error: Error: Daily Limit for Unauthenticated Use Exceeded. Continued use requires signup."` just visit the base url to get a new one.* 
+
+<br>
 
 Sample json return by the API:
 ```JSON
@@ -79,36 +122,6 @@ Sample json return by the API:
     }
 ]
 ```
-These are the currently available API endpoints:
-* api/get/ - returns all records
-* api/get/100 - returns 100 records
-* api/filter/{field}/{value} - returns records that matches the filter
-* api/updateDatabase - downloads latest files from DOH - Philippines
-
-These are all the valid value for field in "api/filter/{field}/{value}":
-```
-caseCode, age, ageGroup, sex, dateSpecimen, dateResultRelease, dateRepConf, dateDied, dateRecover, removalType, admitted, regionRes, provRes, cityMunRes, cityMuniPSGC, healthStatus, quarantined, dateOnset, pregnanttab, validationStatus
-```
-
-For valid value for each field in "api/filter/{field}/{value}" please refer to the sample json above.
-
-Example:
-* returns all covid cases with age of 30
-```http
-GET api/filter/age/30
-``` 
-* returns all covid cases in NCR
-```http
-GET api/filter/regionRes/NCR
-```
-* returns all covid cases between 15 to 19 years old
-```http
-GET api/filter/ageGroup/15-19
-```
-
-<br>
-
-*If you get the error: `"The API returned an error: Error: Daily Limit for Unauthenticated Use Exceeded. Continued use requires signup."` just visit the base url to get a new one.* 
 
 <br>
 
