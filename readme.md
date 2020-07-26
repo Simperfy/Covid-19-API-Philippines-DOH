@@ -7,13 +7,17 @@
 ![Tweet](https://img.shields.io/twitter/url?url=https%3A%2F%2Fgithub.com%2FSimperfy%2FCovid-19-API-Philippines-DOH)
 
 #### Covid-19 Web API for Philippines from data collected by DOH using Node.js that updates itself every 24 hours.
-> The Data is fetched from DOH DATA DROP by web scraping, in case of failure due to changes, the data will be fetched from 
-> [DATA DROP](https://drive.google.com/drive/folders/1UelgRGmUGNMKH1Q3nzqTj57V41bjmnxg) archives instead
+> Unlike any other API, this Web API doesn't use web scraping to fetch data from DOH website instead it collects the data from the csv file from DOH Google Drive.
+> This means that even if DOH website changes this API will be able to maintain itself.
 
-## Example:
-[return 100 covid cases from records of DOH](https://covid19-api-philippines.herokuapp.com/api/get/100)
+### Example:
+[Summary of covid cases](https://covid19-api-philippines.herokuapp.com/api/summary)
 
-[return all covid cases in NCR](https://covid19-api-philippines.herokuapp.com/api/filter/region_res/NCR)
+[Return 100 covid cases from records of DOH](https://covid19-api-philippines.herokuapp.com/api/get/100)
+
+[Return all covid cases in NCR](https://covid19-api-philippines.herokuapp.com/api/filter/region_res/NCR)
+
+[Return all covid cases with age of 18 yrs. old](https://covid19-api-philippines.herokuapp.com/api/filter/age/18)
 
 <br>
 
@@ -97,30 +101,33 @@ GET api/filter/ageGroup/15-19
 
 Sample json return by the API:
 ```JSON
-[
-    {
-      "case_code": "C101356",
-      "age": 55,
-      "age_group": "55-59",
-      "sex": "female",
-      "date_specimen": "2020-07-13",
-      "date_result_release": "2020-07-15",
-      "date_rep_conf": "2020-07-19",
-      "date_died": "",
-      "date_recover": "",
-      "removal_type": "",
-      "admitted": "no",
-      "region_res": "NCR",
-      "prov_res": "ncr",
-      "city_mun_res": "city of malabon",
-      "city_muni_psgc": "PH137502000",
-      "health_status": "mild",
-      "quarantined": "no",
-      "date_onset": "",
-      "pregnant_tab": "no",
-      "validation_status": ""
-    }
-]
+{
+    "data": [
+        {
+            "case_code": "C101356",
+            "age": 55,
+            "age_group": "55-59",
+            "sex": "female",
+            "date_specimen": "2020-07-13",
+            "date_result_release": "2020-07-15",
+            "date_rep_conf": "2020-07-19",
+            "date_died": "",
+            "date_recover": "",
+            "removal_type": "",
+            "admitted": "no",
+            "region_res": "NCR",
+            "prov_res": "ncr",
+            "city_mun_res": "city of malabon",
+            "city_muni_psgc": "PH137502000",
+            "health_status": "mild",
+            "quarantined": "no",
+            "date_onset": "",
+            "pregnant_tab": "no",
+            "validation_status": ""
+        },
+        {...}
+    ]
+}
 ```
 
 <br>

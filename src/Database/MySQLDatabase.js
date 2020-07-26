@@ -95,10 +95,11 @@ class MySQLDatabase {
    */
   getSummary() {
     return new Promise((resolve, reject) => {
-      const query = 'SELECT a.recovered, b.died, c.active_cases FROM ' +
-        '(SELECT count(*) as recovered FROM `case_informations` WHERE `removal_type` = \'recovered\') as a,' +
-        ' (SELECT count(*) as died FROM `case_informations` WHERE `removal_type` = \'died\') as b,' +
-        ' (SELECT count(*) as active_cases FROM `case_informations` WHERE `removal_type` = \'\' AND `date_rep_conf` <> \'\') as c';
+      const query = 'SELECT a.total, b.recoveries, c.deaths, d.active_cases FROM ' +
+        '(SELECT count(*) as total FROM `case_informations`) as a,' +
+        '(SELECT count(*) as recoveries FROM `case_informations` WHERE `removal_type` = \'recovered\') as b,' +
+        ' (SELECT count(*) as deaths FROM `case_informations` WHERE `removal_type` = \'died\') as c,' +
+        ' (SELECT count(*) as active_cases FROM `case_informations` WHERE `removal_type` = \'\' AND `date_rep_conf` <> \'\') as d';
 
       this.executeAndLogQuery(this.connection.query(query, function(err, rows, fields) {
         if (err) return reject(new Error('[MySQLDatabase.js] ' + err));

@@ -126,11 +126,11 @@ class GoogleDriveApi {
       // Check if we have previously stored a token.
       fs.readFile(TOKEN_PATH, (err, token) => {
         if (err) {
-          const obj = {
+          const authErr = {
             'err': err,
             'scopes': SCOPES,
           };
-          return resolve(obj);
+          return reject(authErr);
         }
         this.oAuth2Client.setCredentials(JSON.parse(token));
         resolve(this.oAuth2Client);
