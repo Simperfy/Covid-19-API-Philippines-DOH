@@ -15,7 +15,7 @@ const DATA_DROP_LINK = 'http://bit.ly/DataDropPH';
 class GoogleDriveApiFileManager {
   /**
    * Initialize Variable
-   * @param {String} oAuth2Client
+   * @param {OAuth2Client} oAuth2Client
    * @param {String} rootFolderID
    */
   constructor(oAuth2Client, rootFolderID) {
@@ -80,15 +80,14 @@ class GoogleDriveApiFileManager {
    * @param {String} folderID
    * @return {Promise<[files]>} - contains name and id of folders in the root folder
    */
-  async getFilesInRootFolder(folderID = this.rootFolderID) {
+  getFilesInRootFolder(folderID = this.rootFolderID) {
     return new Promise((resolve, reject)=> {
       const auth = this.oAuth2Client;
       const drive = google.drive({version: 'v3', auth});
       drive.files.list({
         q: `'${folderID}' in parents`,
         fields: 'nextPageToken, files(id, name)',
-      }, (err, res) => {
-        if (err) return reject(new Error('The API returned an error: ' + err));
+      }).then((res) => {
         const files = res.data.files;
         if (files.length) {
           console.log('\nFiles in root folder:');
@@ -100,6 +99,9 @@ class GoogleDriveApiFileManager {
         } else {
           console.log('No files found.');
         }
+      }).catch((err) => {
+        console.log('An Error Occurred while getting a list of files');
+        console.log('Reason: ' + err);
       });
     });
   }
@@ -112,19 +114,21 @@ class GoogleDriveApiFileManager {
     const month = (date.getMonth()) + 1;
     const searchString = '(0' + month + '/20)';
 
-    const folders = await this.getFilesInRootFolder();
+    await this.getFilesInRootFolder().then((folders) => {
+      console.log(`\nFiltering "${searchString}": `);
+      const res = folders.filter((file) => {
+        console.log((-1 !== (file.name.search(searchString))) + ' : ' + file.name);
+        return (-1 !== (file.name.search(searchString)));
+      });
 
-    console.log(`\nFiltering "${searchString}": `);
-    const res = folders.filter((file) => {
-      console.log((-1 !== (file.name.search(searchString))) + ' : ' + file.name);
-      return (-1 !== (file.name.search(searchString)));
+      if (res.length === 1) {
+        return res[0].id;
+      }
+
+      throw new Error('[googleDriveApiFileManager.js] Folder this month couldn\'t be found');
+    }).catch((err) => {
+      console.log('[googleDriveApiFileManager.js] ' + err);
     });
-
-    if (res.length === 1) {
-      return res[0].id;
-    }
-
-    throw new Error('[googleDriveApiFileManager.js] Folder this month couldn\'t be found');
   }
 
   /**
@@ -146,7 +150,7 @@ class GoogleDriveApiFileManager {
         orderBy: 'name desc',
         fields: 'nextPageToken, files(id, name)',
       }, (err, res) => {
-        if (err) return console.log('The API returned an error: ' + err);
+        if (err) return reject(new Error('The API returned an error: ' + err));
         const files = res.data.files;
         if (files.length) {
           console.log(`\nFiles inside this month's folder:`);
@@ -181,7 +185,7 @@ class GoogleDriveApiFileManager {
         orderBy: 'name',
         fields: 'nextPageToken, files(id, name)',
       }, (err, res) => {
-        if (err) return console.log('The API returned an error: ' + err);
+        if (err) return reject(new Error('The API returned an error: ' + err));
         const files = res.data.files;
         if (files.length) {
           console.log(`\nFiltering "${searchString}":`);
@@ -211,7 +215,7 @@ class GoogleDriveApiFileManager {
    * @return {Promise<String>} filePath to the downloaded file
    */
   async downloadFile(fileObj, name = 'Data.csv') {
-    console.log('DOWNLOADING FILE: ' + fileObj.name);
+    console.log('\nDOWNLOADING FILE: ' + fileObj.name);
 
     const auth = this.oAuth2Client;
     const drive = google.drive({version: 'v3', auth});
@@ -278,10 +282,11 @@ class GoogleDriveApiFileManager {
       urlExpander.expand(DATA_DROP_LINK, async (err, longUrl) => {
         if (err) return reject(new Error('[GoogleDriveApiFileManager.js] ' + err));
         const folderID = this.extractFolderIDFromURL(longUrl);
-        console.log(folderID);
-        const files = await t.getFilesInRootFolder(folderID);
-        console.log(files);
-        resolve(await t.downloadFile(files[0], 'latest.pdf'));
+        console.log('Downloading latest pdf from folder id: ' + folderID);
+        await t.getFilesInRootFolder(folderID).then(async (files) => {
+          console.log(files);
+          resolve(await t.downloadFile(files[0], 'latest.pdf'));
+        }).catch((err) => reject(err));
       });
     });
   }
@@ -310,17 +315,18 @@ class GoogleDriveApiFileManager {
           if (err) return reject(new Error('[GoogleDriveApiFileManager.js] ' + err));
           console.log('Long url: ' + longUrl);
           const folderID = this.extractFolderIDFromURL(longUrl);
-          console.log(folderID);
-          const files = await t.getFilesInRootFolder(folderID);
-          // console.log(files);
-          const file = files.filter((data) =>
-            (-1 !== data.name.search('Case Information.csv')),
-          );
-          if (file.length < 0) {
-            return reject(new Error('[GoogleDriveApiFileManager.js] Error Case information.csv not found'));
-          }
-          console.log('Latest file info(From PDF): ' + file[0]);
-          resolve(await t.downloadFile(file[0], 'Data.csv'));
+          console.log('Folder ID: ' + folderID);
+          await t.getFilesInRootFolder(folderID).then(async (files) => {
+            // console.log(files);
+            const file = files.filter((data) =>
+              (-1 !== data.name.search('Case Information.csv')),
+            );
+            if (file.length < 0) {
+              return reject(new Error('[GoogleDriveApiFileManager.js] Error Case information.csv not found'));
+            }
+            console.log('Latest file info(From PDF): ' + file[0]);
+            resolve(await t.downloadFile(file[0], 'Data.csv'));
+          }).catch((err) => console.log('[GoogleDriveApiFileManager.js]  '+ err));
         });
       });
     });

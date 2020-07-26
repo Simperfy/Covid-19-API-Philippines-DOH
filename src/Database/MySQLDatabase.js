@@ -2,7 +2,14 @@
 /* eslint-disable max-len */
 const mysql = require('mysql');
 
+/**
+ * Handles MySQL
+ */
 class MySQLDatabase {
+  /**
+   * Initialize Database and make this a singleton
+   * @return {DatabaseAdapter}
+   */
   constructor() {
     if (!MySQLDatabase.instance) {
       MySQLDatabase.instance=this;
@@ -33,20 +40,6 @@ class MySQLDatabase {
         limit = this.connection.escape(limit);
         query += ` LIMIT ${limit}`;
       }
-
-      this.executeAndLogQuery(this.connection.query(query, function(err, rows, fields) {
-        if (err) return reject(new Error('[MySQLDatabase.js] ' + err));
-        resolve(rows);
-      }));
-    });
-  }
-
-  /**
-   * @return {Promise}
-   */
-  getLastRow() {
-    return new Promise((resolve, reject) => {
-      const query = 'SELECT * from case_informations ORDER BY case_code DESC LIMIT 1';
 
       this.executeAndLogQuery(this.connection.query(query, function(err, rows, fields) {
         if (err) return reject(new Error('[MySQLDatabase.js] ' + err));
@@ -97,17 +90,21 @@ class MySQLDatabase {
     });
   }
 
-  endConnection() {
-    this.connection.end();
-  }
-
   /**
-   * @param {QueryFunction} connectionQuery contains the function of the execute query
-   * @return  {QueryFunction} returns the function of the execute query
+   * @return {Promise}
    */
-  executeAndLogQuery(connectionQuery) {
-    // console.log(`Query: ${connectionQuery.sql}`);
-    return connectionQuery;
+  getSummary() {
+    return new Promise((resolve, reject) => {
+      const query = 'SELECT a.recovered, b.died, c.active_cases FROM ' +
+        '(SELECT count(*) as recovered FROM `case_informations` WHERE `removal_type` = \'recovered\') as a,' +
+        ' (SELECT count(*) as died FROM `case_informations` WHERE `removal_type` = \'died\') as b,' +
+        ' (SELECT count(*) as active_cases FROM `case_informations` WHERE `removal_type` = \'\' AND `date_rep_conf` <> \'\') as c';
+
+      this.executeAndLogQuery(this.connection.query(query, function(err, rows, fields) {
+        if (err) return reject(new Error('[MySQLDatabase.js] ' + err));
+        resolve(rows);
+      }));
+    });
   }
 
   /**
@@ -121,6 +118,51 @@ class MySQLDatabase {
         resolve(rows);
       }));
     });
+  }
+
+  /**
+   * Truncates Database table
+   * @param {String} tableName
+   * @return {Promise<void>}
+   */
+  truncate(tableName) {
+    return new Promise((resolve, reject) => {
+      const query = `TRUNCATE TABLE ${tableName}`;
+      this.executeAndLogQuery(this.connection.query(query, function(err, rows, fields) {
+        if (err) return reject(new Error('[MySQLDatabase.js] ' + err));
+        resolve(rows);
+      }));
+    });
+  }
+
+  /**
+   * End Database connection
+   */
+  endConnection() {
+    this.connection.end();
+  }
+
+  /**
+   * @return {Promise}
+   */
+  getLastRow() {
+    return new Promise((resolve, reject) => {
+      const query = 'SELECT * from case_informations ORDER BY case_code DESC LIMIT 1';
+
+      this.executeAndLogQuery(this.connection.query(query, function(err, rows, fields) {
+        if (err) return reject(new Error('[MySQLDatabase.js] ' + err));
+        resolve(rows);
+      }));
+    });
+  }
+
+  /**
+   * @param {QueryFunction} connectionQuery contains the function of the execute query
+   * @return  {QueryFunction} returns the function of the execute query
+   */
+  executeAndLogQuery(connectionQuery) {
+    // console.log(`Query: ${connectionQuery.sql}`);
+    return connectionQuery;
   }
 }
 

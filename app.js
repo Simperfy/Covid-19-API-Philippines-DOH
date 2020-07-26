@@ -12,9 +12,9 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 // Database vars
-const database = require('./src/Database/Database');
-const Database = database.Database;
-const db = new Database();
+const databaseAdapter = require('./src/Database/DatabaseAdapter');
+const DatabaseAdapter = databaseAdapter.DatabaseAdapter;
+const db = new DatabaseAdapter();
 
 // eslint-disable-next-line new-cap
 const router = express.Router();
@@ -22,9 +22,16 @@ const router = express.Router();
 (
   // Initialize Google Auth Token
   async () => {
-    await GDriveApi.getAuth();
-    // await autoUpdate();
-    // setInterval(await autoUpdate, (60000 * 60) * 24 ); // update every 24 hours
+    await GDriveApi.getAuth().then(async () => {
+      await autoUpdate();
+      setInterval(await autoUpdate, (60000 * 60) * 24 ); // update every 24 hours
+    }).catch((err) => {
+      if (err.err) {
+        console.log('\n' + err.err);
+      } else {
+        console.log('\n' + err);
+      }
+    });
   }
 )();
 
@@ -38,9 +45,9 @@ const jsonStructure = {
  * @return {Promise<void>}
  */
 async function autoUpdate() {
-  console.log('Auto Update Initialized');
-  await GDriveApi.downloadLatestFileFromArchives().then((data) => {
-    console.log('Downloaded Latest Files - ' + data.latestFolderName);
+  console.log('\nAuto Update Initialized');
+  await GDriveApi.downloadLatestFile().then(() => {
+    console.log('Downloaded Latest Files');
   }).catch((err) => {
     console.log('Error Downloading Latest Files: ' + err);
   });
@@ -79,7 +86,7 @@ async function verifyGoogleToken(res) {
 router.get('/updateDatabase', async (req, res) => {
   await autoUpdate().then((data) => {
     res.json({'success': true});
-    console.log('Downloaded Latest Files ');
+    console.log('Downloaded Latest Files');
   }).catch((err) => {
     res.json({'success': false});
     console.log('Error Downloading Latest Files: ' + err);
@@ -115,6 +122,17 @@ router.get('/get/:count?', async (req, res) => {
   });
 });
 
+router.get('/summary', async (req, res) => {
+  await db.summary().then((result) => {
+    jsonStructure.result = result;
+    res.json(jsonStructure);
+  }).catch((err) => {
+    jsonStructure.success = false;
+    jsonStructure.reason = err.message;
+    res.json(jsonStructure);
+  });
+});
+
 app.use('/api', router); // Add prefix "/api" to routes above
 
 app.get('/googleAuth', (req, res) => {
@@ -135,13 +153,13 @@ app.get('/', async (req, res) => {
     if (await verifyGoogleToken(res) === true) {
       res.send('Hello World!');
     }
-  } catch (error) {
-    res.send('ERROR Verifying Google Token');
+  } catch (err) {
+    res.send('ERROR Verifying Google Token: \n' + JSON.stringify(err));
   }
 });
 
 
-app.listen(port, () => console.log(`Started Server at http://localhost:${port}`)).on('close', () => {
+app.listen(port, () => console.log(`\nStarted Server at http://localhost:${port}`)).on('close', () => {
   console.log('Terminating Database connection.');
   db.endConnection();
 });

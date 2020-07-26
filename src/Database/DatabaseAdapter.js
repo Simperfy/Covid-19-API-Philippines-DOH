@@ -4,19 +4,19 @@ const MySQLDatabase = mySQLDatabase.MySQLDatabase;
 
 const csvDatabase = require('./CSVDatabase');
 const CSVDatabase = csvDatabase.CSVDatabase;
-const CaseInformation = require('../CaseInformation');
+// const CaseInformation = require('../CaseInformation');
 
 /**
  * Handles Database
  */
-class Database {
+class DatabaseAdapter {
   /**
    * Initialize Database and make this a singleton
-   * @return {Database}
+   * @return {DatabaseAdapter}
    */
   constructor() {
-    if (!Database.instance) {
-      Database.instance=this;
+    if (!DatabaseAdapter.instance) {
+      DatabaseAdapter.instance=this;
       // If we need to change database in the future
       // we only need to change this class with same methods
       console.log('Connecting to database');
@@ -32,7 +32,7 @@ class Database {
       });
     }
 
-    return Database.instance;
+    return DatabaseAdapter.instance;
   }
 
   /**
@@ -61,6 +61,52 @@ class Database {
   }
 
   /**
+   * @return {Promise}
+   */
+  getSummary() {
+    return this.db.getSummary();
+  }
+
+  /**
+   * @param {String} query
+   * @return {Promise}
+   */
+  executeRaw(query) {
+    return this.db.executeRaw(query);
+  }
+
+  // initial plan was to get last added data then from there we add
+  // whatever was in the new data that wasn't in the old data
+  // Then Doggo realized that case code wasn't incrementally added
+  // therefore we cannot order the data by the date they were entered
+  // there are no other columns that could determine the order in which the data was added
+  // async updateDatabaseFromCSV() {
+  //   console.log('Updating Database from CSV');
+  //   const csvDatabase = new CSVDatabase();
+  //   const lastRow = await this.db.getLastRow();
+  //   const lastRowCaseCode = JSON.parse(JSON.stringify(lastRow))[0].CaseCode;
+  //   const sortedCSV = await csvDatabase.sort('caseCode');
+  //   console.log('lastRowCaseCode ' + lastRowCaseCode);
+  //   console.log('index ' + csvDatabase.findIndex(sortedCSV, 'C999994'));
+  // }
+
+  /**
+   * Truncates Database table
+   * @param {String} tableName
+   * @return {Promise<void>}
+   */
+  truncate(tableName) {
+    return this.db.truncate(tableName);
+  }
+
+  /**
+   * End Database connection
+   */
+  endConnection() {
+    this.db.endConnection();
+  }
+
+  /**
    * @param {[CaseInformation]} csArr
    * @param {int} batchSize
    */
@@ -85,7 +131,7 @@ class Database {
       lastRowIndex = nextLastRowIndex;
 
       // Ignoring, reason possible duplication of data as stated in readme of DOH Data Drop
-      let query = `INSERT IGNORE INTO case_informations (case_code, age, age_group, sex, date_specimen, \
+      let query = `INSERT INTO case_informations (case_code, age, age_group, sex, date_specimen, \
         date_result_release, date_rep_conf, date_died, date_recover, removal_type, admitted, region_res, \
         prov_res, city_mun_res, city_muni_psgc, health_status, quarantined, date_onset, pregnant_tab, validation_status) VALUES`;
 
@@ -128,95 +174,34 @@ ${this.db.connection.escape(data.ValidationStatus)})`;
     return isSuccess;
   }
 
-  // For inspecting purposes only
-  // async compareDatabaseFromCSV() {
-  //   console.log(`\nPerforming Comparison`);
-
-  //   const csvDatabase = new CSVDatabase();
-  //   const cs = await csvDatabase.get();
-
-  //   // let query = `SELECT MAX(datediff(DateResultRelease, DateSpecimen)) AS DateDiff FROM case_informations`;
-  //   let query = `SELECT CaseCode FROM case_informations WHERE CaseCode NOT IN (`;
-
-  //   // BUG RESOLVE Lesson learned, ALWAYS ESCAPE CHARS BEFORE INSERTING TO DB EVEN FROM A CSV!!!
-  //   cs.forEach((data, ind) => {
-  //     query += `${this.db.connection.escape(data.CaseCode)} `;
-
-  //     if ((ind+1) != cs.length) {
-  //       query+= ', ';
-  //     } else {
-  //       query+= ')';
-  //     }
-  //   });
-
-  //   // console.log(query);
-
-  //   await this.executeRaw(query).then((data) => {
-  //     // console.log(data);
-  //     const parseData = JSON.parse(JSON.stringify(data));
-  //     console.log(parseData);
-  //   }).catch((err) => {
-  //     if (err) throw err;
-  //   });
-
-  //   console.log('Done');
-  // }
-
-
   /**
    * Update database form csv
    * @return {Promise<boolean>}
    */
   async updateDatabaseFromCSV() {
+    console.log('\nBegin Updating Database.');
+    console.log('Truncating case_informations table, because it causes anomaly when we don\'t.');
+    await this.truncate('case_informations');
+
     const csvDatabase = new CSVDatabase();
     const cs = await csvDatabase.get();
 
     console.log('\nBefore Updating Database: ');
     console.log('cs length in csv: ' + cs.length);
-    console.log('cs length mysql: ' + await this.count());
+    console.log('cs length in database: ' + await this.count());
     const res = await this.batchInsertDatabaseFromCSV(cs);
     console.log('\nAfter Updating Database: ');
     console.log('cs length in csv: ' + cs.length);
-    console.log('cs length mysql: ' + await this.count());
+    console.log('cs length in database: ' + await this.count());
 
     if (res) {
-      console.log('\nSuccessfully transferred data from CSV to mySQL.\n');
+      console.log('\nSuccessfully transferred data from CSV to Database.\n');
     } else {
-      console.log('\nFailed to transfer data from CSV to mySQL.\n');
+      console.log('\nFailed to transfer data from CSV to Database.\n');
     }
 
     return res;
   }
-
-  /**
-   * @param {String} query
-   * @return {Promise}
-   */
-  executeRaw(query) {
-    return this.db.executeRaw(query);
-  }
-
-  // initial plan was to get last added data then from there we add
-  // whatever was in the new data that wasn't in the old data
-  // Then Doggo realized that case code wasn't incrementally added
-  // therefore we cannot order the data by the date they were entered
-  // there are no other columns that could determine the order in which the data was added
-  // async updateDatabaseFromCSV() {
-  //   console.log('Updating Database from CSV');
-  //   const csvDatabase = new CSVDatabase();
-  //   const lastRow = await this.db.getLastRow();
-  //   const lastRowCaseCode = JSON.parse(JSON.stringify(lastRow))[0].CaseCode;
-  //   const sortedCSV = await csvDatabase.sort('caseCode');
-  //   console.log('lastRowCaseCode ' + lastRowCaseCode);
-  //   console.log('index ' + csvDatabase.findIndex(sortedCSV, 'C999994'));
-  // }
-
-  /**
-   * End Database connection
-   */
-  endConnection() {
-    this.db.endConnection();
-  }
 }
 
-exports.Database = Database;
+exports.DatabaseAdapter = DatabaseAdapter;

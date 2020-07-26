@@ -43,66 +43,57 @@ class GoogleDriveApi {
     return GoogleDriveApi.instance;
   }
 
+  // @TODO this getAuth() function violates Open/Closed Principle
   /**
      * Entry point for the class
-     * @return {google.auth.OAuth2} returns auth api from google drive api
+     * @return {Promise<Promise<Object>>} returns auth api from google drive api
     */
   async getAuth() {
     console.log('Authorizing');
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       if (!fs.existsSync(CREDENTIALS_PATH)) {
         // load client secrets from .env file
         console.log('Credentials.json not found, using values in .env instead.');
+        console.log('Validating .env file');
+        if (
+          !process.env.CLIENT_ID ||
+          !process.env.CLIENT_ID ||
+          !process.env.PROJECT_ID ||
+          !process.env.AUTH_URI ||
+          !process.env.TOKEN_URI ||
+          !process.env.AUTH_PROVIDER_X509_CERT_URL ||
+          !process.env.CLIENT_SECRET ||
+          !process.env.REDIRECT_URIS1 ||
+          !process.env.JAVASCRIPT_ORIGINS1
+        ) {
+          return reject(new Error('ERROR: Invalid .env variables'));
+        }
+
+        console.log('Crafting credentials.json with environment values');
         const credentials = {
           'web': {
-            'client_id': '',
-            'project_id': '',
-            'auth_uri': '',
-            'token_uri': '',
-            'auth_provider_x509_cert_url': '',
-            'client_secret': '',
-            'redirect_uris': [],
-            'javascript_origins': [],
+            'client_id': process.env.CLIENT_ID,
+            'project_id': process.env.PROJECT_ID,
+            'auth_uri': process.env.AUTH_URI,
+            'token_uri': process.env.TOKEN_URI,
+            'auth_provider_x509_cert_url': process.env.AUTH_PROVIDER_X509_CERT_URL,
+            'client_secret': process.env.CLIENT_SECRET,
+            'redirect_uris': [
+              process.env.REDIRECT_URIS1,
+              process.env.REDIRECT_URIS2,
+            ],
+            'javascript_origins': [
+              process.env.JAVASCRIPT_ORIGINS1,
+              process.env.JAVASCRIPT_ORIGINS2,
+            ],
           },
         };
-        const json = credentials.web;
-        console.log('Replacing credentials.json with environment values');
-        if (process.env.CLIENT_ID) {
-          json.client_id = process.env.CLIENT_ID;
-        }
-        if (process.env.PROJECT_ID) {
-          json.project_id = process.env.PROJECT_ID;
-        }
-        if (process.env.AUTH_URI) {
-          json.auth_uri = process.env.AUTH_URI;
-        }
-        if (process.env.TOKEN_URI) {
-          json.token_uri = process.env.TOKEN_URI;
-        }
-        if (process.env.AUTH_PROVIDER_X509_CERT_URL) {
-          json.auth_provider_x509_cert_url = process.env.AUTH_PROVIDER_X509_CERT_URL;
-        }
-        if (process.env.CLIENT_SECRET) {
-          json.client_secret = process.env.CLIENT_SECRET;
-        }
-        if (process.env.REDIRECT_URIS1) {
-          json.redirect_uris[0] = process.env.REDIRECT_URIS1;
-        }
-        if (process.env.REDIRECT_URIS2) {
-          json.redirect_uris[1] = process.env.REDIRECT_URIS2;
-        }
-        if (process.env.JAVASCRIPT_ORIGINS1) {
-          json.javascript_origins[0] = process.env.JAVASCRIPT_ORIGINS1;
-        }
-        if (process.env.JAVASCRIPT_ORIGINS2) {
-          json.javascript_origins[1] = process.env.JAVASCRIPT_ORIGINS2;
-        }
         // console.log(credentials);
         resolve(this.authorize(credentials));
       } else {
         // Load client secrets from a local file.
         fs.readFile(CREDENTIALS_PATH, (err, content) => {
-          if (err) return console.log('Error loading client secret file:', err);
+          if (err) return reject(new Error('Error loading client secret file: ' + err));
           // Authorize a client with credentials, then call the Google Drive API.
           resolve(this.authorize(JSON.parse(content)));
         });
@@ -117,12 +108,14 @@ class GoogleDriveApi {
      */
   async authorize(credentials) {
     // console.log(credentials);
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       const {client_secret: clientSecret, client_id: clientId, redirect_uris: redirectUris} = credentials.web;
       // console.log(credentials.web);
       console.log(redirectUris[process.env.NODE_ENV === 'production' ? 1 : 0]);
       this.oAuth2Client = new google.auth.OAuth2(
           clientId, clientSecret, redirectUris[process.env.NODE_ENV === 'production' ? 1 : 0]);
+
+      // console.log(this.oAuth2Client);
 
       // create file manager as soon as OAuth2 is available
       this.googleDriveApiFileManager = new GoogleDriveApiFileManager(this.oAuth2Client, DOH_DATA_DROP_FOLDER_ID);
@@ -134,7 +127,7 @@ class GoogleDriveApi {
       fs.readFile(TOKEN_PATH, (err, token) => {
         if (err) {
           const obj = {
-            'err': 'no access token: ' + err,
+            'err': err,
             'scopes': SCOPES,
           };
           return resolve(obj);
@@ -166,7 +159,7 @@ class GoogleDriveApi {
    * @return {void}
    */
   deleteExpiredToken() {
-    console.log('Checking if token is expired');
+    console.log('\nChecking if token is expired');
 
     fs.readFile(TOKEN_PATH, (err, token) => {
       if (err) {
@@ -175,7 +168,7 @@ class GoogleDriveApi {
       }
 
       token = JSON.parse(token);
-      console.log(token.expiry_date);
+      // console.log(token.expiry_date);
       const expiryDate = new Date(token.expiry_date);
       const currentDate = new Date();
 
