@@ -15,7 +15,6 @@ const GDriveApi = new GoogleDriveApi();
 const express = require('express');
 const app = express();
 const port = process.env.PORT || 3000;
-const host = '127.0.0.1';
 
 // Database vars
 const databaseAdapter = require('./src/Database/DatabaseAdapter');
@@ -174,7 +173,7 @@ app.get('/', async (req, res) => {
   }
 });
 
-app.listen(port, host, () => console.log(`\nStarted Server at http://${host}:${port}`)).on('close', () => {
+app.listen(port, () => console.log(`\nStarted Server at http://${host}:${port}`)).on('close', () => {
   console.log('Terminating Database connection.');
   db.endConnection();
 });
