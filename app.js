@@ -173,7 +173,7 @@ app.get('/', async (req, res) => {
   }
 });
 
-app.listen(port, () => console.log(`\nStarted Server at http://${host}:${port}`)).on('close', () => {
+app.listen(port, () => console.log(`\nStarted Server at port ${port}`)).on('close', () => {
   console.log('Terminating Database connection.');
   db.endConnection();
 });
