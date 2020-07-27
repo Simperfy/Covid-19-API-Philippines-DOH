@@ -75,21 +75,6 @@ class DatabaseAdapter {
     return this.db.executeRaw(query);
   }
 
-  // initial plan was to get last added data then from there we add
-  // whatever was in the new data that wasn't in the old data
-  // Then Doggo realized that case code wasn't incrementally added
-  // therefore we cannot order the data by the date they were entered
-  // there are no other columns that could determine the order in which the data was added
-  // async updateDatabaseFromCSV() {
-  //   console.log('Updating Database from CSV');
-  //   const csvDatabase = new CSVDatabase();
-  //   const lastRow = await this.db.getLastRow();
-  //   const lastRowCaseCode = JSON.parse(JSON.stringify(lastRow))[0].CaseCode;
-  //   const sortedCSV = await csvDatabase.sort('caseCode');
-  //   console.log('lastRowCaseCode ' + lastRowCaseCode);
-  //   console.log('index ' + csvDatabase.findIndex(sortedCSV, 'C999994'));
-  // }
-
   /**
    * Truncates Database table
    * @param {String} tableName

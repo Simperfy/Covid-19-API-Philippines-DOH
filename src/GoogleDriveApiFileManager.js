@@ -15,16 +15,16 @@ const DATA_DROP_LINK = 'http://bit.ly/DataDropPH';
 class GoogleDriveApiFileManager {
   /**
    * Initialize Variable
-   * @param {OAuth2Client} oAuth2Client
+   * @param {OAuth2Client} auth
    * @param {String} rootFolderID
    */
-  constructor(oAuth2Client, rootFolderID) {
-    this.oAuth2Client = oAuth2Client;
+  constructor(auth, rootFolderID) {
+    this.auth = auth;
     this.rootFolderID = rootFolderID;
   }
 
   /* listFiles() {
-    const auth = this.oAuth2Client;
+    const auth = this.auth;
     // console.log(auth);
     const drive = google.drive({version: 'v3', auth});
     drive.files.list({
@@ -51,7 +51,7 @@ class GoogleDriveApiFileManager {
    */
   /* searchFiles(query, pageSize = 10) {
     return new Promise((resolve, reject) => {
-      const auth = this.oAuth2Client;
+      const auth = this.auth;
       const drive = google.drive({version: 'v3', auth});
       drive.files.list({
         q: query,
@@ -82,7 +82,7 @@ class GoogleDriveApiFileManager {
    */
   getFilesInRootFolder(folderID = this.rootFolderID) {
     return new Promise((resolve, reject)=> {
-      const auth = this.oAuth2Client;
+      const auth = this.auth;
       const drive = google.drive({version: 'v3', auth});
       drive.files.list({
         q: `'${folderID}' in parents`,
@@ -141,7 +141,7 @@ class GoogleDriveApiFileManager {
     const id = await this.getGFolderIDThisMonth();
     console.log('\nThis month folder id: ' + id);
 
-    const auth = this.oAuth2Client;
+    const auth = this.auth;
     const drive = google.drive({version: 'v3', auth});
 
     return new Promise((resolve, reject) => {
@@ -175,7 +175,7 @@ class GoogleDriveApiFileManager {
     this.latestFolderName = latestFolder.name;
     console.log('\nLatest folder id: ' + id);
 
-    const auth = this.oAuth2Client;
+    const auth = this.auth;
     const drive = google.drive({version: 'v3', auth});
     const searchString = 'Case Information.csv';
 
@@ -217,7 +217,7 @@ class GoogleDriveApiFileManager {
   async downloadFile(fileObj, name = 'Data.csv') {
     console.log('\nDOWNLOADING FILE: ' + fileObj.name);
 
-    const auth = this.oAuth2Client;
+    const auth = this.auth;
     const drive = google.drive({version: 'v3', auth});
     const res = await drive.files
         .get({fileId: fileObj.id, alt: 'media'}, {responseType: 'stream'}).catch((err) => console.log(err));

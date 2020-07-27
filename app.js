@@ -1,6 +1,11 @@
 /* eslint-disable max-len */
 require('dotenv').config();
 
+// Disable console.log on production
+if (process.env.NODE_ENV === 'development') {
+  console.log = () => {};
+}
+
 // GOOGLE DRIVE VARS
 const googleDriveApi = require('./src/GoogleDriveApiClient');
 const GoogleDriveApi = googleDriveApi.GoogleDriveApi;
@@ -10,6 +15,7 @@ const GDriveApi = new GoogleDriveApi();
 const express = require('express');
 const app = express();
 const port = process.env.PORT || 3000;
+const host = '127.0.0.1';
 
 // Database vars
 const databaseAdapter = require('./src/Database/DatabaseAdapter');
@@ -23,7 +29,6 @@ let forceRedirectToHome = false;
 const jsonStructure = {
   'data': [],
 };
-
 (
   // Initialize Google Auth Token
   async () => {
@@ -68,13 +73,13 @@ async function autoUpdate() {
  * verify token.json exists on application start
  * @param {express.req} res
  */
-async function verifyGoogleToken(res) {
+/* async function verifyGoogleToken(res) {
   let result;
   await GDriveApi.getAuth().then(() => {
     result = true;
   }).catch((authErr) => {
     console.log('GETTING NEW TOKEN');
-    const url = GDriveApi.oAuth2Client.generateAuthUrl({
+    const url = GDriveApi.auth.generateAuthUrl({
       access_type: 'offline',
       scope: authErr.scopes,
     });
@@ -83,7 +88,7 @@ async function verifyGoogleToken(res) {
     res.redirect(url);
   });
   return result;
-}
+}*/
 
 /**
  * Clear data before every request
@@ -148,31 +153,28 @@ router.get('/summary', async (req, res) => {
 
 app.use('/api', router); // Add prefix "/api" to routes above
 
-app.get('/googleAuth', (req, res) => {
+/* app.get('/googleAuth', (req, res) => {
   try {
     GDriveApi.getAndStoreToken(req.query.code);
     res.redirect('/verified');
   } catch (error) {
     res.send('ERROR SAVING TOKEN: ' + error);
   }
-});
+});*/
 
-app.get('/verified', (req, res) => res.send(
+/* app.get('/verified', (req, res) => res.send(
     '<html>Token Created! <a href="/">Go back to home</a><html>',
-));
+));*/
 
 app.get('/', async (req, res) => {
   try {
-    if (await verifyGoogleToken(res) === true) {
-      res.send('Hello World!');
-    }
+    res.send('Hello World!');
   } catch (err) {
     res.send('ERROR Verifying Google Token: \n' + JSON.stringify(err));
   }
 });
 
-
-app.listen(port, () => console.log(`\nStarted Server at http://localhost:${port}`)).on('close', () => {
+app.listen(port, host, () => console.log(`\nStarted Server at http://${host}:${port}`)).on('close', () => {
   console.log('Terminating Database connection.');
   db.endConnection();
 });
