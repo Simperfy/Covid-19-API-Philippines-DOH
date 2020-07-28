@@ -46,6 +46,7 @@ class GoogleDriveApi {
         console.log('Service key is valid!');
         console.log('output: ');
 
+        // replace \\n with \n for heroku
         const privateKey = process.env.PRIVATE_KEY.replace(new RegExp('\\\\n', '\g'), '\n');
         this.auth = new GoogleAuth({
           scopes: SCOPES,

@@ -38,19 +38,17 @@ Select [Enable Drive API](https://developers.google.com/drive/api/v3/quickstart/
 $ npm install
 ```
 
-2. Get token.json (must have `credentials.json`)
+2. Create a [Service Account](https://developers.google.com/identity/protocols/oauth2/service-account) and download the key.
 
-3. create and configure ".env" file (see `env.example`)
+3. copy .env.example to .env and paste the service key and database credentials respectively
 
-4. import .sql files inside the folder `./src/Database/sql`
+- (Optional import .sql files inside the folder `./src/Database/sql`)
 
-5. Run the project
+4. Run the project in development.
 
 ```
-$ npm start
+$ npm run dev
 ```
-
-6. visit `http://localhost:3000/` to initialize token.json (must have a properly configured google account)
 
 <br>
 
@@ -80,15 +78,19 @@ case_code, age, age_group, sex, date_specimen, date_result_release, date_rep_con
 For valid value for each field in "api/filter/{field}/{value}" please refer to the sample json above.
 
 Example:
-* returns all covid cases with age of 30
+* returns summary covid-19 cases
+```http
+GET api/summary
+```
+* returns all covid-19 cases with age of 30
 ```http
 GET api/filter/age/30
 ``` 
-* returns all covid cases in NCR
+* returns all covid-19 cases in NCR
 ```http
 GET api/filter/regionRes/NCR
 ```
-* returns all covid cases between 15 to 19 years old
+* returns all covid-19 cases between 15 to 19 years old
 ```http
 GET api/filter/ageGroup/15-19
 ```

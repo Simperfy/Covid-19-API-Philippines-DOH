@@ -2,9 +2,9 @@
 require('dotenv').config();
 
 // Disable console.log on production
-if (process.env.NODE_ENV === 'development') {
+/* if (process.env.NODE_ENV === 'production') {
   console.log = () => {};
-}
+}*/
 
 // GOOGLE DRIVE VARS
 const googleDriveApi = require('./src/GoogleDriveApiClient');
