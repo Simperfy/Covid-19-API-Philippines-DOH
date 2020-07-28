@@ -32,8 +32,10 @@ const jsonStructure = {
   // Initialize Google Auth Token
   async () => {
     await GDriveApi.getAuth().then(async () => {
-      // await autoUpdate();
-      // setInterval(await autoUpdate, (60000 * 60) * 24 ); // update every 24 hours
+      if (process.env.NODE_ENV !== 'development') {
+        await autoUpdate();
+        setInterval(await autoUpdate, (60000 * 60) * 24 );
+      }
     }).catch((err) => {
       forceRedirectToHome = true;
       if (err.err) {
@@ -69,27 +71,6 @@ async function autoUpdate() {
 }
 
 /**
- * verify token.json exists on application start
- * @param {express.req} res
- */
-/* async function verifyGoogleToken(res) {
-  let result;
-  await GDriveApi.getAuth().then(() => {
-    result = true;
-  }).catch((authErr) => {
-    console.log('GETTING NEW TOKEN');
-    const url = GDriveApi.auth.generateAuthUrl({
-      access_type: 'offline',
-      scope: authErr.scopes,
-    });
-    console.log('Redirecting TO: ' + url);
-
-    res.redirect(url);
-  });
-  return result;
-}*/
-
-/**
  * Clear data before every request
  */
 app.use(function(req, res, next) {
@@ -104,13 +85,17 @@ app.use(function(req, res, next) {
 });
 
 router.get('/updateDatabase', async (req, res) => {
-  await autoUpdate().then((data) => {
-    res.json({'success': true});
-    console.log('Downloaded Latest Files');
-  }).catch((err) => {
-    res.json({'success': false});
-    console.log('Error Downloading Latest Files: ' + err);
-  });
+  if (process.env.NODE_ENV === 'development') {
+    await autoUpdate().then(() => {
+      res.json({'success': true});
+      console.log('Downloaded Latest Files');
+    }).catch((err) => {
+      res.json({'success': false});
+      console.log('Error Downloading Latest Files: ' + err);
+    });
+  } else {
+    res.send('Unable to manually update database in production.');
+  }
 });
 
 router.get('/filter/:field/:value', async (req, res) => {
@@ -151,19 +136,6 @@ router.get('/summary', async (req, res) => {
 });
 
 app.use('/api', router); // Add prefix "/api" to routes above
-
-/* app.get('/googleAuth', (req, res) => {
-  try {
-    GDriveApi.getAndStoreToken(req.query.code);
-    res.redirect('/verified');
-  } catch (error) {
-    res.send('ERROR SAVING TOKEN: ' + error);
-  }
-});*/
-
-/* app.get('/verified', (req, res) => res.send(
-    '<html>Token Created! <a href="/">Go back to home</a><html>',
-));*/
 
 app.get('/', async (req, res) => {
   try {
