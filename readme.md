@@ -30,8 +30,6 @@
 
 ### 🔨 Installation
 
-Select [Enable Drive API](https://developers.google.com/drive/api/v3/quickstart/go) and download the `credentials.json` and place the json file at the root folder of the project.
-
 1. Make sure you have [Node.js](https://nodejs.org) & run the command
 
 ```
