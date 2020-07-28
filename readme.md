@@ -24,7 +24,7 @@
 ## Getting Started
 
 ### Prerequisites
-* [credentials.json](https://developers.google.com/drive/api/v3/quickstart/go) - Google Drive API
+* [configured service account](https://developers.google.com/identity/protocols/oauth2/service-account)
 * [Node.js](https://nodejs.org/en/)
 * MySQL
 
