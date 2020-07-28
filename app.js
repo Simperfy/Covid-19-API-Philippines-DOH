@@ -32,7 +32,7 @@ const jsonStructure = {
   // Initialize Google Auth Token
   async () => {
     await GDriveApi.getAuth().then(async () => {
-      if (process.env.NODE_ENV !== 'development') {
+      if (process.env.NODE_ENV === 'production') {
         await autoUpdate();
         setInterval(await autoUpdate, (60000 * 60) * 24 );
       }
