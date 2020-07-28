@@ -56,6 +56,8 @@ class GoogleDriveApi {
         },
         );
 
+        console.log(this.auth);
+
         // console.log(this.auth);
         // create file manager as soon as OAuth2 is available
         this.googleDriveApiFileManager = new GoogleDriveApiFileManager(this.auth, DOH_DATA_DROP_FOLDER_ID);
