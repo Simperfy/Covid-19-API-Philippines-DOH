@@ -46,7 +46,7 @@ const jsonStructure = {
     await GDriveApi.getAuth().then(async () => {
       if (process.env.NODE_ENV === 'production') {
         await autoUpdate();
-        setInterval(await autoUpdate, (60000 * 60) * 24 );
+        setInterval(await autoUpdate, ((1000 * 60) * 60) * 24 ); // 1min -> 1 hr -> 24 hrs
       }
     }).catch((err) => {
       forceRedirectToHome = true;

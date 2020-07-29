@@ -10,27 +10,46 @@
 > A Web API doesn't use web scraping to fetch data from DOH website instead it collects the data from the csv file from DOH Google Drive.
 > This means that even if DOH website changes this API will be able to maintain itself.
 
+<br>
+
+---
+
+<br>
+
 ## 📌 Endpoints
-These are the currently available API endpoints:
+Base URL: https://covid19-api-philippines.herokuapp.com/
+
+Currently available API endpoints:
 
 Fetching summary
 ```http
 GET api/summary
 ```
+
 Fetching all records
 ```http
 GET api/get
 ```
+
+Fetching records by month
+```http
+GET api/get?month=03
+```
+
+Fetching all by specific date
+```http
+GET api/get?month=03&date=01
+```
+
 Fetching {n} records
 ```http
 GET api/get/{n}
 ```
+
 Fetching records that matches the filter
 ```http
 GET api/filter/{field}/{value}
 ```
-
-<br>
 
 These are all the valid value for `field` in "api/filter/{field}/{value}":
 ```
@@ -92,6 +111,10 @@ Sample json return by the API:
 
 <br>
 
+---
+
+<br>
+
 ## 🔨 Installation
 
 ### Prerequisites
@@ -121,10 +144,18 @@ $ npm run dev
 
 <br>
 
+---
+
+<br>
+
 ## 📄 About the Data
 ### Where does the data come from?
 * The data comes from [DOH DATA DROP](https://drive.google.com/drive/folders/1UelgRGmUGNMKH1Q3nzqTj57V41bjmnxg)
 * The data wasn't tampered and was directly converted to json from csv without heavy modification.
+
+<br>
+
+---
 
 <br>
 
@@ -136,9 +167,17 @@ $ npm run dev
 
 <br>
 
+---
+
+<br>
+
 ## Authors
 
 * 🐶 **Simperfy(The Doggo)** - [Github](https://github.com/Simperfy)
+
+<br>
+
+---
 
 <br>
 
