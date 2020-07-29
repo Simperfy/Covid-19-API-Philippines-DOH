@@ -28,17 +28,32 @@ class MySQLDatabase {
   }
 
   /**
-   * @param {*} numEntries number of records to return
+   * @param {Object} numEntries
+   * @param {String} numEntries.count
+   * @param {String} numEntries.month
+   * @param {String} numEntries.day
    * @return {Promise} returns JSON of the result
    */
-  get(numEntries = null) {
+  // SELECT count(*) FROM `case_informations` WHERE ((`date_specimen` = '2020-07-01' AND date_onset = '') OR `date_onset` = '2020-07-01') ORDER BY `health_status` ASC
+  get(numEntries) {
     return new Promise((resolve, reject) => {
-      if (isNaN(numEntries)) return reject(new Error('invalid values'));
-      let query = 'SELECT * from case_informations ORDER BY case_code ASC';
-      if (numEntries !== null) {
-        let limit = parseInt(numEntries);
+      if (numEntries.month > 12) return reject(new Error('Error: the month cannot be greater than 12'));
+      if (numEntries.day > 31) return reject(new Error('Error: the day cannot be greater than 31'));
+      let query = 'SELECT * from case_informations ';
+
+      if (numEntries.month && !numEntries.day) {
+        const date = `${this.connection.escape('2020-' + numEntries.month + '%')}`;
+        query += `WHERE ((date_specimen LIKE ${date} AND date_onset = '') OR date_onset LIKE ${date}) `;
+      } else if (numEntries.month && numEntries.day) {
+        const date = `${this.connection.escape('2020-' + numEntries.month + '-' + numEntries.day)}`;
+        query += `WHERE ((date_specimen LIKE ${date} AND date_onset = '') OR date_onset LIKE ${date}) `;
+      }
+
+      query += 'ORDER BY case_code ASC ';
+      if (numEntries.count !== undefined) {
+        let limit = parseInt(numEntries.count);
         limit = this.connection.escape(limit);
-        query += ` LIMIT ${limit}`;
+        query += `LIMIT ${limit}`;
       }
 
       this.executeAndLogQuery(this.connection.query(query, function(err, rows, fields) {
@@ -162,7 +177,7 @@ class MySQLDatabase {
    * @return  {QueryFunction} returns the function of the execute query
    */
   executeAndLogQuery(connectionQuery) {
-    // console.log(`Query: ${connectionQuery.sql}`);
+    console.log(`Query: ${connectionQuery.sql}`);
     return connectionQuery;
   }
 }

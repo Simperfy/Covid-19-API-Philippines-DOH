@@ -36,7 +36,10 @@ class DatabaseAdapter {
   }
 
   /**
-   * @param {*} numEntries
+   * @param {Object} numEntries
+   * @param {String} numEntries.count
+   * @param {String} numEntries.month
+   * @param {String} numEntries.day
    * @return {Promise}
    */
   get(numEntries) {

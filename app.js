@@ -83,7 +83,7 @@ async function autoUpdate() {
 }
 
 /**
- * Clear data before every request
+ * Custom middleware
  */
 app.use(function(req, res, next) {
   if (forceRedirectToHome && req.url !== '/') {
@@ -91,8 +91,11 @@ app.use(function(req, res, next) {
     console.log('Force redirect to home');
     return res.redirect('/');
   }
+
+  // Clear data before every request
   jsonStructure.data = [];
   delete jsonStructure.error;
+  delete jsonStructure.result_count;
   next();
 });
 
@@ -128,8 +131,11 @@ router.get('/filter/:field/:value', async (req, res) => {
 });
 
 router.get('/get/:count?', async (req, res) => {
-  await db.get(req.params.count).then((data) => {
+  const month = req.query.month;
+  const day = req.query.day;
+  await db. get({count: req.params.count, month: month, day: day}).then((data) => {
     jsonStructure.data = data;
+    jsonStructure.result_count = data.length;
     res.json(jsonStructure);
   }).catch((err) => {
     jsonStructure.error = err.message;
