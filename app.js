@@ -1,6 +1,14 @@
 /* eslint-disable max-len */
 require('dotenv').config();
+const cors = require('cors');
+const apicache = require('apicache');
 
+const cache = apicache.options({
+  statusCodes: {
+    exclude: [404, 403, 503],
+    include: [200],
+  },
+}).middleware;
 // Disable console.log on production
 /* if (process.env.NODE_ENV === 'production') {
   console.log = () => {};
@@ -20,6 +28,10 @@ const port = process.env.PORT || 3000;
 const databaseAdapter = require('./src/Database/DatabaseAdapter');
 const DatabaseAdapter = databaseAdapter.DatabaseAdapter;
 const db = new DatabaseAdapter();
+
+// Middlewares
+app.use(cors());
+app.use(cache('6 hours'));
 
 // eslint-disable-next-line new-cap
 const router = express.Router();
