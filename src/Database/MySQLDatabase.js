@@ -189,26 +189,26 @@ class MySQLDatabase {
 
       // BUG RESOLVE Lesson learned, ALWAYS ESCAPE CHARS BEFORE INSERTING TO DB EVEN FROM A CSV!!!
       csBatchArr.forEach((data, ind) => {
-        query += ` (${this.db.connection.escape(data.CaseCode)}, \
-${this.db.connection.escape(data.Age)}, \
-${this.db.connection.escape(data.AgeGroup)}, \
-${this.db.connection.escape(data.Sex)}, \
-${this.db.connection.escape(data.DateSpecimen)}, \
-${this.db.connection.escape(data.DateResultRelease)}, \
-${this.db.connection.escape(data.DateRepConf)}, \
-${this.db.connection.escape(data.DateDied)}, \
-${this.db.connection.escape(data.DateRecover)}, \
-${this.db.connection.escape(data.RemovalType)}, \
-${this.db.connection.escape(data.Admitted)}, \
-${this.db.connection.escape(data.RegionRes)}, \
-${this.db.connection.escape(data.ProvRes)}, \
-${this.db.connection.escape(data.CityMunRes)}, \
-${this.db.connection.escape(data.CityMuniPSGC)}, \
-${this.db.connection.escape(data.HealthStatus)}, \
-${this.db.connection.escape(data.Quarantined)}, \
-${this.db.connection.escape(data.DateOnset)}, \
-${this.db.connection.escape(data.Pregnanttab)}, \
-${this.db.connection.escape(data.ValidationStatus)})`;
+        query += ` (${this.connection.escape(data.CaseCode)}, \
+${this.connection.escape(data.Age)}, \
+${this.connection.escape(data.AgeGroup)}, \
+${this.connection.escape(data.Sex)}, \
+${this.connection.escape(data.DateSpecimen)}, \
+${this.connection.escape(data.DateResultRelease)}, \
+${this.connection.escape(data.DateRepConf)}, \
+${this.connection.escape(data.DateDied)}, \
+${this.connection.escape(data.DateRecover)}, \
+${this.connection.escape(data.RemovalType)}, \
+${this.connection.escape(data.Admitted)}, \
+${this.connection.escape(data.RegionRes)}, \
+${this.connection.escape(data.ProvRes)}, \
+${this.connection.escape(data.CityMunRes)}, \
+${this.connection.escape(data.CityMuniPSGC)}, \
+${this.connection.escape(data.HealthStatus)}, \
+${this.connection.escape(data.Quarantined)}, \
+${this.connection.escape(data.DateOnset)}, \
+${this.connection.escape(data.Pregnanttab)}, \
+${this.connection.escape(data.ValidationStatus)})`;
 
         if ((ind+1) !== csBatchArr.length) {
           query+= ', ';
@@ -274,7 +274,7 @@ ${this.db.connection.escape(data.ValidationStatus)})`;
    * @return  {QueryFunction} returns the function of the execute query
    */
   executeAndLogQuery(connectionQuery) {
-    console.log(`Query: ${connectionQuery.sql}`);
+    // console.log(`Query: ${connectionQuery.sql}`);
     return connectionQuery;
   }
 }

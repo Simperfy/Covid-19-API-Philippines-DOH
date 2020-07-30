@@ -29,10 +29,6 @@ const databaseAdapter = require('./src/Database/DatabaseAdapter');
 const DatabaseAdapter = databaseAdapter.DatabaseAdapter;
 const db = new DatabaseAdapter();
 
-// CSVDatabase
-const csvDatabase = require('./src/Database/CSVDatabase');
-const CSVDatabase = csvDatabase.CSVDatabase;
-
 // Middlewares
 app.use(cors());
 app.use(cache('6 hours'));
@@ -75,7 +71,7 @@ async function autoUpdate() {
     console.log('Error Downloading Latest Files: ' + err);
   });
 
-  await db.updateDatabaseFromCSV(CSVDatabase).then((data) => {
+  await db.updateDatabaseFromCSV().then((data) => {
     if (data === true) {
       console.log('Database Updated Successfully');
     } else {
@@ -161,7 +157,7 @@ app.use('/api', router); // Add prefix "/api" to routes above
 
 app.get('/', async (req, res) => {
   try {
-    res.send('Hello World!');
+    res.send('<html>Endpoints and documentation are available <a href="https://github.com/Simperfy/Covid-19-API-Philippines-DOH#-endpoints">here</a></html>');
   } catch (err) {
     res.send('ERROR Verifying Google Token: \n' + JSON.stringify(err));
   }

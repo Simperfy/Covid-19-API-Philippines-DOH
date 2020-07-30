@@ -2,8 +2,8 @@
 const mySQLDatabase = require('./MySQLDatabase');
 const MySQLDatabase = mySQLDatabase.MySQLDatabase;
 
-// const csvDatabase = require('./CSVDatabase');
-// const CSVDatabase = csvDatabase.CSVDatabase;
+const csvDatabase = require('./CSVDatabase');
+const CSVDatabase = csvDatabase.CSVDatabase;
 // const CaseInformation = require('../CaseInformation');
 
 /**
@@ -104,11 +104,10 @@ class DatabaseAdapter {
 
   /**
    * Update database form csv
-   * @param {CSVDatabase} csvDatabase
    * @return {Promise<boolean>}
    */
-  async updateDatabaseFromCSV(csvDatabase) {
-    return this.db.updateDatabaseFromCSV(csvDatabase);
+  async updateDatabaseFromCSV() {
+    return this.db.updateDatabaseFromCSV(new CSVDatabase());
   }
 }
 
