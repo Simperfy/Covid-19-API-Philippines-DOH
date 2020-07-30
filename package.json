@@ -5,7 +5,10 @@
   "main": "app.js",
   "scripts": {
     "dev": "nodemon app.js",
-    "start": "node app.js"
+    "start": "node app.js",
+    "test": "jest",
+    "test2": "jest --watch",
+    "test3": "jest --coverage"
   },
   "keywords": [],
   "author": "",
@@ -27,6 +30,8 @@
   "devDependencies": {
     "eslint": "^7.4.0",
     "eslint-config-google": "^0.14.0",
-    "nodemon": "^2.0.4"
+    "jest": "^26.2.1",
+    "nodemon": "^2.0.4",
+    "supertest": "^4.0.2"
   }
 }

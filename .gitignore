@@ -7,3 +7,4 @@ tmp/
 old/
 .env
 service-key.json
+coverage/

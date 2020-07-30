@@ -106,7 +106,7 @@ class DatabaseAdapter {
    * @return {Promise<boolean>}
    */
   async updateDatabaseFromCSV() {
-    return this.db.updateDatabaseFromCSV(new CSVDatabase());
+    return this.db.updateDatabaseFromCSV(await new CSVDatabase());
   }
 }
 

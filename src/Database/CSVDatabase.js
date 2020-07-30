@@ -12,15 +12,17 @@ const CSV_FILE_PATH = path.join(__dirname, '../../tmp/Data.csv');
 class CSVDatabase {
   // make this a singleton
   constructor() {
-    this.isCSLoaded = false;
-    this.isConverting = false;
-    this.CaseInformations = [];
-    if (!CSVDatabase.instance) {
-      CSVDatabase.instance = this;
-      this.convertCsvToJson();
-    }
+    return (async () => {
+      this.isCSLoaded = false;
+      this.isConverting = false;
+      this.CaseInformations = [];
+      if (!CSVDatabase.instance) {
+        CSVDatabase.instance = this;
+        await this.convertCsvToJson();
+      }
 
-    return CSVDatabase.instance;
+      return CSVDatabase.instance;
+    })();
   }
 
   /**
