@@ -143,6 +143,16 @@ router.get('/get/:count?', async (req, res) => {
   });
 });
 
+router.get('/timeline', async (req, res) => {
+  await db.getTimeline().then((data) => {
+    jsonStructure.data = data;
+    res.json(jsonStructure);
+  }).catch((err) => {
+    jsonStructure.error = err.message;
+    res.json(jsonStructure);
+  });
+});
+
 router.get('/summary', async (req, res) => {
   await db.getSummary().then((data) => {
     jsonStructure.data = data[0];

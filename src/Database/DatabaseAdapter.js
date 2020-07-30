@@ -71,6 +71,13 @@ class DatabaseAdapter {
   }
 
   /**
+   * @return {Promise}
+   */
+  getTimeline() {
+    return this.db.getTimeline();
+  }
+
+  /**
    * @param {String} query
    * @return {Promise}
    */

@@ -46,7 +46,7 @@ class MySQLDatabase {
         query += `WHERE ((date_specimen LIKE ${date} AND date_onset = '') OR date_onset LIKE ${date}) `;
       } else if (numEntries.month && numEntries.day) {
         const date = `${this.connection.escape('2020-' + numEntries.month + '-' + numEntries.day)}`;
-        query += `WHERE ((date_specimen LIKE ${date} AND date_onset = '') OR date_onset LIKE ${date}) `;
+        query += `WHERE ((date_specimen = ${date} AND date_onset = '') OR date_onset = ${date}) `;
       }
 
       query += 'ORDER BY case_code ASC ';
@@ -115,6 +115,24 @@ class MySQLDatabase {
         '(SELECT count(*) as recoveries FROM `case_informations` WHERE `removal_type` = \'recovered\') as b,' +
         ' (SELECT count(*) as deaths FROM `case_informations` WHERE `removal_type` = \'died\') as c,' +
         ' (SELECT count(*) as active_cases FROM `case_informations` WHERE `removal_type` = \'\' AND `date_rep_conf` <> \'\') as d';
+
+      this.executeAndLogQuery(this.connection.query(query, function(err, rows, fields) {
+        if (err) return reject(new Error('[MySQLDatabase.js] ' + err));
+        resolve(rows);
+      }));
+    });
+  }
+
+  /**
+   * @return {Promise}
+   */
+  getTimeline() {
+    return new Promise((resolve, reject) => {
+      const query = 'SELECT count(a.cases) as cases, a.date FROM \n' +
+        '(SELECT date_specimen AS cases, date_specimen AS date from case_informations WHERE (date_specimen <> \'\' AND date_onset = \'\')\n' +
+        'UNION ALL\n' +
+        'SELECT date_onset AS cases, date_onset AS date FROM case_informations WHERE date_onset <> \'\') AS a\n' +
+        'GROUP BY a.date ORDER BY a.date ASC';
 
       this.executeAndLogQuery(this.connection.query(query, function(err, rows, fields) {
         if (err) return reject(new Error('[MySQLDatabase.js] ' + err));
@@ -274,7 +292,9 @@ ${this.connection.escape(data.ValidationStatus)})`;
    * @return  {QueryFunction} returns the function of the execute query
    */
   executeAndLogQuery(connectionQuery) {
-    // console.log(`Query: ${connectionQuery.sql}`);
+    if (process.env.LOG_SQL === 'true') {
+      console.log(`Query: ${connectionQuery.sql}`);
+    }
     return connectionQuery;
   }
 }

@@ -36,6 +36,30 @@ GET api/summary
 }
 ```
 
+Fetching No. of Cases Timeline
+```http
+GET api/timeline
+```
+```JSON
+{
+  "data": [
+    {
+      "cases": 1,
+      "date": "2020-01-16"
+    },
+    {
+      "cases": 1,
+      "date": "2020-01-17"
+    },
+    {...},
+    {
+      "cases": 2398,
+      "date": "2020-07-17"
+    }
+  ]
+}
+```
+
 Fetching all records
 ```http
 GET api/get
