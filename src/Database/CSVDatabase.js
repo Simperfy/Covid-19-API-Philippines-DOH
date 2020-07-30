@@ -13,7 +13,6 @@ class CSVDatabase {
   // make this a singleton
   constructor() {
     return (async () => {
-      this.isCSLoaded = false;
       this.isConverting = false;
       this.CaseInformations = [];
       if (!CSVDatabase.instance) {
@@ -53,6 +52,9 @@ class CSVDatabase {
               });
             }).then(() => {
               console.log('Case Information loaded');
+              return true;
+            }).catch((err) => {
+              console.log(err);
             });
       } else {
         this.isConverting = false;
