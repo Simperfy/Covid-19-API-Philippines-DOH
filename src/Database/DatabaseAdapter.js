@@ -87,6 +87,7 @@ class DatabaseAdapter {
     return this.db.truncate(tableName);
   }
 
+  // @ TODO move this function body inside MySQL this violates our agnostic database
   /**
    * End Database connection
    */
@@ -162,6 +163,7 @@ ${this.db.connection.escape(data.ValidationStatus)})`;
     return isSuccess;
   }
 
+  // @ TODO move this function body inside MySQL this violates our agnostic database
   /**
    * Update database form csv
    * @return {Promise<boolean>}

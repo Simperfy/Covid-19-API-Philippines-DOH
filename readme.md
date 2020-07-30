@@ -25,6 +25,16 @@ Fetching summary
 ```http
 GET api/summary
 ```
+```JSON
+{
+  "data": {
+    "total":85486, 
+    "recoveries":26996,
+    "deaths":1962,
+    "active_cases":56528
+  }
+}
+```
 
 Fetching all records
 ```http
