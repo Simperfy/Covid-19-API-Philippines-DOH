@@ -28,10 +28,12 @@ GET api/summary
 ```JSON
 {
   "data": {
-    "total":85486, 
-    "recoveries":26996,
-    "deaths":1962,
-    "active_cases":56528
+    "total": 89374,
+    "recoveries": 65064,
+    "deaths": 1983,
+    "active_cases": 22327,
+    "fatality_rate": "2.22",
+    "recovery_rate": "72.80"
   }
 }
 ```

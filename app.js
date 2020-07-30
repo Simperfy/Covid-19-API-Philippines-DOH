@@ -156,6 +156,10 @@ router.get('/timeline', async (req, res) => {
 router.get('/summary', async (req, res) => {
   await db.getSummary().then((data) => {
     jsonStructure.data = data[0];
+    const fatalityRate = data[0].deaths / data[0].total;
+    const recoveryRate = data[0].recoveries / data[0].total;
+    jsonStructure.data.fatality_rate = (fatalityRate * 100).toFixed(2);
+    jsonStructure.data.recovery_rate = (recoveryRate * 100).toFixed(2);
     res.json(jsonStructure);
   }).catch((err) => {
     jsonStructure.error = err.message;
