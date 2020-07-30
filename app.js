@@ -29,6 +29,10 @@ const databaseAdapter = require('./src/Database/DatabaseAdapter');
 const DatabaseAdapter = databaseAdapter.DatabaseAdapter;
 const db = new DatabaseAdapter();
 
+// CSVDatabase
+const csvDatabase = require('./src/Database/CSVDatabase');
+const CSVDatabase = csvDatabase.CSVDatabase;
+
 // Middlewares
 app.use(cors());
 app.use(cache('6 hours'));
@@ -71,7 +75,7 @@ async function autoUpdate() {
     console.log('Error Downloading Latest Files: ' + err);
   });
 
-  await db.updateDatabaseFromCSV().then((data) => {
+  await db.updateDatabaseFromCSV(CSVDatabase).then((data) => {
     if (data === true) {
       console.log('Database Updated Successfully');
     } else {
@@ -109,7 +113,7 @@ router.get('/updateDatabase', async (req, res) => {
       console.log('Error Downloading Latest Files: ' + err);
     });
   } else {
-    res.send('Unable to manually update database in production.');
+    res.send('You cannot manually update database in production.');
   }
 });
 

@@ -159,6 +159,103 @@ class MySQLDatabase {
   }
 
   /**
+   * @param {[CaseInformation]} csArr
+   * @param {int} batchSize
+   */
+  async batchInsertDatabaseFromCSV(csArr, batchSize=10000) {
+    console.log(`\nPerforming batch insert (batch size: ${batchSize}):`);
+    let isSuccess = true;
+    let lastRowIndex = 0;
+    const csArrLength = csArr.length;
+    const batchRuns = Math.ceil(csArr.length / batchSize);
+    for (let i = 0; i < batchRuns; i++) {
+      console.log(`Running batch ${i+1}/${batchRuns}`);
+      const nextLastRowIndex = lastRowIndex+batchSize;
+      // console.log('lastRowIndex: ' + lastRowIndex);
+      // console.log('nextLastRowIndex: ' + nextLastRowIndex);
+
+      const sliceStart = lastRowIndex;
+      const sliceEnd = (nextLastRowIndex >= csArr.length ? csArrLength : nextLastRowIndex);
+
+      // console.log('sliceS: ' + sliceStart + ', sliceE: ' + sliceEnd);
+      const csBatchArr = csArr.slice(sliceStart, sliceEnd); // BUG RESOLVE: Splice vs slice :O
+      // console.log('csBatchArr.length: ' + csBatchArr.length + '\n');
+      lastRowIndex = nextLastRowIndex;
+
+      // Ignoring, reason possible duplication of data as stated in readme of DOH Data Drop
+      let query = `INSERT INTO case_informations (case_code, age, age_group, sex, date_specimen, \
+        date_result_release, date_rep_conf, date_died, date_recover, removal_type, admitted, region_res, \
+        prov_res, city_mun_res, city_muni_psgc, health_status, quarantined, date_onset, pregnant_tab, validation_status) VALUES`;
+
+      // BUG RESOLVE Lesson learned, ALWAYS ESCAPE CHARS BEFORE INSERTING TO DB EVEN FROM A CSV!!!
+      csBatchArr.forEach((data, ind) => {
+        query += ` (${this.db.connection.escape(data.CaseCode)}, \
+${this.db.connection.escape(data.Age)}, \
+${this.db.connection.escape(data.AgeGroup)}, \
+${this.db.connection.escape(data.Sex)}, \
+${this.db.connection.escape(data.DateSpecimen)}, \
+${this.db.connection.escape(data.DateResultRelease)}, \
+${this.db.connection.escape(data.DateRepConf)}, \
+${this.db.connection.escape(data.DateDied)}, \
+${this.db.connection.escape(data.DateRecover)}, \
+${this.db.connection.escape(data.RemovalType)}, \
+${this.db.connection.escape(data.Admitted)}, \
+${this.db.connection.escape(data.RegionRes)}, \
+${this.db.connection.escape(data.ProvRes)}, \
+${this.db.connection.escape(data.CityMunRes)}, \
+${this.db.connection.escape(data.CityMuniPSGC)}, \
+${this.db.connection.escape(data.HealthStatus)}, \
+${this.db.connection.escape(data.Quarantined)}, \
+${this.db.connection.escape(data.DateOnset)}, \
+${this.db.connection.escape(data.Pregnanttab)}, \
+${this.db.connection.escape(data.ValidationStatus)})`;
+
+        if ((ind+1) !== csBatchArr.length) {
+          query+= ', ';
+        }
+      });
+
+      await this.executeRaw(query).then((data) => {
+        console.log('Affected rows: ' + JSON.parse(JSON.stringify(data)).affectedRows);
+      }).catch((err) => {
+        if (err) throw new Error('[Database.js] ' + err);
+        isSuccess = false;
+      });
+    }
+
+    return isSuccess;
+  }
+
+  /**
+   * Update database form csv
+   * @param {CSVDatabase} csvDatabase
+   * @return {Promise<boolean>}
+   */
+  async updateDatabaseFromCSV(csvDatabase) {
+    console.log('\nBegin Updating Database.');
+    console.log('Truncating case_informations table, because it causes anomaly when we don\'t.');
+    await this.truncate('case_informations');
+
+    const cs = await csvDatabase.get();
+
+    console.log('\nBefore Updating Database: ');
+    console.log('cs length in csv: ' + cs.length);
+    console.log('cs length in database: ' + await this.count());
+    const res = await this.batchInsertDatabaseFromCSV(cs);
+    console.log('\nAfter Updating Database: ');
+    console.log('cs length in csv: ' + cs.length);
+    console.log('cs length in database: ' + await this.count());
+
+    if (res) {
+      console.log('\nSuccessfully transferred data from CSV to Database.\n');
+    } else {
+      console.log('\nFailed to transfer data from CSV to Database.\n');
+    }
+
+    return res;
+  }
+
+  /**
    * @return {Promise}
    */
   getLastRow() {
