@@ -34,7 +34,6 @@ class MySQLDatabase {
    * @param {String} numEntries.day
    * @return {Promise} returns JSON of the result
    */
-  // SELECT count(*) FROM `case_informations` WHERE ((`date_specimen` = '2020-07-01' AND date_onset = '') OR `date_onset` = '2020-07-01') ORDER BY `health_status` ASC
   get(numEntries) {
     return new Promise((resolve, reject) => {
       if (numEntries.month > 12) return reject(new Error('Error: the month cannot be greater than 12'));
@@ -273,26 +272,13 @@ ${this.connection.escape(data.ValidationStatus)})`;
     return res;
   }
 
-  /**
-   * @return {Promise}
-   */
-  getLastRow() {
-    return new Promise((resolve, reject) => {
-      const query = 'SELECT * from case_informations ORDER BY case_code DESC LIMIT 1';
-
-      this.executeAndLogQuery(this.connection.query(query, function(err, rows, fields) {
-        if (err) return reject(new Error('[MySQLDatabase.js] ' + err));
-        resolve(rows);
-      }));
-    });
-  }
 
   /**
    * @param {QueryFunction} connectionQuery contains the function of the execute query
    * @return  {QueryFunction} returns the function of the execute query
    */
   executeAndLogQuery(connectionQuery) {
-    if (process.env.LOG_SQL === 'true') {
+    if (process.env.LOG_QUERIES === 'true') {
       console.log(`Query: ${connectionQuery.sql}`);
     }
     return connectionQuery;

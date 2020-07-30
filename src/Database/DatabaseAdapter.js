@@ -102,14 +102,6 @@ class DatabaseAdapter {
   }
 
   /**
-   * @param {[CaseInformation]} csArr
-   * @param {int} batchSize
-   */
-  async batchInsertDatabaseFromCSV(csArr, batchSize=10000) {
-    return this.db.batchInsertDatabaseFromCSV(csArr, batchSize);
-  }
-
-  /**
    * Update database form csv
    * @return {Promise<boolean>}
    */
