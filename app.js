@@ -26,8 +26,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 // Database vars
-const databaseAdapter = require('./src/Database/DatabaseAdapter');
-const DatabaseAdapter = databaseAdapter.DatabaseAdapter;
+const DatabaseAdapter = require('./src/Database/DatabaseAdapter');
 const db = new DatabaseAdapter();
 
 let forceRedirectToHome = false;

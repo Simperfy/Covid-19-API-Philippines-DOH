@@ -1,9 +1,7 @@
 /* eslint-disable max-len */
-const mySQLDatabase = require('./MySQLDatabase');
-const MySQLDatabase = mySQLDatabase.MySQLDatabase;
+const MySQLDatabase = require('./MySQLDatabase');
 
-const csvDatabase = require('./CSVDatabase');
-const CSVDatabase = csvDatabase.CSVDatabase;
+const CSVDatabase = require('./CSVDatabase');
 // const CaseInformation = require('../CaseInformation');
 
 /**
@@ -111,4 +109,4 @@ class DatabaseAdapter {
   }
 }
 
-exports.DatabaseAdapter = DatabaseAdapter;
+module.exports = DatabaseAdapter;

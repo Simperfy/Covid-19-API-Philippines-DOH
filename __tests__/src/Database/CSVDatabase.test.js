@@ -1,5 +1,5 @@
 /* eslint-disable max-len */
-const CSVDatabase = require('../../../src/Database/CSVDatabase').CSVDatabase;
+const CSVDatabase = require('../../../src/Database/CSVDatabase');
 
 
 test('Should be a singleton', async () => {

@@ -142,4 +142,4 @@ class CSVDatabase {
   }
 }
 
-exports.CSVDatabase = CSVDatabase;
+module.exports = CSVDatabase;

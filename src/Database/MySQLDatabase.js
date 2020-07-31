@@ -297,4 +297,4 @@ ${this.connection.escape(data.ValidationStatus)})`;
   }
 }
 
-exports.MySQLDatabase = MySQLDatabase;
+module.exports = MySQLDatabase;
