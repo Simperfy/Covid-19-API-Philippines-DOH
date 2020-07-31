@@ -66,6 +66,37 @@ Fetching all records
 ```http
 GET api/get
 ```
+```JSON
+{
+    "data": [
+        {
+            "case_code": "C101356",
+            "age": 55,
+            "age_group": "55-59",
+            "sex": "female",
+            "date_specimen": "2020-07-13",
+            "date_result_release": "2020-07-15",
+            "date_rep_conf": "2020-07-19",
+            "date_died": "",
+            "date_recover": "",
+            "removal_type": "",
+            "admitted": "no",
+            "region_res": "NCR",
+            "prov_res": "ncr",
+            "city_mun_res": "city of malabon",
+            "city_muni_psgc": "PH137502000",
+            "health_status": "mild",
+            "quarantined": "no",
+            "date_onset": "",
+            "pregnant_tab": "no",
+            "validation_status": ""
+        },
+        {...}
+    ],
+    "result_count":	89374
+
+}
+```
 
 Fetching records by month
 ```http
@@ -128,40 +159,6 @@ GET api/filter/regionRes/NCR
 * Fetching all covid-19 cases between 15 and 19 years old
 ```http
 GET api/filter/ageGroup/15-19
-```
-
-<br>
-
-<br>
-
-Sample json return by the API:
-```JSON
-{
-    "data": [
-        {
-            "case_code": "C101356",
-            "age": 55,
-            "age_group": "55-59",
-            "sex": "female",
-            "date_specimen": "2020-07-13",
-            "date_result_release": "2020-07-15",
-            "date_rep_conf": "2020-07-19",
-            "date_died": "",
-            "date_recover": "",
-            "removal_type": "",
-            "admitted": "no",
-            "region_res": "NCR",
-            "prov_res": "ncr",
-            "city_mun_res": "city of malabon",
-            "city_muni_psgc": "PH137502000",
-            "health_status": "mild",
-            "quarantined": "no",
-            "date_onset": "",
-            "pregnant_tab": "no",
-            "validation_status": ""
-        }
-    ]
-}
 ```
 
 <br>
