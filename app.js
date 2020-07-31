@@ -31,7 +31,9 @@ const db = new DatabaseAdapter();
 
 // Middlewares
 app.use(cors());
-app.use(cache('6 hours'));
+if (process.env.NODE_ENV !== 'development') { // only use cache in production
+  app.use(cache('6 hours'));
+}
 
 // eslint-disable-next-line new-cap
 const router = express.Router();
@@ -154,7 +156,9 @@ router.get('/timeline', async (req, res) => {
 });
 
 router.get('/summary', async (req, res) => {
-  await db.getSummary().then((data) => {
+  const region = req.query.region || null;
+
+  await db.getSummary(region).then((data) => {
     jsonStructure.data = data[0];
     const fatalityRate = data[0].deaths / data[0].total;
     const recoveryRate = data[0].recoveries / data[0].total;

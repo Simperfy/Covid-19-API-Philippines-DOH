@@ -64,10 +64,11 @@ class DatabaseAdapter {
   }
 
   /**
+   * @param {String} region
    * @return {Promise}
    */
-  getSummary() {
-    return this.db.getSummary();
+  getSummary(region = null) {
+    return this.db.getSummary(region);
   }
 
   /**
