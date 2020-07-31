@@ -2,6 +2,7 @@
 require('dotenv').config();
 const cors = require('cors');
 const apicache = require('apicache');
+const morgan = require('morgan');
 
 const cache = apicache.options({
   statusCodes: {
@@ -29,19 +30,51 @@ const databaseAdapter = require('./src/Database/DatabaseAdapter');
 const DatabaseAdapter = databaseAdapter.DatabaseAdapter;
 const db = new DatabaseAdapter();
 
+let forceRedirectToHome = false;
+const jsonStructure = {
+  'data': [],
+};
+
 // Middlewares
 app.use(cors());
 if (process.env.NODE_ENV !== 'development') { // only use cache in production
   app.use(cache('6 hours'));
 }
 
+// app.use(morgan(':remote-addr - :remote-user [:date[web]] ":method :url HTTP/:http-version" :status :res[content-length]'));
+app.use(morgan((tokens, req, res) => {
+  return [
+    tokens['remote-addr'](req, res), '-',
+    tokens['remote-user'](req, res),
+    '[' + new Date().toLocaleString('en-US', {
+      timeZone: 'Asia/Shanghai',
+    }) + ']',
+    tokens.method(req, res), '',
+    `"${tokens.url(req, res)}"`,
+    tokens.status(req, res),
+    tokens.res(req, res, 'content-length'), '-',
+    tokens['response-time'](req, res), 'ms',
+  ].join(' ');
+}));
+
+// Custom middleware
+app.use(function(req, res, next) {
+  if (forceRedirectToHome && req.url !== '/') {
+    forceRedirectToHome = false;
+    console.log('Force redirect to home');
+    return res.redirect('/');
+  }
+
+  // Clear data before every request
+  jsonStructure.data = [];
+  delete jsonStructure.error;
+  delete jsonStructure.result_count;
+  next();
+});
+
 // eslint-disable-next-line new-cap
 const router = express.Router();
 
-let forceRedirectToHome = false;
-const jsonStructure = {
-  'data': [],
-};
 (
   // Initialize Google Auth Token
   async () => {
@@ -83,23 +116,6 @@ async function autoUpdate() {
     console.log('Error Updating Database: ' + err);
   });
 }
-
-/**
- * Custom middleware
- */
-app.use(function(req, res, next) {
-  if (forceRedirectToHome && req.url !== '/') {
-    forceRedirectToHome = false;
-    console.log('Force redirect to home');
-    return res.redirect('/');
-  }
-
-  // Clear data before every request
-  jsonStructure.data = [];
-  delete jsonStructure.error;
-  delete jsonStructure.result_count;
-  next();
-});
 
 router.get('/updateDatabase', async (req, res) => {
   if (process.env.NODE_ENV === 'development') {
