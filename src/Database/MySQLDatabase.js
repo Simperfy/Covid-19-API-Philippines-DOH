@@ -105,15 +105,27 @@ class MySQLDatabase {
   }
 
   /**
+   * @param {String} region
    * @return {Promise}
    */
-  getSummary() {
+  getSummary(region = null) {
     return new Promise((resolve, reject) => {
-      const query = 'SELECT a.total, b.recoveries, c.deaths, d.active_cases FROM ' +
-        '(SELECT count(*) as total FROM `case_informations`) as a,' +
-        '(SELECT count(*) as recoveries FROM `case_informations` WHERE `removal_type` = \'recovered\') as b,' +
-        ' (SELECT count(*) as deaths FROM `case_informations` WHERE `removal_type` = \'died\') as c,' +
-        ' (SELECT count(*) as active_cases FROM `case_informations` WHERE `removal_type` = \'\' AND `date_rep_conf` <> \'\') as d';
+      let query;
+      if (region === null) {
+        query = 'SELECT a.total, b.recoveries, c.deaths, d.active_cases FROM ' +
+          '(SELECT count(*) as total FROM `case_informations`) as a,' +
+          '(SELECT count(*) as recoveries FROM `case_informations` WHERE `removal_type` = \'recovered\') as b,' +
+          ' (SELECT count(*) as deaths FROM `case_informations` WHERE `removal_type` = \'died\') as c,' +
+          ' (SELECT count(*) as active_cases FROM `case_informations` WHERE `removal_type` = \'\' AND `date_rep_conf` <> \'\') as d';
+      } else {
+        const regionVal = this.connection.escape(region);
+        query = `SELECT a.total, b.recoveries, c.deaths, d.active_cases FROM` +
+          ` (SELECT count(*) as total FROM case_informations WHERE region_res = ${regionVal}) as a,` +
+          ` (SELECT count(*) as recoveries FROM case_informations WHERE (removal_type = 'recovered' AND region_res = ${regionVal})) as b,` +
+          ` (SELECT count(*) as deaths FROM case_informations WHERE (removal_type = 'died' AND region_res = ${regionVal})) as c,` +
+          ` (SELECT count(*) as active_cases FROM case_informations WHERE (removal_type = '' AND date_rep_conf <> '' AND region_res = ${regionVal})) as d`;
+      }
+
 
       this.executeAndLogQuery(this.connection.query(query, function(err, rows, fields) {
         if (err) return reject(new Error('[MySQLDatabase.js] ' + err));
