@@ -21,7 +21,7 @@ Base URL: https://covid19-api-philippines.herokuapp.com/
 
 Currently available API endpoints:
 
-Fetching summary
+**Fetching summary**
 ```http
 GET api/summary
 ```
@@ -38,7 +38,7 @@ GET api/summary
 }
 ```
 
-Fetching No. of Cases Timeline
+**Fetching No. of Cases Timeline**
 ```http
 GET api/timeline
 ```
@@ -62,7 +62,7 @@ GET api/timeline
 }
 ```
 
-Fetching all records
+**Fetching all records**
 ```http
 GET api/get
 ```
@@ -98,22 +98,22 @@ GET api/get
 }
 ```
 
-Fetching records by month
+**Fetching records by month**
 ```http
 GET api/get?month=03
 ```
 
-Fetching all by specific date
+**Fetching all by specific date**
 ```http
 GET api/get?month=03&date=01
 ```
 
-Fetching {n} records
+**Fetching {n} records**
 ```http
 GET api/get/{n}
 ```
 
-Fetching records that matches the filter
+**Fetching records that matches the filter**
 ```http
 GET api/filter/{field}/{value}
 ```
@@ -202,7 +202,8 @@ $ npm run dev
 
 ## 📄 About the Data
 ### Where does the data come from?
-* The data comes from [DOH DATA DROP](https://drive.google.com/drive/folders/1UelgRGmUGNMKH1Q3nzqTj57V41bjmnxg)
+
+* The data comes from [DOH DATA DROP](http://bit.ly/DataDropPH) and [DOH DATA DROP Archives](https://drive.google.com/drive/folders/1UelgRGmUGNMKH1Q3nzqTj57V41bjmnxg)
 * The data wasn't tampered and was directly converted to json from csv without heavy modification.
 
 <br>
