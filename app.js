@@ -26,11 +26,13 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 // Database vars
+const MySQLDatabase = require('./src/Database/MySQLDatabase');
 const DatabaseAdapter = require('./src/Database/DatabaseAdapter');
+
 let db;
 (
   async () => {
-    db = await new DatabaseAdapter();
+    db = await new DatabaseAdapter(new MySQLDatabase());
   }
 )();
 

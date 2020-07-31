@@ -27,6 +27,18 @@ class MySQLDatabase {
     return MySQLDatabase.instance;
   }
 
+  connect() {
+    return new Promise((resolve, reject) => {
+      this.connection.connect((err) => {
+        if (!err) {
+          resolve('Successfully connected to the Database');
+        } else {
+          reject(new Error('Failed to connect to the Database: ' + err));
+        }
+      });
+    });
+  }
+
   /**
    * @param {Object} numEntries
    * @param {String} numEntries.count
