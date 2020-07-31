@@ -27,7 +27,13 @@ const port = process.env.PORT || 3000;
 
 // Database vars
 const DatabaseAdapter = require('./src/Database/DatabaseAdapter');
-const db = new DatabaseAdapter();
+let db;
+(
+  async () => {
+    db = await new DatabaseAdapter();
+  }
+)();
+
 
 let forceRedirectToHome = false;
 const jsonStructure = {

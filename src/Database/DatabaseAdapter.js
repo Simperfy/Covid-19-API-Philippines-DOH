@@ -10,27 +10,29 @@ const CSVDatabase = require('./CSVDatabase');
 class DatabaseAdapter {
   /**
    * Initialize Database and make this a singleton
-   * @return {DatabaseAdapter}
+   * @return {Promise<DatabaseAdapter>}
    */
   constructor() {
-    if (!DatabaseAdapter.instance) {
-      DatabaseAdapter.instance=this;
-      // If we need to change database in the future
-      // we only need to change this class with same methods
-      console.log('Connecting to database');
-      const mySQLDatabase = new MySQLDatabase();
-      this.db = mySQLDatabase;
+    return (async () => {
+      if (!DatabaseAdapter.instance) {
+        DatabaseAdapter.instance=this;
+        // If we need to change database in the future
+        // we only need to change this class with same methods
+        console.log('Connecting to database');
+        const mySQLDatabase = new MySQLDatabase();
+        this.db = mySQLDatabase;
 
-      mySQLDatabase.connection.connect((err) => {
-        if (!err) {
-          console.log('Successfully connected to the Database');
-        } else {
-          console.log('Failed to connect to the Database: ' + err);
-        }
-      });
-    }
+        mySQLDatabase.connection.connect((err) => {
+          if (!err) {
+            console.log('Successfully connected to the Database');
+          } else {
+            console.log('Failed to connect to the Database: ' + err);
+          }
+        });
+      }
 
-    return DatabaseAdapter.instance;
+      return DatabaseAdapter.instance;
+    })();
   }
 
   /**
