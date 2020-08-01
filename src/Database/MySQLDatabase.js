@@ -194,6 +194,37 @@ class MySQLDatabase {
   }
 
   /**
+   * @param {String} tableName
+   * @param {Object} fieldValueObj
+   * @return {Promise<String>}
+   */
+  insert(tableName, fieldValueObj) {
+    return new Promise((resolve, reject) => {
+      let fields = '';
+      let values = '';
+      let i = 0;
+
+      Object.entries(fieldValueObj).forEach(([field, value])=>{
+        fields += field;
+        values += value;
+        // console.log(`${field}:${value}`);
+        if (i < Object.entries(fieldValueObj).length - 1) {
+          fields += ', ';
+          values += ', ';
+        }
+        i++;
+      });
+
+      const query = `INSERT INTO update_history (${fields}) VALUES (${values})`;
+
+      this.executeAndLogQuery(this.connection.query(query, function(err, rows, fields) {
+        if (err) return reject(new Error('[MySQLDatabase.js] ' + err));
+        resolve(rows);
+      }));
+    });
+  }
+
+  /**
    * End Database connection
    */
   endConnection() {

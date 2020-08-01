@@ -97,6 +97,15 @@ class DatabaseAdapter {
   }
 
   /**
+   * @param {String} tableName
+   * @param {Object} fieldValueObj
+   * @return {Promise<String>}
+   */
+  insert(tableName, fieldValueObj) {
+    return this.db.insert();
+  }
+
+  /**
    * End Database connection
    */
   endConnection() {
