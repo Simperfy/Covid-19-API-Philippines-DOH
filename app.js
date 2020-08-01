@@ -1,11 +1,12 @@
 /* eslint-disable max-len */
 require('dotenv').config();
-if (process.env.NODE_ENV !== 'development') {
+if (process.env.ENABLE_NEWRELIC === 'true') {
   require('newrelic');
 }
 const cors = require('cors');
 const apicache = require('apicache');
 const morgan = require('morgan');
+const compression = require('compression');
 
 const cache = apicache.options({
   statusCodes: {
@@ -47,11 +48,10 @@ let jsonStructure = {
 
 // Middlewares
 app.use(cors());
+app.use(compression());
 if (process.env.NODE_ENV !== 'development') { // only use cache in production
   app.use(cache('6 hours'));
 }
-
-// app.use(morgan(':remote-addr - :remote-user [:date[web]] ":method :url HTTP/:http-version" :status :res[content-length]'));
 app.use(morgan((tokens, req, res) => {
   return [
     tokens['remote-addr'](req, res), '-',
