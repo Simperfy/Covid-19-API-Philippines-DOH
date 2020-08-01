@@ -1,5 +1,6 @@
 /* eslint-disable max-len */
 require('dotenv').config();
+require('newrelic');
 const cors = require('cors');
 const apicache = require('apicache');
 const morgan = require('morgan');

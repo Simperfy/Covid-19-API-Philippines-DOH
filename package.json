@@ -26,6 +26,7 @@
     "googleapis": "^39.2.0",
     "morgan": "^1.10.0",
     "mysql": "^2.18.1",
+    "newrelic": "^6.11.0",
     "pdf-parse": "^1.1.1"
   },
   "devDependencies": {
