@@ -79,10 +79,6 @@ app.use(function(req, res, next) {
   jsonStructure = {
     'data': [],
   };
-  // jsonStructure.data = [];
-  // delete jsonStructure.error;
-  // delete jsonStructure.result_count;
-  // delete jsonStructure.pagination;
   next();
 });
 
@@ -168,19 +164,8 @@ router.get('/get', async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || maxLimit;
 
-  if (page < 1 || limit < 1) {
-    jsonStructure.error = 'Error: page or limit query can\'t be less than 1.';
-    return res.json(jsonStructure);
-  }
-
-  if (limit > maxLimit) {
-    jsonStructure.error = `Error: limit query can\'t be greater than ${maxLimit}.`;
-    return res.json(jsonStructure);
-  }
-
-  await db.get({limit: limit, month: month, day: day, page: page}).then(async (data) => {
+  await db.get({limit: limit, month: month, day: day, page: page, maxLimit: maxLimit}).then(async (data) => {
     jsonStructure.data = data;
-
     const maxPage = Math.ceil(await db.count() / limit);
 
     if (page > maxPage) {
