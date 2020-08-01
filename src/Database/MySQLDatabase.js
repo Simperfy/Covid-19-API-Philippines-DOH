@@ -40,29 +40,29 @@ class MySQLDatabase {
   }
 
   /**
-   * @param {Object} numEntries
-   * @param {String} numEntries.count
-   * @param {String} numEntries.month
-   * @param {String} numEntries.day
+   * @param {Object} queries
+   * @param {String} queries.limit
+   * @param {String} queries.month
+   * @param {String} queries.day
    * @return {Promise} returns JSON of the result
    */
-  get(numEntries) {
+  get(queries) {
     return new Promise((resolve, reject) => {
-      if (numEntries.month > 12) return reject(new Error('Error: the month cannot be greater than 12'));
-      if (numEntries.day > 31) return reject(new Error('Error: the day cannot be greater than 31'));
+      if (queries.month > 12) return reject(new Error('Error: the month cannot be greater than 12'));
+      if (queries.day > 31) return reject(new Error('Error: the day cannot be greater than 31'));
       let query = 'SELECT * from case_informations ';
 
-      if (numEntries.month && !numEntries.day) {
-        const date = `${this.connection.escape('2020-' + numEntries.month + '%')}`;
+      if (queries.month && !queries.day) {
+        const date = `${this.connection.escape('2020-' + queries.month + '%')}`;
         query += `WHERE ((date_specimen LIKE ${date} AND date_onset = '') OR date_onset LIKE ${date}) `;
-      } else if (numEntries.month && numEntries.day) {
-        const date = `${this.connection.escape('2020-' + numEntries.month + '-' + numEntries.day)}`;
+      } else if (queries.month && queries.day) {
+        const date = `${this.connection.escape('2020-' + queries.month + '-' + queries.day)}`;
         query += `WHERE ((date_specimen = ${date} AND date_onset = '') OR date_onset = ${date}) `;
       }
 
       query += 'ORDER BY case_code ASC ';
-      if (numEntries.count !== undefined) {
-        let limit = parseInt(numEntries.count);
+      if (queries.limit !== undefined) {
+        let limit = parseInt(queries.limit);
         limit = this.connection.escape(limit);
         query += `LIMIT ${limit}`;
       }

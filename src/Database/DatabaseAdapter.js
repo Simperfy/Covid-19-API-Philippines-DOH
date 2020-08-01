@@ -35,14 +35,14 @@ class DatabaseAdapter {
   }
 
   /**
-   * @param {Object} numEntries
-   * @param {String} numEntries.count
-   * @param {String} numEntries.month
-   * @param {String} numEntries.day
+   * @param {Object} queries
+   * @param {String} queries.limit
+   * @param {String} queries.month
+   * @param {String} queries.day
    * @return {Promise}
    */
-  get(numEntries) {
-    return this.db.get(numEntries);
+  get(queries) {
+    return this.db.get(queries);
   }
 
   /**

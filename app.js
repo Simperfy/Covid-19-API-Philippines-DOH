@@ -41,7 +41,7 @@ let db;
 
 
 let forceRedirectToHome = false;
-const jsonStructure = {
+let jsonStructure = {
   'data': [],
 };
 
@@ -76,9 +76,13 @@ app.use(function(req, res, next) {
   }
 
   // Clear data before every request
-  jsonStructure.data = [];
-  delete jsonStructure.error;
-  delete jsonStructure.result_count;
+  jsonStructure = {
+    'data': [],
+  };
+  // jsonStructure.data = [];
+  // delete jsonStructure.error;
+  // delete jsonStructure.result_count;
+  // delete jsonStructure.pagination;
   next();
 });
 
@@ -158,10 +162,11 @@ router.get('/filter/:field/:value', async (req, res) => {
   });
 });
 
-router.get('/get/:count?', async (req, res) => {
+router.get('/get', async (req, res) => {
   const month = req.query.month;
   const day = req.query.day;
-  await db. get({count: req.params.count, month: month, day: day}).then((data) => {
+  const limit = parseInt(req.query.limit) || 10000;
+  await db.get({limit: limit, month: month, day: day}).then((data) => {
     jsonStructure.data = data;
     jsonStructure.result_count = data.length;
     res.json(jsonStructure);
