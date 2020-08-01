@@ -43,14 +43,18 @@ class MySQLDatabase {
    * @param {Object} queries
    * @param {String} queries.month
    * @param {String} queries.day
-   * @param {String} queries.page
-   * @param {String} queries.limit
+   * @param {int} queries.page
+   * @param {int} queries.limit
+   * @param {int} queries.maxLimit
    * @return {Promise} returns JSON of the result
    */
   get(queries) {
     return new Promise((resolve, reject) => {
       if (queries.month > 12) return reject(new Error('Error: the month cannot be greater than 12'));
       if (queries.day > 31) return reject(new Error('Error: the day cannot be greater than 31'));
+      if (queries.page < 1 || queries.limit < 1) return reject(new Error('Error: page or limit query can\'t be less than 1.'));
+      if (queries.limit > queries.maxLimit) return reject(new Error(`Error: limit query can\'t be greater than ${queries.maxLimit}.`));
+
       let query = 'SELECT * from case_informations ';
 
       if (queries.month && !queries.day) {
