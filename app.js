@@ -1,5 +1,8 @@
 /* eslint-disable max-len */
 require('dotenv').config();
+if (process.env.NODE_ENV !== 'development') {
+  require('newrelic');
+}
 const cors = require('cors');
 const apicache = require('apicache');
 const morgan = require('morgan');
@@ -26,11 +29,19 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 // Database vars
+const MySQLDatabase = require('./src/Database/MySQLDatabase');
 const DatabaseAdapter = require('./src/Database/DatabaseAdapter');
-const db = new DatabaseAdapter();
 
+let db;
+(
+  async () => {
+    db = await new DatabaseAdapter(new MySQLDatabase());
+  }
+)();
+
+const maxLimit = 10000;
 let forceRedirectToHome = false;
-const jsonStructure = {
+let jsonStructure = {
   'data': [],
 };
 
@@ -65,9 +76,13 @@ app.use(function(req, res, next) {
   }
 
   // Clear data before every request
-  jsonStructure.data = [];
-  delete jsonStructure.error;
-  delete jsonStructure.result_count;
+  jsonStructure = {
+    'data': [],
+  };
+  // jsonStructure.data = [];
+  // delete jsonStructure.error;
+  // delete jsonStructure.result_count;
+  // delete jsonStructure.pagination;
   next();
 });
 
@@ -147,11 +162,47 @@ router.get('/filter/:field/:value', async (req, res) => {
   });
 });
 
-router.get('/get/:count?', async (req, res) => {
+router.get('/get', async (req, res) => {
   const month = req.query.month;
   const day = req.query.day;
-  await db. get({count: req.params.count, month: month, day: day}).then((data) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || maxLimit;
+
+  if (page < 1 || limit < 1) {
+    jsonStructure.error = 'Error: page or limit query can\'t be less than 1.';
+    return res.json(jsonStructure);
+  }
+
+  if (limit > maxLimit) {
+    jsonStructure.error = `Error: limit query can\'t be greater than ${maxLimit}.`;
+    return res.json(jsonStructure);
+  }
+
+  await db.get({limit: limit, month: month, day: day, page: page}).then(async (data) => {
     jsonStructure.data = data;
+
+    const maxPage = Math.ceil(await db.count() / limit);
+
+    if (page > maxPage) {
+      jsonStructure.error = `Error: page query can\'t be greater than max_page(${maxPage})`;
+      return res.json(jsonStructure);
+    }
+
+    jsonStructure.pagination = {
+      'previous_page': page - 1,
+      'next_page': page + 1,
+      'limit': limit,
+      'max_page': maxPage,
+    };
+
+    if (jsonStructure.pagination.previous_page <= 0) {
+      delete jsonStructure.pagination.previous_page;
+    }
+
+    if (jsonStructure.pagination.next_page >= maxPage) {
+      delete jsonStructure.pagination.next_page;
+    }
+
     jsonStructure.result_count = data.length;
     res.json(jsonStructure);
   }).catch((err) => {

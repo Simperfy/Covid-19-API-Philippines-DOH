@@ -80,39 +80,47 @@ GET api/timeline
 }
 ```
 
-**Fetching all records**
+**Fetching all records** (Ordered by case_code)
+
+***UPDATE: Added pagination***
+
+*`limit` cannot exceed `10000`*
 ```http
-GET api/get
+GET api/get?page=1&limit=10000
 ```
 ```JSON
 {
     "data": [
         {
-            "case_code": "C101356",
-            "age": 55,
-            "age_group": "55-59",
+            "case_code": "C100018",
+            "age": 53,
+            "age_group": "50-54",
             "sex": "female",
-            "date_specimen": "2020-07-13",
-            "date_result_release": "2020-07-15",
-            "date_rep_conf": "2020-07-19",
+            "date_specimen": "2020-04-30",
+            "date_result_release": "2020-05-09",
+            "date_rep_conf": "2020-05-11",
             "date_died": "",
             "date_recover": "",
-            "removal_type": "",
+            "removal_type": "recovered",
             "admitted": "no",
-            "region_res": "NCR",
-            "prov_res": "ncr",
-            "city_mun_res": "city of malabon",
-            "city_muni_psgc": "PH137502000",
-            "health_status": "mild",
+            "region_res": "Region IV-A: CALABARZON",
+            "prov_res": "laguna",
+            "city_mun_res": "city of san pedro",
+            "city_muni_psgc": "PH043425000",
+            "health_status": "recovered",
             "quarantined": "no",
             "date_onset": "",
             "pregnant_tab": "no",
-            "validation_status": ""
+            "validation_status": "Health Status is \"Recovered\", but no Date Recovered is recorded\nHealth Status is \"Recovered\", but no Date Recovered is recorded\nRemoval Type is \"Recovered\", but no Recovered Date is recorded\nRemoval Type is \"Recovered\", but no Recovered Date is recorded"
         },
         {...}
     ],
-    "result_count":	89374
-
+    "pagination": {
+        "next_page": 2,
+        "limit": 10000,
+        "max_page": 10
+    },
+    "result_count": 10000
 }
 ```
 
@@ -124,11 +132,6 @@ GET api/get?month=03
 **Fetching all by specific date**
 ```http
 GET api/get?month=03&date=01
-```
-
-**Fetching {n} records**
-```http
-GET api/get/{n}
 ```
 
 **Fetching records that matches the filter**
@@ -169,9 +172,11 @@ GET api/filter/{field}/{value}
 <br>
 
 Examples:
-* Fetching 100 covid-19 cases
+* Fetching 10000 covid-19 cases at a time
 ```http
-GET api/get/100
+GET api/get?page=1&limit=10000
+GET api/get?page=2&limit=10000
+GET api/get?page=3&limit=10000
 ```
 
 * Fetching all covid-19 cases with age of 30
@@ -181,12 +186,12 @@ GET api/filter/age/30
 
 * Fetching all covid-19 cases in NCR
 ```http
-GET api/filter/regionRes/NCR
+GET api/filter/region_res/NCR
 ```
 
 * Fetching all covid-19 cases between 15 and 19 years old
 ```http
-GET api/filter/ageGroup/15-19
+GET api/filter/age_group/15-19
 ```
 
 <br>

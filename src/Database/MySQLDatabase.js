@@ -27,33 +27,42 @@ class MySQLDatabase {
     return MySQLDatabase.instance;
   }
 
+  connect() {
+    return new Promise((resolve, reject) => {
+      this.connection.connect((err) => {
+        if (!err) {
+          resolve('Successfully connected to the Database');
+        } else {
+          reject(new Error('Failed to connect to the Database: ' + err));
+        }
+      });
+    });
+  }
+
   /**
-   * @param {Object} numEntries
-   * @param {String} numEntries.count
-   * @param {String} numEntries.month
-   * @param {String} numEntries.day
+   * @param {Object} queries
+   * @param {String} queries.month
+   * @param {String} queries.day
+   * @param {String} queries.page
+   * @param {String} queries.limit
    * @return {Promise} returns JSON of the result
    */
-  get(numEntries) {
+  get(queries) {
     return new Promise((resolve, reject) => {
-      if (numEntries.month > 12) return reject(new Error('Error: the month cannot be greater than 12'));
-      if (numEntries.day > 31) return reject(new Error('Error: the day cannot be greater than 31'));
+      if (queries.month > 12) return reject(new Error('Error: the month cannot be greater than 12'));
+      if (queries.day > 31) return reject(new Error('Error: the day cannot be greater than 31'));
       let query = 'SELECT * from case_informations ';
 
-      if (numEntries.month && !numEntries.day) {
-        const date = `${this.connection.escape('2020-' + numEntries.month + '%')}`;
+      if (queries.month && !queries.day) {
+        const date = `${this.connection.escape('2020-' + queries.month + '%')}`;
         query += `WHERE ((date_specimen LIKE ${date} AND date_onset = '') OR date_onset LIKE ${date}) `;
-      } else if (numEntries.month && numEntries.day) {
-        const date = `${this.connection.escape('2020-' + numEntries.month + '-' + numEntries.day)}`;
+      } else if (queries.month && queries.day) {
+        const date = `${this.connection.escape('2020-' + queries.month + '-' + queries.day)}`;
         query += `WHERE ((date_specimen = ${date} AND date_onset = '') OR date_onset = ${date}) `;
       }
 
       query += 'ORDER BY case_code ASC ';
-      if (numEntries.count !== undefined) {
-        let limit = parseInt(numEntries.count);
-        limit = this.connection.escape(limit);
-        query += `LIMIT ${limit}`;
-      }
+      query += `LIMIT ${this.connection.escape((queries.page - 1) * queries.limit)}, ${this.connection.escape(queries.limit)} `;
 
       this.executeAndLogQuery(this.connection.query(query, function(err, rows, fields) {
         if (err) return reject(new Error('[MySQLDatabase.js] ' + err));
