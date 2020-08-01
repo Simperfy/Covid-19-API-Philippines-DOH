@@ -36,9 +36,10 @@ class DatabaseAdapter {
 
   /**
    * @param {Object} queries
-   * @param {String} queries.limit
    * @param {String} queries.month
    * @param {String} queries.day
+   * @param {String} queries.page
+   * @param {String} queries.limit
    * @return {Promise}
    */
   get(queries) {

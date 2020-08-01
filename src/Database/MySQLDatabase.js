@@ -41,9 +41,10 @@ class MySQLDatabase {
 
   /**
    * @param {Object} queries
-   * @param {String} queries.limit
    * @param {String} queries.month
    * @param {String} queries.day
+   * @param {String} queries.page
+   * @param {String} queries.limit
    * @return {Promise} returns JSON of the result
    */
   get(queries) {
@@ -61,11 +62,7 @@ class MySQLDatabase {
       }
 
       query += 'ORDER BY case_code ASC ';
-      if (queries.limit !== undefined) {
-        let limit = parseInt(queries.limit);
-        limit = this.connection.escape(limit);
-        query += `LIMIT ${limit}`;
-      }
+      query += `LIMIT ${this.connection.escape((queries.page - 1) * queries.limit)}, ${this.connection.escape(queries.limit)} `;
 
       this.executeAndLogQuery(this.connection.query(query, function(err, rows, fields) {
         if (err) return reject(new Error('[MySQLDatabase.js] ' + err));
