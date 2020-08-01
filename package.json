@@ -7,8 +7,9 @@
     "dev": "nodemon app.js",
     "start": "node app.js",
     "test": "jest",
-    "test2": "jest --watch",
-    "test3": "jest --coverage"
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:detectOpenHandles": "jest --detectOpenHandles"
   },
   "keywords": [],
   "author": "",
