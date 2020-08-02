@@ -20,7 +20,7 @@ class DBLogger {
    */
   async getLatestFolderID() {
     const res = await this.db.executeRaw(`SELECT folder_id FROM update_history ORDER BY updated_at DESC LIMIT 1`);
-    console.log('res: ', res[0]);
+
     if (!res[0]) {
       return '';
     }
@@ -29,6 +29,18 @@ class DBLogger {
 
   async insertToUpdateSummary(folderID) {
     return this.db.insert('update_history', {'id': 'NULL', 'folder_id': `'${folderID}'`, 'updated_at': 'current_timestamp()'});
+  }
+
+  async getLastUpdateDate() {
+    const res = await this.db.executeRaw(`SELECT updated_at FROM update_history ORDER BY updated_at DESC LIMIT 1`);
+
+    if (!res[0]) {
+      return '';
+    }
+
+    return new Date(res[0].updated_at).toLocaleString('en-US', {
+      timeZone: 'Asia/Shanghai',
+    }) || '';
   }
 }
 

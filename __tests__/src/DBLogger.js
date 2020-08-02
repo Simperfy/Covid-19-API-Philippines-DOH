@@ -12,7 +12,7 @@ class DatabaseAdapterMock {
   }
 }
 
-test('should return latest folder id', async () => {
+/*test('should return latest folder id', async () => {
   const dbLogger = await new DBLogger();
   dbLogger.db = new DatabaseAdapterMock();
   const executeRawMock = jest.spyOn(dbLogger.db, 'executeRaw');
@@ -32,4 +32,12 @@ test('should insert latest folder id', async () => {
 
   expect(insertRawMock).toHaveBeenCalledWith('update_history', {'id': 'NULL', 'folder_id': `'folderID1'`, 'updated_at': 'current_timestamp()'});
   expect(res).toBe('success');
+});*/
+
+test('should latest update date', async () => {
+  const dbLogger = await new DBLogger();
+
+  const res = await dbLogger.getLastUpdateDate();
+  console.log(res);
+  // expect(res).toBe('success');
 });

@@ -30,6 +30,9 @@ const port = process.env.PORT || 3000;
 const MySQLDatabase = require('./src/Database/MySQLDatabase');
 const DatabaseAdapter = require('./src/Database/DatabaseAdapter');
 
+// Database Logger
+const DBLogger = require('./src/DBLogger');
+
 let db;
 (
   async () => {
@@ -65,17 +68,20 @@ app.use(morgan((tokens, req, res) => {
 }));
 
 // Custom middleware
-app.use(function(req, res, next) {
+app.use(async (req, res, next) => {
   if (forceRedirectToHome && req.url !== '/') {
     forceRedirectToHome = false;
     console.log('Force redirect to home');
     return res.redirect('/');
   }
 
+  const dbLogger = await new DBLogger();
+
   // Clear data before every request
   jsonStructure = {
     'data': [],
   };
+  jsonStructure.last_update = await dbLogger.getLastUpdateDate();
   next();
 });
 
