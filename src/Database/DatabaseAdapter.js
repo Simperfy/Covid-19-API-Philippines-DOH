@@ -102,7 +102,7 @@ class DatabaseAdapter {
    * @return {Promise<String>}
    */
   insert(tableName, fieldValueObj) {
-    return this.db.insert();
+    return this.db.insert(tableName, fieldValueObj);
   }
 
   /**

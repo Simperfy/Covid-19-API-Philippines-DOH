@@ -19,13 +19,16 @@ class DBLogger {
    * @return {Promise<String>}
    */
   async getLatestFolderID() {
-    console.log(typeof(this.db));
     const res = await this.db.executeRaw(`SELECT folder_id FROM update_history ORDER BY updated_at DESC LIMIT 1`);
-    return res[0].folder_id;
+    console.log('res: ', res[0]);
+    if (!res[0]) {
+      return '';
+    }
+    return res[0].folder_id || '';
   }
 
   async insertToUpdateSummary(folderID) {
-    await this.db.insert('update_history', {'id': 'NULL', 'folder_id': `'${folderID}'`, 'updated_at': 'current_timestamp()'});
+    return this.db.insert('update_history', {'id': 'NULL', 'folder_id': `'${folderID}'`, 'updated_at': 'current_timestamp()'});
   }
 }
 

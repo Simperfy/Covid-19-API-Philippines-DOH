@@ -95,7 +95,7 @@ class GoogleDriveApi {
 
   /**
    * downloads latest file based from the latest pdf
-   * @return {Promise<void>}
+   * @return {Promise<String|null>}
    */
   downloadLatestFile() {
     return this.googleDriveApiFileManager.downloadLatestFile();

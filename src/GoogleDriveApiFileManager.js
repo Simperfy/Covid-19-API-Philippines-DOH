@@ -9,6 +9,7 @@ const PDFHandler = require('./PDFHandler').PDFHandler;
 const TMP_PATH = path.join(__dirname, '/../tmp');
 const DATA_DROP_LINK = 'http://bit.ly/DataDropPH';
 
+const DBLogger = require('./DBLogger');
 /**
  * Handles Google Files
  */
@@ -293,7 +294,7 @@ class GoogleDriveApiFileManager {
 
   /**
    *
-   * @return {Promise<void>}
+   * @return {Promise<String|Boolean>}
    */
   async downloadLatestFileFromDataDrop() {
     const t = this;
@@ -315,18 +316,29 @@ class GoogleDriveApiFileManager {
           if (err) return reject(new Error('[GoogleDriveApiFileManager.js] ' + err));
           console.log('Long url: ' + longUrl);
           const folderID = this.extractFolderIDFromURL(longUrl);
-          console.log('Folder ID: ' + folderID);
-          await t.getFilesInRootFolder(folderID).then(async (files) => {
-            // console.log(files);
-            const file = files.filter((data) =>
-              (-1 !== data.name.search('Case Information.csv')),
-            );
-            if (file.length < 0) {
-              return reject(new Error('[GoogleDriveApiFileManager.js] Error Case information.csv not found'));
-            }
-            console.log('Latest file info(From PDF): ' + file[0]);
-            resolve(await t.downloadFile(file[0], 'Data.csv'));
-          }).catch((err) => console.log('[GoogleDriveApiFileManager.js]  '+ err));
+          const dbLogger = await new DBLogger();
+          const previousFolderID = await dbLogger.getLatestFolderID();
+
+          if (folderID === previousFolderID) {
+            console.log('\nPrevious folder ID is the same as target folder ID');
+            console.log('Skipping the download of csv file');
+            resolve('SKIP');
+          } else {
+            console.log('\nFolder ID: ' + folderID);
+            console.log('Logging folder id...');
+            await dbLogger.insertToUpdateSummary(folderID);
+
+            await t.getFilesInRootFolder(folderID).then(async (files) => {
+              const file = files.filter((data) =>
+                (-1 !== data.name.search('Case Information.csv')),
+              );
+              if (file.length < 0) {
+                return reject(new Error('[GoogleDriveApiFileManager.js] Error Case information.csv not found'));
+              }
+              console.log('Latest file info(From PDF): ' + file[0]);
+              resolve(await t.downloadFile(file[0], 'Data.csv'));
+            }).catch((err) => console.log('[GoogleDriveApiFileManager.js] ' + err));
+          }
         });
       });
     });
@@ -334,21 +346,27 @@ class GoogleDriveApiFileManager {
 
   /**
    * Downloads Latest file from DataDrop or DataDrop Archives
-   * @return {Promise<void>}
+   * @return {Promise<String|null>}
    */
   async downloadLatestFile() {
     // @TODO @DOGGO This code needs refactoring
     const t = this;
-    console.log('Downloading latest csv file from latest pdf');
-    await this.downloadLatestFileFromDataDrop().then((data) => {
-      if (data === false) {
-        console.log('\nDownloading latest csv file from archives instead');
-        t.downloadLatestFileFromArchives().catch((err) => {
-          console.log(err);
-          console.log('\ncsv file also failed to be downloaded from archives');
-        });
-      }
-    }).catch((err) => console.log(err));
+    return new Promise(async (resolve, reject) => {
+      console.log('Downloading latest csv file from latest pdf');
+      await this.downloadLatestFileFromDataDrop().then((data) => {
+        if (data === 'SKIP') {
+          resolve('SKIP');
+        } else if (data === false) {
+          console.log('\nDownloading latest csv file from archives instead');
+          t.downloadLatestFileFromArchives().then(() => resolve('Downloaded files from archives')).catch((err) => {
+            console.log('\ncsv file also failed to be downloaded from archives');
+            reject(new Error(err));
+          });
+        } else {
+          resolve(null);
+        }
+      }).catch((err) => reject(new Error(err)));
+    });
   }
 
   /**
