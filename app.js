@@ -55,14 +55,12 @@ if (process.env.NODE_ENV !== 'development') { // only use cache in production
 }
 app.use(morgan((tokens, req, res) => {
   return [
-    tokens['remote-addr'](req, res), '-',
-    tokens['remote-user'](req, res),
     '[' + new Date().toLocaleString('en-US', {
       timeZone: 'Asia/Shanghai',
     }) + ']',
-    tokens.method(req, res), '',
-    `"${tokens.url(req, res)}"`,
-    tokens.status(req, res),
+    `\x1b[35m${tokens.method(req, res)}\x1b[0m`,
+    `\x1b[4m"${tokens.url(req, res)}\x1b[0m"`,
+    `\x1b[36m${tokens.status(req, res)}\x1b[0m`,
     tokens.res(req, res, 'content-length'), '-',
     tokens['response-time'](req, res), 'ms',
   ].join(' ');
