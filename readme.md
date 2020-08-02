@@ -6,7 +6,7 @@
 ![Forks](https://img.shields.io/github/forks/Simperfy/Covid-19-API-Philippines-DOH?style=plastic&logo=github)
 ![Tweet](https://img.shields.io/twitter/url?url=https%3A%2F%2Fgithub.com%2FSimperfy%2FCovid-19-API-Philippines-DOH)
 
-#### Covid-19 Web API for Philippines from data collected by DOH using Node.js that updates itself every 24 hours.
+#### Covid-19 Web API for Philippines from data collected by DOH using Node.js that automatically updates itself.
 > A Web API doesn't use web scraping to fetch data from DOH website instead it collects the data from the csv file from DOH Google Drive.
 > This means that even if DOH website changes this API will be able to maintain itself.
 

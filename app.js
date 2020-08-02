@@ -30,6 +30,9 @@ const port = process.env.PORT || 3000;
 const MySQLDatabase = require('./src/Database/MySQLDatabase');
 const DatabaseAdapter = require('./src/Database/DatabaseAdapter');
 
+// Database Logger
+const DBLogger = require('./src/DBLogger');
+
 let db;
 (
   async () => {
@@ -37,6 +40,7 @@ let db;
   }
 )();
 
+const updateInterval = parseFloat(process.env.UPDATE_INTERVAL) || 24;
 const maxLimit = 10000;
 let forceRedirectToHome = false;
 let jsonStructure = {
@@ -65,22 +69,26 @@ app.use(morgan((tokens, req, res) => {
 }));
 
 // Custom middleware
-app.use(function(req, res, next) {
+app.use(async (req, res, next) => {
   if (forceRedirectToHome && req.url !== '/') {
     forceRedirectToHome = false;
     console.log('Force redirect to home');
     return res.redirect('/');
   }
 
+  const dbLogger = await new DBLogger();
+
   // Clear data before every request
   jsonStructure = {
     'data': [],
   };
+  jsonStructure.last_update = await dbLogger.getLastUpdateDate();
   next();
 });
 
 // eslint-disable-next-line new-cap
 const router = express.Router();
+
 
 (
   // Initialize Google Auth Token
@@ -88,7 +96,7 @@ const router = express.Router();
     await GDriveApi.getAuth().then(async () => {
       if (process.env.NODE_ENV === 'production') {
         await autoUpdate();
-        setInterval(await autoUpdate, ((1000 * 60) * 60) * 24 ); // 1min -> 1 hr -> 24 hrs
+        setInterval(await autoUpdate, ( (1000 * 60) * 60) * updateInterval ); // 1min -> 1 hr -> 24 hrs
       }
     }).catch((err) => {
       forceRedirectToHome = true;
@@ -106,32 +114,41 @@ const router = express.Router();
  * @return {Promise<void>}
  */
 async function autoUpdate() {
+  // @TODO @DOGGO this needs heavy refactoring
+  let shouldSkip = false;
   console.log('\nAuto Update Initialized');
-  await GDriveApi.downloadLatestFile().then(() => {
-    console.log('Downloaded Latest Files');
+  console.log('Interval hr: ' + updateInterval);
+  await GDriveApi.downloadLatestFile().then((data) => {
+    if (data === 'SKIP') {
+      shouldSkip = true;
+      console.log('Skipping download of files');
+    } else {
+      console.log('data: ', data);
+    }
   }).catch((err) => {
     console.log('Error Downloading Latest Files: ' + err);
   });
 
-  await db.updateDatabaseFromCSV().then((data) => {
-    if (data === true) {
-      console.log('Database Updated Successfully');
-    } else {
-      console.log('Something went wrong while updating database');
-    }
-  }).catch((err) => {
-    console.log('Error Updating Database: ' + err);
-  });
+  console.log('SKIP ', shouldSkip);
+  if (!shouldSkip) {
+    await db.updateDatabaseFromCSV().then((data) => {
+      if (data === true) {
+        console.log('Database Updated Successfully');
+      } else {
+        console.log('Something went wrong while updating database');
+      }
+    }).catch((err) => {
+      console.log('Error Updating Database: ' + err);
+    });
+  }
 }
 
 router.get('/updateDatabase', async (req, res) => {
   if (process.env.NODE_ENV === 'development') {
     await autoUpdate().then(() => {
       res.json({'success': true});
-      console.log('Downloaded Latest Files');
     }).catch((err) => {
       res.json({'success': false});
-      console.log('Error Downloading Latest Files: ' + err);
     });
   } else {
     res.send('You cannot manually update database in production.');
