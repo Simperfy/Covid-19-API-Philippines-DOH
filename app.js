@@ -20,7 +20,6 @@ const DBLogger = require('./src/DBLogger');
 const updateInterval = parseFloat(process.env.UPDATE_INTERVAL) || 24;
 const maxLimit = 10000;
 let db;
-let forceRedirectToHome = false;
 let jsonRespStructure = {
   'data': [],
 };
@@ -37,7 +36,7 @@ if (process.env.NODE_ENV !== 'development') { // only use cache in production
   }).middleware;
   app.use(cache('6 hours'));
 }
-app.use(morgan((tokens, req, res) => {
+app.use(morgan((tokens, req, res) => { // HTTP Logger
   return [
     '[' + new Date().toLocaleString('en-US', {
       timeZone: 'Asia/Shanghai',
@@ -51,18 +50,12 @@ app.use(morgan((tokens, req, res) => {
 }));
 // Custom middleware
 app.use(async (req, res, next) => {
-  if (forceRedirectToHome && req.url !== '/') {
-    forceRedirectToHome = false;
-    console.log('Force redirect to home');
-    return res.redirect('/');
-  }
-
   const dbLogger = await new DBLogger();
-
   // Clear data before every request
   jsonRespStructure = {
     'data': [],
   };
+  // add last_update to json response
   jsonRespStructure.last_update = await dbLogger.getLastUpdateDate();
   next();
 });
@@ -80,7 +73,6 @@ const router = express.Router();
       setInterval(await autoUpdate, ( (1000 * 60) * 60) * updateInterval ); // 1min -> 1 hr -> 24 hrs
     }
   }).catch((err) => {
-    forceRedirectToHome = true;
     if (err.err) {
       console.log('\n' + err.err);
     } else {
@@ -177,7 +169,6 @@ router.get('/get', async (req, res) => {
     if (jsonRespStructure.pagination.previous_page <= 0) {
       delete jsonRespStructure.pagination.previous_page;
     }
-
     if (jsonRespStructure.pagination.next_page >= maxPage) {
       delete jsonRespStructure.pagination.next_page;
     }
@@ -218,11 +209,7 @@ router.get('/summary', async (req, res) => {
 app.use('/api', router); // Add prefix "/api" to routes above
 
 app.get('/', async (req, res) => {
-  try {
-    res.send('<html>Endpoints and documentation are available <a href="https://github.com/Simperfy/Covid-19-API-Philippines-DOH#-endpoints">here</a></html>');
-  } catch (err) {
-    res.send('ERROR Verifying Google Token: \n' + JSON.stringify(err));
-  }
+  res.send('<html>Endpoints and documentation are available <a href="https://github.com/Simperfy/Covid-19-API-Philippines-DOH#-endpoints">here</a></html>');
 });
 
 module.exports = app;
