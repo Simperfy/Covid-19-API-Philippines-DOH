@@ -3,7 +3,7 @@ require('dotenv').config();
 const DBLogger = require('../../src/DBLogger');
 
 class DatabaseAdapterMock {
-  executeRaw() {
+  executeRaw(query) {
     return [{'folder_id': 'folder 3'}];
   }
 
@@ -12,9 +12,16 @@ class DatabaseAdapterMock {
   }
 }
 
-/*test('should return latest folder id', async () => {
-  const dbLogger = await new DBLogger();
+let dbLogger = null;
+let realDB = null;
+
+beforeAll(async () => {
+  dbLogger = await new DBLogger();
+  realDB = dbLogger.db;
   dbLogger.db = new DatabaseAdapterMock();
+});
+
+test('should return latest folder id', async () => {
   const executeRawMock = jest.spyOn(dbLogger.db, 'executeRaw');
 
   const res = await dbLogger.getLatestFolderID();
@@ -24,20 +31,22 @@ class DatabaseAdapterMock {
 });
 
 test('should insert latest folder id', async () => {
-  const dbLogger = await new DBLogger();
-  dbLogger.db = new DatabaseAdapterMock();
   const insertRawMock = jest.spyOn(dbLogger.db, 'insert');
 
   const res = await dbLogger.insertToUpdateSummary('folderID1');
 
   expect(insertRawMock).toHaveBeenCalledWith('update_history', {'id': 'NULL', 'folder_id': `'folderID1'`, 'updated_at': 'current_timestamp()'});
   expect(res).toBe('success');
-});*/
+});
 
-test('should latest update date', async () => {
-  const dbLogger = await new DBLogger();
+test('should update latest update_at', async () => {
+  const executeRawMock = jest.spyOn(dbLogger.db, 'executeRaw');
 
-  const res = await dbLogger.getLastUpdateDate();
-  console.log(res);
-  // expect(res).toBe('success');
+  await dbLogger.getLastUpdateDate();
+
+  expect(executeRawMock).toHaveBeenCalled();
+});
+
+afterAll(() => {
+  realDB.endConnection();
 });
