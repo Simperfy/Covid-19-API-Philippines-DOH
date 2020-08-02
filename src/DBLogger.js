@@ -27,10 +27,6 @@ class DBLogger {
   async insertToUpdateSummary(folderID) {
     await this.db.insert('update_history', {'id': 'NULL', 'folder_id': `'${folderID}'`, 'updated_at': 'current_timestamp()'});
   }
-
-  hello() {
-    return 'hello world';
-  }
 }
 
 module.exports = DBLogger;
