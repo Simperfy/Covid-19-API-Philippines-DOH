@@ -40,6 +40,7 @@ let db;
   }
 )();
 
+const updateInterval = parseFloat(process.env.UPDATE_INTERVAL) || 24;
 const maxLimit = 10000;
 let forceRedirectToHome = false;
 let jsonStructure = {
@@ -88,13 +89,14 @@ app.use(async (req, res, next) => {
 // eslint-disable-next-line new-cap
 const router = express.Router();
 
+
 (
   // Initialize Google Auth Token
   async () => {
     await GDriveApi.getAuth().then(async () => {
       if (process.env.NODE_ENV === 'production') {
         await autoUpdate();
-        setInterval(await autoUpdate, ((1000 * 60) * 60) * 24 ); // 1min -> 1 hr -> 24 hrs
+        setInterval(await autoUpdate, ( (1000 * 60) * 60) * updateInterval ); // 1min -> 1 hr -> 24 hrs
       }
     }).catch((err) => {
       forceRedirectToHome = true;
@@ -115,6 +117,7 @@ async function autoUpdate() {
   // @TODO @DOGGO this needs heavy refactoring
   let shouldSkip = false;
   console.log('\nAuto Update Initialized');
+  console.log('Interval hr: ' + ( ( (updateInterval / 1000) / 60) / 60) );
   await GDriveApi.downloadLatestFile().then((data) => {
     if (data === 'SKIP') {
       shouldSkip = true;
