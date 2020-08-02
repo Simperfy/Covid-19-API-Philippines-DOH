@@ -24,7 +24,6 @@ const GDriveApi = new GoogleDriveApi();
 // SERVER VARS
 const express = require('express');
 const app = express();
-const port = process.env.PORT || 3000;
 
 // Database vars
 const MySQLDatabase = require('./src/Database/MySQLDatabase');
@@ -244,7 +243,4 @@ app.get('/', async (req, res) => {
   }
 });
 
-app.listen(port, () => console.log(`\nStarted Server at port ${port}`)).on('close', () => {
-  console.log('Terminating Database connection.');
-  db.endConnection();
-});
+module.exports = app;
