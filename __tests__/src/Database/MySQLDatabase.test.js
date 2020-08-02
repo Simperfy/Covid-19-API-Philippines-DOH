@@ -1,6 +1,7 @@
 /* eslint-disable max-len */
 require('dotenv').config();
 const MySQLDatabase = require('../../../src/Database/MySQLDatabase');
+console.log = () => {}; // disable logs
 
 test('should be singleton', async () => {
   const mySQLDatabase1 = new MySQLDatabase();

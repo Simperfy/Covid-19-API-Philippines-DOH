@@ -1,6 +1,7 @@
 /* eslint-disable max-len,require-jsdoc */
 require('dotenv').config();
 const DBLogger = require('../../src/DBLogger');
+console.log = () => {}; // disable logs
 
 class DatabaseAdapterMock {
   executeRaw(query) {

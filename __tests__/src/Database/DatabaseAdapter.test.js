@@ -1,6 +1,7 @@
 /* eslint-disable max-len,require-jsdoc */
 const DatabaseAdapter = require('../../../src/Database/DatabaseAdapter');
 const MySQLDatabase = require('../../../src/Database/MySQLDatabase');
+console.log = () => {}; // disable logs
 
 jest.mock('../../../src/Database/MySQLDatabase');
 

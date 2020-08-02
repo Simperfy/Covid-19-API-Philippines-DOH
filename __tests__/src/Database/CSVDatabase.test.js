@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 const CSVDatabase = require('../../../src/Database/CSVDatabase');
-
+console.log = () => {}; // disable logs
 
 test('Should be a singleton', async () => {
   const csvDatabase1 = await new CSVDatabase();
