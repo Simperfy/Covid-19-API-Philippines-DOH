@@ -117,7 +117,7 @@ async function autoUpdate() {
   // @TODO @DOGGO this needs heavy refactoring
   let shouldSkip = false;
   console.log('\nAuto Update Initialized');
-  console.log('Interval hr: ' + ( ( (updateInterval / 1000) / 60) / 60) );
+  console.log('Interval hr: ' + updateInterval);
   await GDriveApi.downloadLatestFile().then((data) => {
     if (data === 'SKIP') {
       shouldSkip = true;
