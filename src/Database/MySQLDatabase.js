@@ -119,7 +119,10 @@ class MySQLDatabase {
 
   /**
    * @param {String} region
-   * @return {Promise}
+   * @return {Promise<Object>} result
+   * @return {Promise<Object>} result.data
+   * @return {Promise<Object>} result.fatalityRate
+   * @return {Promise<Object>} result.recoveryRate
    */
   getSummary(region = null) {
     return new Promise((resolve, reject) => {
@@ -142,7 +145,17 @@ class MySQLDatabase {
 
       this.executeAndLogQuery(this.connection.query(query, function(err, rows, fields) {
         if (err) return reject(new Error('[MySQLDatabase.js] ' + err));
-        resolve(rows);
+        // resolve(rows);
+        let fatalityRate = rows[0].deaths / rows[0].total;
+        let recoveryRate = rows[0].recoveries / rows[0].total;
+        fatalityRate = (fatalityRate * 100).toFixed(2);
+        recoveryRate = (recoveryRate * 100).toFixed(2);
+
+        resolve({
+          'result': rows[0],
+          'fatalityRate': fatalityRate,
+          'recoveryRate': recoveryRate,
+        });
       }));
     });
   }
