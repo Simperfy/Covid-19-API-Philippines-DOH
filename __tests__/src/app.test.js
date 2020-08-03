@@ -26,16 +26,16 @@ test('GET /api/get', async () => {
   expect(res.body.result_count).toBe(10000);
 });
 
-test('GET /api/get?page=1&limit=5000', async () => {
-  const res = await request(app).get('/api/get?page=1&limit=5000');
+test('GET /api/get?page=1&limit=100', async () => {
+  const res = await request(app).get('/api/get?page=1&limit=100');
 
   expect(res.status).toBe(200);
   expect(res.body).toHaveProperty('data');
-  expect(res.body.data).toHaveLength(5000);
+  expect(res.body.data).toHaveLength(100);
   expect(res.body).toHaveProperty('last_update');
   expect(res.body).toHaveProperty('pagination');
   expect(res.body).toHaveProperty('result_count');
-  expect(res.body.result_count).toBe(5000);
+  expect(res.body.result_count).toBe(100);
 });
 
 test('GET /api/get?page=-1&limit=-1', async () => {

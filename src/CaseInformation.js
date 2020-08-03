@@ -13,7 +13,7 @@ class CaseInformation {
   }
 
   get Age() {
-    return this.age;
+    return this.age === '' ? 0 : parseInt(this.age);
   }
 
   set AgeGroup(ageGroup) {

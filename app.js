@@ -152,7 +152,13 @@ router.get('/get', async (req, res) => {
 
   await db.get({limit: limit, month: month, day: day, page: page, maxLimit: maxLimit}).then(async (data) => {
     jsonRespStructure.data = data;
-    const maxPage = Math.ceil(await db.count() / limit);
+    const dbCount = await db.count();
+    const maxPage = Math.ceil(dbCount / limit);
+
+    if (dbCount === 0) {
+      jsonRespStructure.error = `Error: There's no data found found.`;
+      return res.json(jsonRespStructure);
+    }
 
     if (page > maxPage) {
       jsonRespStructure.error = `Error: page query can\'t be greater than max_page(${maxPage})`;
