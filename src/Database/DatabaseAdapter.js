@@ -66,7 +66,10 @@ class DatabaseAdapter {
 
   /**
    * @param {String} region
-   * @return {Promise}
+   * @return {Promise<Object>} result
+   * @return {Promise<Object>} result.data
+   * @return {Promise<Object>} result.fatalityRate
+   * @return {Promise<Object>} result.recoveryRate
    */
   getSummary(region = null) {
     return this.db.getSummary(region);

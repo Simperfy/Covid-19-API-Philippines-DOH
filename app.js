@@ -1,49 +1,26 @@
 /* eslint-disable max-len */
 require('dotenv').config();
 const cors = require('cors');
-const apicache = require('apicache');
 const morgan = require('morgan');
 const compression = require('compression');
-
-const cache = apicache.options({
-  statusCodes: {
-    exclude: [404, 403, 503],
-    include: [200],
-  },
-}).middleware;
-// Disable console.log on production
-/* if (process.env.NODE_ENV === 'production') {
-  console.log = () => {};
-}*/
-
+const apicache = require('apicache');
 // GOOGLE DRIVE VARS
 const googleDriveApi = require('./src/GoogleDriveApiClient');
 const GoogleDriveApi = googleDriveApi.GoogleDriveApi;
 const GDriveApi = new GoogleDriveApi();
-
 // SERVER VARS
 const express = require('express');
 const app = express();
-const port = process.env.PORT || 3000;
-
 // Database vars
 const MySQLDatabase = require('./src/Database/MySQLDatabase');
 const DatabaseAdapter = require('./src/Database/DatabaseAdapter');
-
 // Database Logger
 const DBLogger = require('./src/DBLogger');
-
-let db;
-(
-  async () => {
-    db = await new DatabaseAdapter(new MySQLDatabase());
-  }
-)();
-
+// Express related vars
 const updateInterval = parseFloat(process.env.UPDATE_INTERVAL) || 24;
 const maxLimit = 10000;
-let forceRedirectToHome = false;
-let jsonStructure = {
+let db;
+let jsonRespStructure = {
   'data': [],
 };
 
@@ -51,63 +28,58 @@ let jsonStructure = {
 app.use(cors());
 app.use(compression());
 if (process.env.NODE_ENV !== 'development') { // only use cache in production
+  const cache = apicache.options({
+    statusCodes: {
+      exclude: [404, 403, 503],
+      include: [200],
+    },
+  }).middleware;
   app.use(cache('6 hours'));
 }
-app.use(morgan((tokens, req, res) => {
+app.use(morgan((tokens, req, res) => { // HTTP Logger
   return [
-    tokens['remote-addr'](req, res), '-',
-    tokens['remote-user'](req, res),
     '[' + new Date().toLocaleString('en-US', {
       timeZone: 'Asia/Shanghai',
     }) + ']',
-    tokens.method(req, res), '',
-    `"${tokens.url(req, res)}"`,
-    tokens.status(req, res),
+    `\x1b[35m${tokens.method(req, res)}\x1b[0m`,
+    `\x1b[4m"${tokens.url(req, res)}\x1b[0m"`,
+    `\x1b[36m${tokens.status(req, res)}\x1b[0m`,
     tokens.res(req, res, 'content-length'), '-',
     tokens['response-time'](req, res), 'ms',
   ].join(' ');
 }));
-
 // Custom middleware
 app.use(async (req, res, next) => {
-  if (forceRedirectToHome && req.url !== '/') {
-    forceRedirectToHome = false;
-    console.log('Force redirect to home');
-    return res.redirect('/');
-  }
-
   const dbLogger = await new DBLogger();
-
   // Clear data before every request
-  jsonStructure = {
+  jsonRespStructure = {
     'data': [],
   };
-  jsonStructure.last_update = await dbLogger.getLastUpdateDate();
+  // add last_update to json response
+  jsonRespStructure.last_update = await dbLogger.getLastUpdateDate();
   next();
 });
 
 // eslint-disable-next-line new-cap
 const router = express.Router();
 
-
-(
+(async () => {
+  // Initialize Database
+  db = await new DatabaseAdapter(new MySQLDatabase());
   // Initialize Google Auth Token
-  async () => {
-    await GDriveApi.getAuth().then(async () => {
-      if (process.env.NODE_ENV === 'production') {
-        await autoUpdate();
-        setInterval(await autoUpdate, ( (1000 * 60) * 60) * updateInterval ); // 1min -> 1 hr -> 24 hrs
-      }
-    }).catch((err) => {
-      forceRedirectToHome = true;
-      if (err.err) {
-        console.log('\n' + err.err);
-      } else {
-        console.log('\n' + err);
-      }
-    });
-  }
-)();
+  await GDriveApi.getAuth().then(async () => {
+    if (process.env.NODE_ENV === 'production') {
+      await autoUpdate();
+      setInterval(await autoUpdate, ( (1000 * 60) * 60) * updateInterval ); // 1min -> 1 hr -> 24 hrs
+    }
+  }).catch((err) => {
+    if (err.err) {
+      console.log('\n' + err.err);
+    } else {
+      console.log('\n' + err);
+    }
+  });
+})();
 
 /**
  * Auto update function
@@ -164,11 +136,11 @@ router.get('/filter/:field/:value', async (req, res) => {
   }
 
   await db.filter(field, value).then((data) => {
-    jsonStructure.data = data;
-    res.json(jsonStructure);
+    jsonRespStructure.data = data;
+    res.json(jsonRespStructure);
   }).catch((err) => {
-    jsonStructure.error = err.message;
-    res.json(jsonStructure);
+    jsonRespStructure.error = err.message;
+    res.json(jsonRespStructure);
   });
 });
 
@@ -179,44 +151,43 @@ router.get('/get', async (req, res) => {
   const limit = parseInt(req.query.limit) || maxLimit;
 
   await db.get({limit: limit, month: month, day: day, page: page, maxLimit: maxLimit}).then(async (data) => {
-    jsonStructure.data = data;
+    jsonRespStructure.data = data;
     const maxPage = Math.ceil(await db.count() / limit);
 
     if (page > maxPage) {
-      jsonStructure.error = `Error: page query can\'t be greater than max_page(${maxPage})`;
-      return res.json(jsonStructure);
+      jsonRespStructure.error = `Error: page query can\'t be greater than max_page(${maxPage})`;
+      return res.json(jsonRespStructure);
     }
 
-    jsonStructure.pagination = {
+    jsonRespStructure.pagination = {
       'previous_page': page - 1,
       'next_page': page + 1,
       'limit': limit,
       'max_page': maxPage,
     };
 
-    if (jsonStructure.pagination.previous_page <= 0) {
-      delete jsonStructure.pagination.previous_page;
+    if (jsonRespStructure.pagination.previous_page <= 0) {
+      delete jsonRespStructure.pagination.previous_page;
+    }
+    if (jsonRespStructure.pagination.next_page >= maxPage) {
+      delete jsonRespStructure.pagination.next_page;
     }
 
-    if (jsonStructure.pagination.next_page >= maxPage) {
-      delete jsonStructure.pagination.next_page;
-    }
-
-    jsonStructure.result_count = data.length;
-    res.json(jsonStructure);
+    jsonRespStructure.result_count = data.length;
+    res.json(jsonRespStructure);
   }).catch((err) => {
-    jsonStructure.error = err.message;
-    res.json(jsonStructure);
+    jsonRespStructure.error = err.message;
+    res.json(jsonRespStructure);
   });
 });
 
 router.get('/timeline', async (req, res) => {
   await db.getTimeline().then((data) => {
-    jsonStructure.data = data;
-    res.json(jsonStructure);
+    jsonRespStructure.data = data;
+    res.json(jsonRespStructure);
   }).catch((err) => {
-    jsonStructure.error = err.message;
-    res.json(jsonStructure);
+    jsonRespStructure.error = err.message;
+    res.json(jsonRespStructure);
   });
 });
 
@@ -224,29 +195,21 @@ router.get('/summary', async (req, res) => {
   const region = req.query.region || null;
 
   await db.getSummary(region).then((data) => {
-    jsonStructure.data = data[0];
-    const fatalityRate = data[0].deaths / data[0].total;
-    const recoveryRate = data[0].recoveries / data[0].total;
-    jsonStructure.data.fatality_rate = (fatalityRate * 100).toFixed(2);
-    jsonStructure.data.recovery_rate = (recoveryRate * 100).toFixed(2);
-    res.json(jsonStructure);
+    ({result: jsonRespStructure.data,
+      fatalityRate: jsonRespStructure.data.fatality_rate,
+      recoveryRate: jsonRespStructure.data.recovery_rate} = data);
+
+    res.json(jsonRespStructure);
   }).catch((err) => {
-    jsonStructure.error = err.message;
-    res.json(jsonStructure);
+    jsonRespStructure.error = err.message;
+    res.json(jsonRespStructure);
   });
 });
 
 app.use('/api', router); // Add prefix "/api" to routes above
 
 app.get('/', async (req, res) => {
-  try {
-    res.send('<html>Endpoints and documentation are available <a href="https://github.com/Simperfy/Covid-19-API-Philippines-DOH#-endpoints">here</a></html>');
-  } catch (err) {
-    res.send('ERROR Verifying Google Token: \n' + JSON.stringify(err));
-  }
+  res.send('<html>Endpoints and documentation are available <a href="https://github.com/Simperfy/Covid-19-API-Philippines-DOH#-endpoints">here</a></html>');
 });
 
-app.listen(port, () => console.log(`\nStarted Server at port ${port}`)).on('close', () => {
-  console.log('Terminating Database connection.');
-  db.endConnection();
-});
+module.exports = app;
