@@ -26,6 +26,7 @@
     "firebase-admin": "^8.13.0",
     "google-auth-library": "^6.0.5",
     "googleapis": "^39.2.0",
+    "mongodb": "^3.6.0",
     "morgan": "^1.10.0",
     "mysql": "^2.18.1",
     "pdf-parse": "^1.1.1"
