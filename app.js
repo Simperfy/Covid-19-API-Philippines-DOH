@@ -12,7 +12,6 @@ const GDriveApi = new GoogleDriveApi();
 const express = require('express');
 const app = express();
 // Database vars
-const MySQLDatabase = require('./src/Database/MySQLDatabase');
 const DatabaseAdapter = require('./src/Database/DatabaseAdapter');
 // Database Logger
 const DBLogger = require('./src/DBLogger');
@@ -65,7 +64,7 @@ const router = express.Router();
 
 (async () => {
   // Initialize Database
-  db = await new DatabaseAdapter(new MySQLDatabase());
+  db = await new DatabaseAdapter();
   // Initialize Google Auth Token
   await GDriveApi.getAuth().then(async () => {
     if (process.env.NODE_ENV === 'production') {

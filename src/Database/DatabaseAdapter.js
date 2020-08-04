@@ -1,5 +1,6 @@
 /* eslint-disable max-len */
 const CSVDatabase = require('./CSVDatabase');
+const MongoDBDatabase = require('./MongoDBDatabase');
 // const CaseInformation = require('../CaseInformation');
 
 /**
@@ -8,16 +9,15 @@ const CSVDatabase = require('./CSVDatabase');
 class DatabaseAdapter {
   /**
    * Initialize Database and make this a singleton
-   * @param {*} database Database class
    * @return {Promise<DatabaseAdapter>}
    */
-  constructor(database) {
+  constructor() {
     return (async () => {
       if (!DatabaseAdapter.instance) {
         DatabaseAdapter.instance=this;
 
         console.log('Connecting to database');
-        const msg = await this.connect(database);
+        const msg = await this.connect(new MongoDBDatabase());
         console.log(msg);
       }
 

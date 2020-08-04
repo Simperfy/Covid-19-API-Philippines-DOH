@@ -1,13 +1,12 @@
 /* eslint-disable require-jsdoc,max-len */
 const DatabaseAdapter = require('./Database/DatabaseAdapter');
-const MySQLDatabase = require('./Database/MySQLDatabase');
 
 class DBLogger {
   constructor() {
     return (async () => {
       if (!DBLogger.instance) {
         DBLogger.instance = this;
-        this.db = await new DatabaseAdapter(new MySQLDatabase());
+        this.db = await new DatabaseAdapter();
       }
 
       return DBLogger.instance;
