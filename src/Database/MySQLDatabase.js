@@ -1,4 +1,3 @@
-/* eslint-disable require-jsdoc */
 /* eslint-disable max-len */
 const mysql = require('mysql');
 
@@ -27,6 +26,9 @@ class MySQLDatabase {
     return MySQLDatabase.instance;
   }
 
+  /**
+   * @return {Promise<*>}
+   */
   connect() {
     return new Promise((resolve, reject) => {
       this.connection.connect((err) => {
@@ -245,8 +247,9 @@ class MySQLDatabase {
   }
 
   /**
-   * @param {[CaseInformation]} csArr
+   * @param {CaseInformation[]} csArr
    * @param {int} batchSize
+   * @return {Promise<boolean>}
    */
   async batchInsertDatabaseFromCSV(csArr, batchSize=10000) {
     console.log(`\nPerforming batch insert (batch size: ${batchSize}):`);

@@ -12,6 +12,9 @@ class MongoDBDatabase {
     return MongoDBDatabase.instance;
   }
 
+  /**
+   * @return {Promise<*>}
+   */
   connect() {
     return new Promise(async (resolve, reject) => {
       let dbUrl;
@@ -95,8 +98,9 @@ class MongoDBDatabase {
   }
 
   /**
-   * @param {[CaseInformation]} csArr
+   * @param {CaseInformation[]} csArr
    * @param {int} batchSize
+   * @return {Promise<boolean>}
    */
   async batchInsertDatabaseFromCSV(csArr, batchSize=10000) {
     console.log(`\nPerforming batch insert (batch size: ${batchSize}):`);
