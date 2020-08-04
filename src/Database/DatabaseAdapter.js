@@ -107,14 +107,6 @@ class DatabaseAdapter {
   }
 
   /**
-   * @param {String} query
-   * @return {Promise}
-   */
-  executeRaw(query) {
-    return this.db.executeRaw(query);
-  }
-
-  /**
    * Truncates Database table
    * @param {String} tableName
    * @return {Promise<void>}
