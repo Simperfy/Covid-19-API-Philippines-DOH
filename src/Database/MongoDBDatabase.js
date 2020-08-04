@@ -1,12 +1,12 @@
 /* eslint-disable require-jsdoc,max-len */
-const MongoClient = require('mongodb').MongoClient;
+const MongoDB = require('mongodb');
 
 class MongoDBDatabase {
   constructor() {
     if (!MongoDBDatabase.instance) {
       MongoDBDatabase.instance=this;
 
-      this.connection = MongoClient;
+      this.connection = MongoDB.MongoClient;
     }
 
     return MongoDBDatabase.instance;
@@ -52,7 +52,6 @@ class MongoDBDatabase {
 
       this.connection.then(async (client) => {
         const db = client.db();
-
         const collection = db.collection('case_informations');
 
         let filter = {};
@@ -89,13 +88,58 @@ class MongoDBDatabase {
         }
 
         try {
-          const cursor = await collection.find(filter, opt).sort(sortOpt);
-          resolve(await cursor.toArray());
+          const result = await collection.find(filter, opt).sort(sortOpt);
+          resolve(await result.toArray());
         } catch (e) {
           reject(new Error(e));
         }
       });
     });
+  }
+
+  // @TODO @Doggo merge getLatestFolderID and getLastUpdateDate to one function
+  /**
+   *
+   * @return {Promise<String>}
+   */
+  async getLatestFolderID() {
+    let res;
+    await this.connection.then(async (client) => {
+      const db = client.db();
+      const collection = db.collection('update_history');
+
+      try {
+        const result = await collection.find({}, {limit: 1}).sort({updated_at: -1});
+        res = await result.toArray();
+      } catch (e) {
+        reject(new Error(e));
+      }
+    });
+
+    return res[0].folder_id || '';
+  }
+
+  /**
+   *
+   * @return {Promise<String>}
+   */
+  async getLastUpdateDate() {
+    let res;
+    await this.connection.then(async (client) => {
+      const db = client.db();
+      const collection = db.collection('update_history');
+
+      try {
+        const result = await collection.find({}, {limit: 1}).sort({updated_at: -1});
+        res = await result.toArray();
+      } catch (e) {
+        reject(new Error(e));
+      }
+    });
+
+    return new Date(res[0]._id.getTimestamp()).toLocaleString('en-US', {
+      timeZone: 'Asia/Shanghai',
+    }) || '';
   }
 
   /**
@@ -107,7 +151,6 @@ class MongoDBDatabase {
     return new Promise((resolve, reject) => {
       this.connection.then((client) => {
         const db = client.db();
-
         let collection = db.collection('case_informations');
 
         if (objFilters !== null) {
