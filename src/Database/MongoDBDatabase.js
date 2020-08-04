@@ -17,19 +17,7 @@ class MongoDBDatabase {
    */
   connect() {
     return new Promise(async (resolve, reject) => {
-      let dbUrl;
-
-      const dbHost = process.env.DB_HOST;
-      const dbUser = process.env.DB_USER;
-      const dbPass = process.env.DB_PASSWORD;
-      const dbName = process.env.DB_DATABASE;
-
-      if (process.env.NODE_ENV === 'development') {
-        // You may need to change auth source
-        dbUrl = `mongodb://${dbUser}:${dbPass}@${dbHost}/${dbName}?retryWrites=true&w=majority&authSource=admin`;
-      } else {
-        dbUrl = `mongodb+srv://${dbUser}:${dbPass}@${dbHost}/${dbName}?retryWrites=true&w=majority`;
-      }
+      const dbUrl = process.env.DB_NOSQL_URI;
 
       this.connection = this.connection.connect(dbUrl, {
         useNewUrlParser: true,
@@ -73,6 +61,7 @@ class MongoDBDatabase {
 
         return collection.countDocuments().then((data) => {
           resolve(data);
+          client.close();
         }).catch((err) => reject(new Error(err)));
       });
     });
@@ -85,12 +74,29 @@ class MongoDBDatabase {
    */
   truncate(tableName) {
     return new Promise(async (resolve, reject) => {
+      let db;
       await this.connection.then(async (client) => {
-        const db = client.db();
-        return db.collection(tableName).drop();
-      }).then((result) => {
-        console.log(result);
-        resolve(result);
+        db = client.db();
+        await db.listCollections().toArray(function(err, items) {
+          if (err) throw err;
+
+          items.forEach(async (item) => {
+            if (item.name === tableName) {
+              console.log('Dropping: ' + item.name);
+              await db.collection(tableName).drop().then((result) => {
+                console.log(result);
+                resolve(result);
+              });
+            }
+          });
+
+          if (items.length === 0) {
+            console.log('No collections in database');
+            resolve('No collections in database');
+          }
+        });
+
+        resolve('Table not found');
       }).catch((err) => {
         reject(new Error('[MySQLDatabase.js] ' + err));
       });
@@ -147,6 +153,7 @@ class MongoDBDatabase {
       await this.connection.then(async (client) => {
         const db = client.db();
         await db.collection('case_informations').insertMany(caseInfos, {forceServerObjectId: true});
+        db.close();
       });
       console.log(`Inserted: ${caseInfos.length} rows`);
     }
