@@ -136,6 +136,7 @@ router.get('/filter/:field/:value', async (req, res) => {
 
   await db.filter(field, value).then((data) => {
     jsonRespStructure.data = data;
+    jsonRespStructure.result_count = data.length;
     res.json(jsonRespStructure);
   }).catch((err) => {
     jsonRespStructure.error = err.message;

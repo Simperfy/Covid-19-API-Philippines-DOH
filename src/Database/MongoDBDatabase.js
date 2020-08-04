@@ -183,6 +183,30 @@ class MongoDBDatabase {
   }
 
   /**
+   * @param {String} field
+   * @param {String|Number} value
+   * @return {Promise} Contains JSON
+   */
+  filter(field, value) {
+    return new Promise(async (resolve, reject) => {
+      await this.connection.then(async (client) => {
+        const db = client.db();
+        const collection = db.collection('case_informations');
+
+        const filter = {};
+        filter[field] = value;
+
+        try {
+          const result = await collection.find(filter);
+          resolve(await result.toArray());
+        } catch (e) {
+          reject(new Error(e));
+        }
+      });
+    });
+  }
+
+  /**
    * Truncates Database table
    * @param {String} tableName
    * @return {Promise<void>}
@@ -232,26 +256,6 @@ class MongoDBDatabase {
           reject(new Error(e));
         }
       });
-      /* let fields = '';
-      let values = '';
-      let i = 0;
-
-      Object.entries(fieldValueObj).forEach(([field, value])=>{
-        fields += field;
-        values += value;
-        if (i < Object.entries(fieldValueObj).length - 1) {
-          fields += ', ';
-          values += ', ';
-        }
-        i++;
-      });
-
-      const query = `INSERT INTO update_history (${fields}) VALUES (${values})`;
-
-      this.executeAndLogQuery(this.connection.query(query, function(err, rows, fields) {
-        if (err) return reject(new Error('[MySQLDatabase.js] ' + err));
-        resolve(rows);
-      }));*/
     });
   }
 
