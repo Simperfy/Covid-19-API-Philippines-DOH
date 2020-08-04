@@ -22,7 +22,15 @@ class DBLogger {
   }
 
   async insertToUpdateSummary(folderID) {
-    return this.dba.insert('update_history', {'id': 'NULL', 'folder_id': `'${folderID}'`, 'updated_at': 'current_timestamp()'});
+    if (process.env.DATABASE_TYPE.toLowerCase() === 'mysql') {
+      return this.dba.insert('update_history', {'id': 'NULL', 'folder_id': `'${folderID}'`, 'updated_at': 'current_timestamp()'});
+    } else if (process.env.DATABASE_TYPE.toLowerCase() === 'nosql') {
+      return this.dba.insert('update_history', {'folder_id': `${folderID}`, 'updated_at': `${new Date().toLocaleString('en-US', {
+        timeZone: 'Asia/Shanghai',
+      })}`});
+    } else {
+      throw new Error('No DATABASE_TYPE specified');
+    }
   }
 
   /**

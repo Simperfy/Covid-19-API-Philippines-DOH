@@ -116,6 +116,10 @@ class MongoDBDatabase {
       }
     });
 
+    if (res.length === 0) {
+      return '';
+    }
+
     return res[0].folder_id || '';
   }
 
@@ -136,6 +140,10 @@ class MongoDBDatabase {
         reject(new Error(e));
       }
     });
+
+    if (res.length === 0) {
+      return '';
+    }
 
     return new Date(res[0]._id.getTimestamp()).toLocaleString('en-US', {
       timeZone: 'Asia/Shanghai',
@@ -184,29 +192,66 @@ class MongoDBDatabase {
       let db;
       await this.connection.then(async (client) => {
         db = client.db();
-        await db.listCollections().toArray(function(err, items) {
-          if (err) throw err;
-
-          items.forEach(async (item) => {
-            if (item.name === tableName) {
-              console.log('Dropping: ' + item.name);
-              await db.collection(tableName).drop().then((result) => {
-                console.log(result);
-                resolve(result);
-              });
-            }
-          });
-
-          if (items.length === 0) {
-            console.log('No collections in database');
-            resolve('No collections in database');
+        const items = await db.listCollections().toArray();
+        for (const item of items) {
+          if (item.name === tableName) {
+            console.log('Dropping: ' + item.name);
+            await db.collection(tableName).drop().then((result) => {
+              console.log(result);
+              resolve(result);
+            });
           }
-        });
+        }
 
+        if (items.length === 0) {
+          console.log('No collections in database');
+          resolve('No collections in database');
+        }
         resolve('Table not found');
       }).catch((err) => {
         reject(new Error('[MySQLDatabase.js] ' + err));
       });
+    });
+  }
+
+  /**
+   * @param {String} tableName
+   * @param {Object} fieldValueObj
+   * @return {Promise<String>}
+   */
+  insert(tableName, fieldValueObj) {
+    return new Promise(async (resolve, reject) => {
+      await this.connection.then(async (client) => {
+        const db = client.db();
+        const collection = db.collection('update_history');
+
+        try {
+          await collection.insertOne(fieldValueObj, {forceServerObjectId: true});
+          resolve('Successfully inserted data');
+        } catch (e) {
+          reject(new Error(e));
+        }
+      });
+      /* let fields = '';
+      let values = '';
+      let i = 0;
+
+      Object.entries(fieldValueObj).forEach(([field, value])=>{
+        fields += field;
+        values += value;
+        if (i < Object.entries(fieldValueObj).length - 1) {
+          fields += ', ';
+          values += ', ';
+        }
+        i++;
+      });
+
+      const query = `INSERT INTO update_history (${fields}) VALUES (${values})`;
+
+      this.executeAndLogQuery(this.connection.query(query, function(err, rows, fields) {
+        if (err) return reject(new Error('[MySQLDatabase.js] ' + err));
+        resolve(rows);
+      }));*/
     });
   }
 
