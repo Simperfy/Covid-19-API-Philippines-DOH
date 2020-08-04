@@ -1,6 +1,7 @@
 /* eslint-disable max-len */
 const CSVDatabase = require('./CSVDatabase');
 const MongoDBDatabase = require('./MongoDBDatabase');
+const MySQLDatabase = require('./MySQLDatabase');
 // const CaseInformation = require('../CaseInformation');
 
 /**
@@ -17,7 +18,14 @@ class DatabaseAdapter {
         DatabaseAdapter.instance=this;
 
         console.log('Connecting to database');
-        const msg = await this.connect(new MongoDBDatabase());
+        let msg;
+        if (process.env.DATABASE_TYPE.toLowerCase() === 'nosql') {
+          msg = await this.connect(new MongoDBDatabase());
+        } else if (process.env.DATABASE_TYPE.toLowerCase() === 'mysql') {
+          msg = await this.connect(new MySQLDatabase());
+        } else {
+          throw new Error('Please specify "DATABASE_TYPE" in environment variables');
+        }
         console.log(msg);
       }
 
