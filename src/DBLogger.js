@@ -6,7 +6,7 @@ class DBLogger {
     return (async () => {
       if (!DBLogger.instance) {
         DBLogger.instance = this;
-        this.db = await new DatabaseAdapter();
+        this.dba = await new DatabaseAdapter();
       }
 
       return DBLogger.instance;
@@ -18,28 +18,19 @@ class DBLogger {
    * @return {Promise<String>}
    */
   async getLatestFolderID() {
-    const res = await this.db.executeRaw(`SELECT folder_id FROM update_history ORDER BY updated_at DESC LIMIT 1`);
-
-    if (!res[0]) {
-      return '';
-    }
-    return res[0].folder_id || '';
+    return this.dba.getLatestFolderID();
   }
 
   async insertToUpdateSummary(folderID) {
-    return this.db.insert('update_history', {'id': 'NULL', 'folder_id': `'${folderID}'`, 'updated_at': 'current_timestamp()'});
+    return this.dba.insert('update_history', {'id': 'NULL', 'folder_id': `'${folderID}'`, 'updated_at': 'current_timestamp()'});
   }
 
+  /**
+   *
+   * @return {Promise<String>}
+   */
   async getLastUpdateDate() {
-    const res = await this.db.executeRaw(`SELECT updated_at FROM update_history ORDER BY updated_at DESC LIMIT 1`);
-
-    if (!res[0]) {
-      return '';
-    }
-
-    return new Date(res[0].updated_at).toLocaleString('en-US', {
-      timeZone: 'Asia/Shanghai',
-    }) || '';
+    return this.dba.getLastUpdateDate();
   }
 }
 

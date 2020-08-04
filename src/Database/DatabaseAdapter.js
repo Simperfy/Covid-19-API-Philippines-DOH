@@ -91,6 +91,22 @@ class DatabaseAdapter {
   }
 
   /**
+   *
+   * @return {Promise<String>}
+   */
+  getLatestFolderID() {
+    return this.db.getLatestFolderID();
+  }
+
+  /**
+   *
+   * @return {Promise<String>}
+   */
+  getLastUpdateDate() {
+    return this.db.getLastUpdateDate();
+  }
+
+  /**
    * @param {String} query
    * @return {Promise}
    */

@@ -181,6 +181,35 @@ class MySQLDatabase {
   }
 
   /**
+   *
+   * @return {Promise<String>}
+   */
+  async getLatestFolderID() {
+    const res = await this.executeRaw(`SELECT folder_id FROM update_history ORDER BY updated_at DESC LIMIT 1`);
+
+    if (!res[0]) {
+      return '';
+    }
+    return res[0].folder_id || '';
+  }
+
+  /**
+   *
+   * @return {Promise<String>}
+   */
+  async getLastUpdateDate() {
+    const res = await this.executeRaw(`SELECT updated_at FROM update_history ORDER BY updated_at DESC LIMIT 1`);
+
+    if (!res[0]) {
+      return '';
+    }
+
+    return new Date(res[0].updated_at).toLocaleString('en-US', {
+      timeZone: 'Asia/Shanghai',
+    }) || '';
+  }
+
+  /**
    * @param {String} query
    * @return {Promise}
    */
