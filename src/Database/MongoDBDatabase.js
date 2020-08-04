@@ -27,10 +27,74 @@ class MongoDBDatabase {
       });
 
       if (await this.connection === undefined) {
-        return reject(new Error('[MongoDBDatabase] ' + ' Failed to connect.'));
+        return reject(new Error('[MongoDBDatabase] ' + 'Failed to connect.'));
       }
 
       resolve('Successfully connected to the Mongo Database');
+    });
+  }
+
+  /**
+   * @param {Object} queries
+   * @param {String} queries.month
+   * @param {String} queries.day
+   * @param {int} queries.page
+   * @param {int} queries.limit
+   * @param {int} queries.maxLimit
+   * @return {Promise} returns JSON of the result
+   */
+  get(queries) {
+    return new Promise((resolve, reject) => {
+      if (queries.month > 12) return reject(new Error('Error: the month cannot be greater than 12'));
+      if (queries.day > 31) return reject(new Error('Error: the day cannot be greater than 31'));
+      if (queries.page < 1 || queries.limit < 1) return reject(new Error('Error: page or limit query can\'t be less than 1.'));
+      if (queries.limit > queries.maxLimit) return reject(new Error(`Error: limit query can\'t be greater than ${queries.maxLimit}.`));
+
+      this.connection.then(async (client) => {
+        const db = client.db();
+
+        const collection = db.collection('case_informations');
+
+        let filter = {};
+        const opt = {
+          limit: queries.limit,
+          skip: (queries.page - 1) * queries.limit,
+        };
+        const sortOpt = {
+          case_code: 1,
+        };
+
+        if (queries.month && !queries.day) {
+          const date = '/2020-' + queries.month + '.*/';
+          filter = {
+            $or: [
+              {$and: [
+                {date_specimen: date},
+                {date_onset: ''},
+              ]},
+              {date_onset: date},
+            ],
+          };
+        } else if (queries.month && queries.day) {
+          const date = '2020-' + queries.month + '-' + queries.day;
+          filter = {
+            $or: [
+              {$and: [
+                {date_specimen: date},
+                {date_onset: ''},
+              ]},
+              {date_onset: date},
+            ],
+          };
+        }
+
+        try {
+          const cursor = await collection.find(filter, opt).sort(sortOpt);
+          resolve(await cursor.toArray());
+        } catch (e) {
+          reject(new Error(e));
+        }
+      });
     });
   }
 
@@ -61,7 +125,7 @@ class MongoDBDatabase {
 
         return collection.countDocuments().then((data) => {
           resolve(data);
-          client.close();
+          // client.close();
         }).catch((err) => reject(new Error(err)));
       });
     });
@@ -153,7 +217,7 @@ class MongoDBDatabase {
       await this.connection.then(async (client) => {
         const db = client.db();
         await db.collection('case_informations').insertMany(caseInfos, {forceServerObjectId: true});
-        db.close();
+        // db.close();
       });
       console.log(`Inserted: ${caseInfos.length} rows`);
     }
