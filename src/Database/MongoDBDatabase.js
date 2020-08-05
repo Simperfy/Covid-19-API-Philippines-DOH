@@ -207,6 +207,94 @@ class MongoDBDatabase {
   }
 
   /**
+   * @param {String} region
+   * @return {Promise<Object>} result
+   * @return {Promise<Object>} result.data
+   * @return {Promise<Object>} result.fatalityRate
+   * @return {Promise<Object>} result.recoveryRate
+   */
+  getSummary(region = null) {
+    return new Promise(async (resolve, reject) => {
+      await this.connection.then(async (client) => {
+        const db = client.db();
+        const collection = db.collection('case_informations');
+
+        const totalFilter = {};
+        const recoveriesFilter = {removal_type: 'recovered'};
+        const diedFilter = {removal_type: 'died'};
+        const activeCasesFilter = {removal_type: '', date_rep_conf: {$exists: true}};
+        const filters = [totalFilter, recoveriesFilter, diedFilter, activeCasesFilter];
+
+        if (region !== null) {
+          filters.forEach((filter) => {
+            filter.region_res = region;
+          });
+        }
+
+        try {
+          const result = await collection.aggregate([
+            {$lookup:
+                {
+                  from: 'case_informations',
+                  pipeline: [
+                    {$match: totalFilter},
+                    {$group: {_id: '$case_informations', count: {$sum: 1}}},
+                    {$project: {'_id': 0}},
+                  ],
+                  as: 'total',
+                },
+            },
+            {$lookup:
+                {
+                  from: 'case_informations',
+                  pipeline: [
+                    {$match: recoveriesFilter},
+                    {$group: {_id: '$removal_type', count: {$sum: 1}}},
+                    {$project: {'_id': 0}},
+                  ],
+                  as: 'recoveries',
+                },
+            },
+            {$lookup:
+                {
+                  from: 'case_informations',
+                  pipeline: [
+                    {$match: diedFilter},
+                    {$group: {_id: '$removal_type', count: {$sum: 1}}},
+                    {$project: {'_id': 0}},
+                  ],
+                  as: 'died',
+                },
+            },
+            {$lookup:
+                {
+                  from: 'case_informations',
+                  pipeline: [
+                    {$match: activeCasesFilter},
+                    {$group: {_id: '$case_informations', count: {$sum: 1}}},
+                    {$project: {'_id': 0}},
+                  ],
+                  as: 'active_cases',
+                },
+            },
+            {$project: {'_id': 0, 'recoveries': 1, 'died': 1, 'total': 1, 'active_cases': 1}},
+          ]).limit(1);
+
+          const res = await result.toArray();
+          res[0].total = res[0].total[0].count;
+          res[0].recoveries = res[0].recoveries[0].count;
+          res[0].died = res[0].died[0].count;
+          res[0].active_cases = res[0].active_cases[0].count;
+
+          resolve(res[0]);
+        } catch (e) {
+          reject(new Error(e));
+        }
+      });
+    });
+  }
+
+  /**
    * Truncates Database table
    * @param {String} tableName
    * @return {Promise<void>}
