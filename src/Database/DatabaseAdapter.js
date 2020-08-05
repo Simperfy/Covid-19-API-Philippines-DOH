@@ -19,6 +19,7 @@ class DatabaseAdapter {
 
         console.log('Connecting to database');
         let msg;
+        console.log('Database Type: ' + process.env.DATABASE_TYPE);
         if (process.env.DATABASE_TYPE.toLowerCase() === 'nosql') {
           msg = await this.connect(new MongoDBDatabase());
         } else if (process.env.DATABASE_TYPE.toLowerCase() === 'mysql') {
