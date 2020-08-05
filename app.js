@@ -198,6 +198,9 @@ router.get('/timeline', async (req, res) => {
 });
 
 router.get('/summary', async (req, res) => {
+  if (req.query.region === undefined && req.query.region_res !== undefined) {
+    req.query.region = req.query.region_res;
+  }
   const region = req.query.region || null;
 
   await db.getSummary(region).then((data) => {
