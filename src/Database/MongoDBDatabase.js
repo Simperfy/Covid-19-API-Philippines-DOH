@@ -304,6 +304,42 @@ class MongoDBDatabase {
   }
 
   /**
+   * @return {Promise}
+   */
+  getTimeline() {
+    return new Promise(async (resolve, reject) => {
+      await this.connection.then(async (client) => {
+        const db = client.db();
+        const collection = db.collection('case_informations');
+
+        try {
+          const result = await collection.aggregate([
+            {$match: {$or: [{'date_onset': {'$ne': ''}}, {'date_specimen': {'$ne': ''}}]}},
+            {
+              $group: {
+                _id: {
+                  'date': {
+                    $cond: {
+                      if: {$eq: ['$date_onset', '']}, then: '$date_specimen', else: '$date_onset',
+                    },
+                  },
+                },
+                cases: {$sum: 1},
+              },
+            },
+            {$sort: {'_id.date': 1}},
+            {$project: {'_id': 0, 'date': '$_id.date', 'cases': 1}},
+          ]);
+          const res = await result.toArray();
+          resolve(res);
+        } catch (e) {
+          reject(new Error(e));
+        }
+      });
+    });
+  }
+
+  /**
    * Truncates Database table
    * @param {String} tableName
    * @return {Promise<void>}
