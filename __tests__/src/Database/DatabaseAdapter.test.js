@@ -14,5 +14,6 @@ test('Should be a singleton', async () => {
   const databaseAdapter2 = await new DatabaseAdapter();
 
   expect(databaseAdapter1).toBe(databaseAdapter2);
+  databaseAdapter1.endConnection();
   // expect(mockConnect).toHaveBeenCalled();
 });
