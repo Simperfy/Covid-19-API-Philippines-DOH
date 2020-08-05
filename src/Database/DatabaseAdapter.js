@@ -1,5 +1,7 @@
 /* eslint-disable max-len */
 const CSVDatabase = require('./CSVDatabase');
+const MongoDBDatabase = require('./MongoDBDatabase');
+const MySQLDatabase = require('./MySQLDatabase');
 // const CaseInformation = require('../CaseInformation');
 
 /**
@@ -8,16 +10,22 @@ const CSVDatabase = require('./CSVDatabase');
 class DatabaseAdapter {
   /**
    * Initialize Database and make this a singleton
-   * @param {*} database Database class
    * @return {Promise<DatabaseAdapter>}
    */
-  constructor(database) {
+  constructor() {
     return (async () => {
       if (!DatabaseAdapter.instance) {
         DatabaseAdapter.instance=this;
 
         console.log('Connecting to database');
-        const msg = await this.connect(database);
+        let msg;
+        if (process.env.DATABASE_TYPE.toLowerCase() === 'nosql') {
+          msg = await this.connect(new MongoDBDatabase());
+        } else if (process.env.DATABASE_TYPE.toLowerCase() === 'mysql') {
+          msg = await this.connect(new MySQLDatabase());
+        } else {
+          throw new Error('Please specify "DATABASE_TYPE" in environment variables');
+        }
         console.log(msg);
       }
 
@@ -83,11 +91,19 @@ class DatabaseAdapter {
   }
 
   /**
-   * @param {String} query
-   * @return {Promise}
+   *
+   * @return {Promise<String>}
    */
-  executeRaw(query) {
-    return this.db.executeRaw(query);
+  getLatestFolderID() {
+    return this.db.getLatestFolderID();
+  }
+
+  /**
+   *
+   * @return {Promise<String>}
+   */
+  getLastUpdateDate() {
+    return this.db.getLastUpdateDate();
   }
 
   /**

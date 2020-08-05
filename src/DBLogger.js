@@ -1,13 +1,12 @@
 /* eslint-disable require-jsdoc,max-len */
 const DatabaseAdapter = require('./Database/DatabaseAdapter');
-const MySQLDatabase = require('./Database/MySQLDatabase');
 
 class DBLogger {
   constructor() {
     return (async () => {
       if (!DBLogger.instance) {
         DBLogger.instance = this;
-        this.db = await new DatabaseAdapter(new MySQLDatabase());
+        this.dba = await new DatabaseAdapter();
       }
 
       return DBLogger.instance;
@@ -19,28 +18,27 @@ class DBLogger {
    * @return {Promise<String>}
    */
   async getLatestFolderID() {
-    const res = await this.db.executeRaw(`SELECT folder_id FROM update_history ORDER BY updated_at DESC LIMIT 1`);
-
-    if (!res[0]) {
-      return '';
-    }
-    return res[0].folder_id || '';
+    return this.dba.getLatestFolderID();
   }
 
   async insertToUpdateSummary(folderID) {
-    return this.db.insert('update_history', {'id': 'NULL', 'folder_id': `'${folderID}'`, 'updated_at': 'current_timestamp()'});
+    if (process.env.DATABASE_TYPE.toLowerCase() === 'mysql') {
+      return this.dba.insert('update_history', {'id': 'NULL', 'folder_id': `'${folderID}'`, 'updated_at': 'current_timestamp()'});
+    } else if (process.env.DATABASE_TYPE.toLowerCase() === 'nosql') {
+      return this.dba.insert('update_history', {'folder_id': `${folderID}`, 'updated_at': `${new Date().toLocaleString('en-US', {
+        timeZone: 'Asia/Shanghai',
+      })}`});
+    } else {
+      throw new Error('No DATABASE_TYPE specified');
+    }
   }
 
+  /**
+   *
+   * @return {Promise<String>}
+   */
   async getLastUpdateDate() {
-    const res = await this.db.executeRaw(`SELECT updated_at FROM update_history ORDER BY updated_at DESC LIMIT 1`);
-
-    if (!res[0]) {
-      return '';
-    }
-
-    return new Date(res[0].updated_at).toLocaleString('en-US', {
-      timeZone: 'Asia/Shanghai',
-    }) || '';
+    return this.dba.getLastUpdateDate();
   }
 }
 
