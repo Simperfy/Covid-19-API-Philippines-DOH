@@ -397,7 +397,6 @@ class MongoDBDatabase {
    */
   async endConnection() {
     await this.connection.then(async (client) => {
-      const db = client.db();
       client.close();
     });
   }
