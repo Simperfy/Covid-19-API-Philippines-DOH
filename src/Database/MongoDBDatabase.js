@@ -263,7 +263,7 @@ class MongoDBDatabase {
                     {$group: {_id: '$removal_type', count: {$sum: 1}}},
                     {$project: {'_id': 0}},
                   ],
-                  as: 'died',
+                  as: 'deaths',
                 },
             },
             {$lookup:
@@ -277,16 +277,25 @@ class MongoDBDatabase {
                   as: 'active_cases',
                 },
             },
-            {$project: {'_id': 0, 'recoveries': 1, 'died': 1, 'total': 1, 'active_cases': 1}},
+            {$project: {'_id': 0, 'recoveries': 1, 'deaths': 1, 'total': 1, 'active_cases': 1}},
           ]).limit(1);
 
           const res = await result.toArray();
           res[0].total = res[0].total[0].count;
           res[0].recoveries = res[0].recoveries[0].count;
-          res[0].died = res[0].died[0].count;
+          res[0].deaths = res[0].deaths[0].count;
           res[0].active_cases = res[0].active_cases[0].count;
 
-          resolve(res[0]);
+          let fatalityRate = res[0].deaths / res[0].total;
+          let recoveryRate = res[0].recoveries / res[0].total;
+          fatalityRate = (fatalityRate * 100).toFixed(2);
+          recoveryRate = (recoveryRate * 100).toFixed(2);
+
+          resolve({
+            'result': res[0],
+            'fatalityRate': fatalityRate,
+            'recoveryRate': recoveryRate,
+          });
         } catch (e) {
           reject(new Error(e));
         }
