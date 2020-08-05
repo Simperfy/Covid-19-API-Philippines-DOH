@@ -25,18 +25,6 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - run: npm ci
-    - run: npm start
-      env:
-        NODE_ENV: production
-        TYPE: service_account
-        DATABASE_TYPE: ${{ secrets.DATABASE_TYPE }}
-        LOG_QUERIES: false
-        DB_NOSQL_URI: ${{ secrets.DB_NOSQL_URI }}
-        PROJECT_ID: ${{ secrets.PROJECT_ID }}
-        PRIVATE_KEY_ID: ${{ secrets.PRIVATE_KEY_ID }}
-        PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
-        CLIENT_EMAIL: ${{ secrets.CLIENT_EMAIL }}
-        CLIENT_ID: ${{ secrets.CLIENT_ID }}
     - run: npm test
       env:
         NODE_ENV: production

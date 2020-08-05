@@ -3,6 +3,8 @@ const request = require('supertest');
 console.log = () => {}; // disable logs
 const app = require('../../app');
 
+jest.mock('../../src/Database/DatabaseAdapter');
+
 jest.setTimeout(300000);
 test('GET /api/summary', async () => {
   const res = await request(app).get('/api/summary');
