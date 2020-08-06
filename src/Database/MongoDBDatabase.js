@@ -90,7 +90,6 @@ class MongoDBDatabase {
 
         try {
           const result = await collection.find(filter, opt).sort(sortOpt);
-          console.log(await result.toArray());
           resolve(await result.toArray());
         } catch (e) {
           reject(new Error(e));
