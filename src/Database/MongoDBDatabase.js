@@ -58,6 +58,7 @@ class MongoDBDatabase {
         const opt = {
           limit: queries.limit,
           skip: (queries.page - 1) * queries.limit,
+          projection: {'_id': 0},
         };
         const sortOpt = {
           case_code: 1,
@@ -89,6 +90,7 @@ class MongoDBDatabase {
 
         try {
           const result = await collection.find(filter, opt).sort(sortOpt);
+          console.log(await result.toArray());
           resolve(await result.toArray());
         } catch (e) {
           reject(new Error(e));
@@ -194,10 +196,13 @@ class MongoDBDatabase {
         const collection = db.collection('case_informations');
 
         const filter = {};
+        const opts = {
+          projection: {_id: 0},
+        };
         filter[field] = value;
 
         try {
-          const result = await collection.find(filter);
+          const result = await collection.find(filter, opts);
           resolve(await result.toArray());
         } catch (e) {
           reject(new Error(e));
