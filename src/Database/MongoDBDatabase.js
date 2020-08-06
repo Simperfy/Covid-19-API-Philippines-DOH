@@ -90,7 +90,6 @@ class MongoDBDatabase {
 
         try {
           const result = await collection.find(filter, opt).sort(sortOpt);
-          console.log(await result.toArray());
           resolve(await result.toArray());
         } catch (e) {
           reject(new Error(e));
@@ -111,7 +110,7 @@ class MongoDBDatabase {
       const collection = db.collection('update_history');
 
       try {
-        const result = await collection.find({}, {limit: 1}).sort({updated_at: -1});
+        const result = await collection.find({}, {limit: 1}).sort({_id: -1});
         res = await result.toArray();
       } catch (e) {
         reject(new Error(e));
