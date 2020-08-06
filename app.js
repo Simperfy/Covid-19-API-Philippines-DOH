@@ -127,11 +127,14 @@ router.get('/updateDatabase', async (req, res) => {
 });
 
 router.get('/filter/:field/:value', async (req, res) => {
-  const field = req.params.field.trim();
+  let field = req.params.field.trim();
   let value = req.params.value.trim();
 
   if (field === 'age') {
     value = parseInt(value);
+  }
+  if (field === 'region') {
+    field = 'region_res';
   }
 
   await db.filter(field, value).then((data) => {
