@@ -181,6 +181,20 @@ class MySQLDatabase {
   }
 
   /**
+   * @return {Promise}
+   */
+  getTopRegions() {
+    return new Promise((resolve, reject) => {
+      const query = `SELECT count(*) as cases, region_res as region FROM case_informations WHERE region_res <> '' GROUP BY region_res ORDER BY cases DESC`;
+
+      this.executeAndLogQuery(this.connection.query(query, function(err, rows, fields) {
+        if (err) return reject(new Error('[MySQLDatabase.js] ' + err));
+        resolve(rows);
+      }));
+    });
+  }
+
+  /**
    *
    * @return {Promise<String>}
    */

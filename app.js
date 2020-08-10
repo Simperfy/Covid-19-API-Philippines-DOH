@@ -200,6 +200,16 @@ router.get('/timeline', async (req, res) => {
   });
 });
 
+router.get('/top-regions', async (req, res) => {
+  await db.getTopRegions().then((data) => {
+    jsonRespStructure.data = data;
+    res.json(jsonRespStructure);
+  }).catch((err) => {
+    jsonRespStructure.error = err.message;
+    res.json(jsonRespStructure);
+  });
+});
+
 router.get('/summary', async (req, res) => {
   if (req.query.region === undefined && req.query.region_res !== undefined) {
     req.query.region = req.query.region_res;

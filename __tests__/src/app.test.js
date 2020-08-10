@@ -61,6 +61,17 @@ test('GET /api/timeline', async () => {
   expect(res.body).toHaveProperty('last_update');
 });
 
+test('GET /api/top-regions', async () => {
+  const res = await request(app).get('/api/top-regions');
+
+  expect(res.status).toBe(200);
+  expect(res.body).toHaveProperty('data');
+  expect(res.body.data).not.toHaveLength(0);
+  expect(res.body.data[0]).toHaveProperty('region');
+  expect(res.body.data[0]).toHaveProperty('cases');
+  expect(res.body).toHaveProperty('last_update');
+});
+
 test('GET /api/filter/region_res/Region IV-A: CALABARZON', async () => {
   const res = await request(app).get('/api/filter/region_res/Region IV-A: CALABARZON');
 

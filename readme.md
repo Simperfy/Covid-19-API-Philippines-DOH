@@ -56,6 +56,30 @@ GET api/summary
     }
 ```
 
+**Fetching Top Regions**
+```http
+GET api/top-regions
+```
+```JSON
+{
+    "data": [
+        {
+            "region": "NCR",
+            "cases": 71145
+        },
+        {
+            "region": "Region VII: Central Visayas",
+            "cases": 17524
+        },
+        {...},
+        {
+            "region": "CARAGA",
+            "cases": 306
+        }
+    ]
+}
+```
+
 **Fetching No. of Cases Timeline**
 ```http
 GET api/timeline

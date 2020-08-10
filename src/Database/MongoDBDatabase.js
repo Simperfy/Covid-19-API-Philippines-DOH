@@ -344,6 +344,44 @@ class MongoDBDatabase {
   }
 
   /**
+   * @return {Promise}
+   */
+  getTopRegions() {
+    return new Promise(async (resolve, reject) => {
+      await this.connection.then(async (client) => {
+        const db = client.db();
+        const collection = db.collection('case_informations');
+
+        try {
+          const result = await collection.aggregate([
+            {$match: {'region_res': {'$ne': ''}}},
+            {
+              $group: {
+                _id: '$region_res',
+                cases: {$sum: 1},
+              },
+            },
+            {$sort: {'cases': -1}},
+            {$project: {'_id': 0, 'region': '$_id', 'cases': '$cases'}},
+          ]);
+          const res = await result.toArray();
+          resolve(res);
+        } catch (e) {
+          reject(new Error(e));
+        }
+      });
+    });
+    /* return new Promise((resolve, reject) => {
+      const query = `SELECT count(*) as cases, region_res as region FROM case_informations WHERE region_res <> '' GROUP BY region_res ORDER BY cases DESC`;
+
+      this.executeAndLogQuery(this.connection.query(query, function(err, rows, fields) {
+        if (err) return reject(new Error('[MySQLDatabase.js] ' + err));
+        resolve(rows);
+      }));
+    });*/
+  }
+
+  /**
    * Truncates Database table
    * @param {String} tableName
    * @return {Promise<void>}

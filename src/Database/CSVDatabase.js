@@ -2,19 +2,21 @@
 /* eslint-disable require-jsdoc */
 const csv = require('csvtojson');
 const path = require('path');
-const caseInformation = require('../CaseInformation');
+// const caseInformation = require('../CaseInformation');
 const fs = require('fs');
 // eslint-disable-next-line no-unused-vars
 const {Converter} = require('csvtojson/v2/Converter');
-const CaseInformation = caseInformation.CaseInformation;
-const CSV_FILE_PATH = path.join(__dirname, '../../tmp/Data.csv');
+// const CaseInformation = caseInformation.CaseInformation;
+// const CSV_FILE_PATH = path.join(__dirname, '../../tmp/Data.csv');
 
 class CSVDatabase {
   // make this a singleton
-  constructor() {
+  constructor(CSVClass) {
     return (async () => {
       this.isConverting = false;
-      this.CaseInformations = [];
+      this.csvClass = CSVClass;
+      this.CSVDatabaseArray = [];
+      this.csvFilePath = path.join(__dirname, `../../tmp/${this.csvClass.getFilename()}`);
       if (!CSVDatabase.instance) {
         CSVDatabase.instance = this;
         await this.convertCsvToJson();
@@ -37,7 +39,7 @@ class CSVDatabase {
   convertCsvToJson() {
     if (!this.isConverting) { // prevent multiple attempts to convert the json
       this.isConverting = true;
-      const pathToCSV = CSV_FILE_PATH;
+      const pathToCSV = this.csvFilePath;
 
       if (fs.existsSync(pathToCSV)) {
         // Invoking csv returns a promise
@@ -46,9 +48,10 @@ class CSVDatabase {
             .then((json) => {
               let c;
               json.forEach((row) => {
-                c = new CaseInformation();
+                // eslint-disable-next-line new-cap
+                c = new this.csvClass();
                 Object.assign(c, row);
-                this.CaseInformations.push(c);
+                this.CSVDatabaseArray.push(c);
               });
             }).then(() => {
               console.log('Case Information loaded');
@@ -58,7 +61,7 @@ class CSVDatabase {
             });
       } else {
         this.isConverting = false;
-        console.error(`Cannot find ${CSV_FILE_PATH}, Did you visit "/api/downloadLatestFiles"?`);
+        console.error(`Cannot find ${this.csvFilePath}, Did you visit "/api/downloadLatestFiles"?`);
       }
     }
   }
@@ -87,7 +90,7 @@ class CSVDatabase {
      */
   async filter(field, value) {
     await this.assureCSIsLoaded();
-    return this.CaseInformations.filter((ci) => ci[field] == value);
+    return this.CSVDatabaseArray.filter((ci) => ci[field] == value);
   }
 
   /**
@@ -97,7 +100,7 @@ class CSVDatabase {
      */
   async get(size=this.getSize()) {
     await this.assureCSIsLoaded();
-    return this.CaseInformations.slice(0, await size);
+    return this.CSVDatabaseArray.slice(0, await size);
   }
 
   /**
@@ -105,7 +108,7 @@ class CSVDatabase {
    */
   async getSize() {
     await this.assureCSIsLoaded();
-    return this.CaseInformations.length;
+    return this.CSVDatabaseArray.length;
   }
 
   /**

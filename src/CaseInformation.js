@@ -161,6 +161,10 @@ class CaseInformation {
   }
 
   constructor() {}
+
+  static getFilename() {
+    return 'Data.csv';
+  }
 }
 
-exports.CaseInformation = CaseInformation;
+module.exports = CaseInformation;
