@@ -146,6 +146,16 @@ class DatabaseAdapter {
   }
 
   /**
+   * @return {Promise}
+   */
+  getTopRegions() {
+    return Promise.resolve([{
+      'region': 'NCR',
+      'cases': 71145,
+    }]);
+  }
+
+  /**
    *
    * @return {Promise<String>}
    */

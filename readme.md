@@ -64,16 +64,16 @@ GET api/top-regions
 {
     "data": [
         {
-            "_id": "NCR",
+            "region": "NCR",
             "cases": 71145
         },
         {
-            "_id": "Region VII: Central Visayas",
+            "region": "Region VII: Central Visayas",
             "cases": 17524
         },
         {...},
         {
-            "_id": "CARAGA",
+            "region": "CARAGA",
             "cases": 306
         }
     ]

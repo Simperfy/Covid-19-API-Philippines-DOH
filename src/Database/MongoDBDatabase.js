@@ -362,6 +362,7 @@ class MongoDBDatabase {
               },
             },
             {$sort: {'cases': -1}},
+            {$project: {'_id': 0, 'region': '$_id', 'cases': '$cases'}},
           ]);
           const res = await result.toArray();
           resolve(res);
