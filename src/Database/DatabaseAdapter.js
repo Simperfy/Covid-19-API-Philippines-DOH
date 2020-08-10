@@ -1,5 +1,6 @@
 /* eslint-disable max-len */
 const CSVDatabase = require('./CSVDatabase');
+const CaseInformation = require('../CaseInformation');
 const MongoDBDatabase = require('./MongoDBDatabase');
 const MySQLDatabase = require('./MySQLDatabase');
 // const CaseInformation = require('../CaseInformation');
@@ -137,7 +138,7 @@ class DatabaseAdapter {
    * @return {Promise<boolean>}
    */
   async updateDatabaseFromCSV() {
-    return this.db.updateDatabaseFromCSV(await new CSVDatabase());
+    return this.db.updateDatabaseFromCSV(await new CSVDatabase(CaseInformation));
   }
 }
 
