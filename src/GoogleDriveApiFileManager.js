@@ -9,6 +9,8 @@ const PDFHandler = require('./PDFHandler').PDFHandler;
 const TMP_PATH = path.join(__dirname, '/../tmp');
 const DATA_DROP_LINK = 'http://bit.ly/DataDropPH';
 
+const downloadStatus = require('./utils/enums').downloadStatus;
+
 const DBLogger = require('./DBLogger');
 /**
  * Handles Google Files
@@ -113,22 +115,24 @@ class GoogleDriveApiFileManager {
   async getGFolderIDThisMonth() {
     const date = new Date();
     const month = (date.getMonth()) + 1;
-    const searchString = '(0' + month + '/20)';
+    const searchString = '(0' + month + ')';
 
-    await this.getFilesInRootFolder().then((folders) => {
-      console.log(`\nFiltering "${searchString}": `);
-      const res = folders.filter((file) => {
-        console.log((-1 !== (file.name.search(searchString))) + ' : ' + file.name);
-        return (-1 !== (file.name.search(searchString)));
+    return new Promise(async (resolve, reject) => {
+      await this.getFilesInRootFolder().then((folders) => {
+        console.log(`\nFiltering "${searchString}": `);
+        const res = folders.filter((file) => {
+          console.log((-1 !== (file.name.search(searchString))) + ' : ' + file.name);
+          return (-1 !== (file.name.search(searchString)));
+        });
+
+        if (res.length === 1) {
+          return resolve(res[0].id);
+        } else {
+          reject(new Error('[googleDriveApiFileManager.js] Folder this month couldn\'t be found'));
+        }
+      }).catch((err) => {
+        console.log('[googleDriveApiFileManager.js] ' + err);
       });
-
-      if (res.length === 1) {
-        return res[0].id;
-      }
-
-      throw new Error('[googleDriveApiFileManager.js] Folder this month couldn\'t be found');
-    }).catch((err) => {
-      console.log('[googleDriveApiFileManager.js] ' + err);
     });
   }
 
@@ -306,7 +310,7 @@ class GoogleDriveApiFileManager {
         const p = new PDFHandler();
         const shortLink = await p.getLatestFolderLink().catch((err) => {
           isErr = true;
-          resolve(false);
+          resolve(downloadStatus.DOWNLOADED_LATEST_FILE_FAILED);
         });
         if (isErr) return;
         // @TODO @DOGGO Until here
@@ -322,7 +326,7 @@ class GoogleDriveApiFileManager {
           if (folderID === previousFolderID) {
             console.log('\nPrevious folder ID is the same as target folder ID');
             console.log('Skipping the download of csv file');
-            resolve('SKIP');
+            resolve(downloadStatus.DOWNLOAD_SKIPPED);
           } else {
             console.log('\nFolder ID: ' + folderID);
             console.log('Logging folder id...');
@@ -336,7 +340,9 @@ class GoogleDriveApiFileManager {
                 return reject(new Error('[GoogleDriveApiFileManager.js] Error Case information.csv not found'));
               }
               console.log('Latest file info(From PDF): ' + file[0]);
-              resolve(await t.downloadFile(file[0], 'Data.csv'));
+              await t.downloadFile(file[0], 'Data.csv')
+                  .then(() => resolve(downloadStatus.DOWNLOADED_LATEST_FILE_SUCCESS))
+                  .catch((err) => reject(new Error('[GoogleDriveApiFileManager.js] Failed to download latest file: ' + err)));
             }).catch((err) => console.log('[GoogleDriveApiFileManager.js] ' + err));
           }
         });
@@ -349,21 +355,31 @@ class GoogleDriveApiFileManager {
    * @return {Promise<String|null>}
    */
   async downloadLatestFile() {
-    // @TODO @DOGGO This code needs refactoring
     const t = this;
     return new Promise(async (resolve, reject) => {
       console.log('Downloading latest csv file from latest pdf');
       await this.downloadLatestFileFromDataDrop().then((data) => {
-        if (data === 'SKIP') {
-          resolve('SKIP');
-        } else if (data === false) {
-          console.log('\nDownloading latest csv file from archives instead');
-          t.downloadLatestFileFromArchives().then(() => resolve('Downloaded files from archives')).catch((err) => {
-            console.log('\ncsv file also failed to be downloaded from archives');
-            reject(new Error(err));
-          });
-        } else {
-          resolve(null);
+        switch (data) {
+          case downloadStatus.DOWNLOAD_SKIPPED:
+            resolve(downloadStatus.DOWNLOAD_SKIPPED);
+            break;
+
+          case downloadStatus.DOWNLOADED_LATEST_FILE_FAILED:
+            console.log('\nDownloading latest csv file from archives instead');
+            t.downloadLatestFileFromArchives()
+                .then(() => resolve(downloadStatus.DOWNLOADED_FROM_ARCHIVES))
+                .catch((err) => {
+                  console.log('\ncsv file also failed to be downloaded from archives');
+                  reject(new Error(err));
+                });
+            break;
+
+          case downloadStatus.DOWNLOADED_LATEST_FILE_SUCCESS:
+            resolve(downloadStatus.DOWNLOADED_LATEST_FILE_SUCCESS);
+            break;
+
+          default:
+            throw new Error('Download Status Undefined');
         }
       }).catch((err) => reject(new Error(err)));
     });
