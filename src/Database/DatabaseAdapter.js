@@ -93,6 +93,13 @@ class DatabaseAdapter {
   }
 
   /**
+   * @return {Promise}
+   */
+  getTopRegions() {
+    return this.db.getTopRegions();
+  }
+
+  /**
    *
    * @return {Promise<String>}
    */
