@@ -378,11 +378,8 @@ ${this.connection.escape(data.ValidationStatus)})`;
     console.log('cs length in csv: ' + cs.length);
     console.log('cs length in database: ' + await this.count());
 
-    if (res) {
-      console.log('\nSuccessfully transferred data from CSV to Database.\n');
-    } else {
-      console.log('\nFailed to transfer data from CSV to Database.\n');
-    }
+    if (res) console.log('\nSuccessfully transferred data from CSV to Database.\n');
+    else console.log('\nFailed to transfer data from CSV to Database.\n');
 
     return res;
   }

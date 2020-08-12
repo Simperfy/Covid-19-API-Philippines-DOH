@@ -26,9 +26,8 @@ class MongoDBDatabase {
         return reject(new Error('[MongoDBDatabase] ' + err));
       });
 
-      if (await this.connection === undefined) {
-        return reject(new Error('[MongoDBDatabase] ' + 'Failed to connect.'));
-      }
+      if (await this.connection === undefined) return reject(new Error('[MongoDBDatabase] ' + 'Failed to connect.'));
+
 
       resolve('Successfully connected to the Mongo Database');
     });
@@ -521,11 +520,8 @@ class MongoDBDatabase {
     console.log('cs length in csv: ' + cs.length);
     console.log('cs length in database: ' + await this.count());
 
-    if (res) {
-      console.log('\nSuccessfully transferred data from CSV to Database.\n');
-    } else {
-      console.log('\nFailed to transfer data from CSV to Database.\n');
-    }
+    if (res) console.log('\nSuccessfully transferred data from CSV to Database.\n');
+    else console.log('\nFailed to transfer data from CSV to Database.\n');
 
     return res;
   }

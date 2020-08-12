@@ -333,12 +333,8 @@ class GoogleDriveApiFileManager {
             await dbLogger.insertToUpdateSummary(folderID);
 
             await t.getFilesInRootFolder(folderID).then(async (files) => {
-              const file = files.filter((data) =>
-                (-1 !== data.name.search('Case Information.csv')),
-              );
-              if (file.length < 0) {
-                return reject(new Error('[GoogleDriveApiFileManager.js] Error Case information.csv not found'));
-              }
+              const file = files.filter( (data) => (-1 !== data.name.search('Case Information.csv')) );
+              if (file.length < 0) return reject(new Error('[GoogleDriveApiFileManager.js] Error Case information.csv not found'));
               console.log('Latest file info(From PDF): ' + file[0]);
               await t.downloadFile(file[0], 'Data.csv')
                   .then(() => resolve(downloadStatus.DOWNLOADED_LATEST_FILE_SUCCESS))

@@ -105,11 +105,8 @@ async function autoUpdate() {
   console.log('SKIP? ', shouldSkip);
   if (!shouldSkip) {
     await db.updateDatabaseFromCSV().then((data) => {
-      if (data === true) {
-        console.log('Database Updated Successfully');
-      } else {
-        console.log('Something went wrong while updating database');
-      }
+      if (data === true) console.log('Database Updated Successfully');
+      else console.log('Something went wrong while updating database');
     }).catch((err) => {
       console.log('Error Updating Database: ' + err);
     });
@@ -132,12 +129,8 @@ router.get('/filter/:field/:value', async (req, res) => {
   let field = req.params.field.trim();
   let value = req.params.value.trim();
 
-  if (field === 'age') {
-    value = parseInt(value);
-  }
-  if (field === 'region') {
-    field = 'region_res';
-  }
+  if (field === 'age') value = parseInt(value);
+  if (field === 'region') field = 'region_res';
 
   await db.filter(field, value).then((data) => {
     jsonRespStructure.data = data;
