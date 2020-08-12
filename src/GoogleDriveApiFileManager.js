@@ -9,7 +9,10 @@ const PDFHandler = require('./PDFHandler').PDFHandler;
 const TMP_PATH = path.join(__dirname, '/../tmp');
 const DATA_DROP_LINK = 'http://bit.ly/DataDropPH';
 
-const downloadStatus = require('./utils/enums').downloadStatus;
+const DOWNLOAD_STATUS = require('./utils/enums').DOWNLOAD_STATUS;
+const FILES_TO_SEARCH = require('./utils/constants').filesToSearch;
+const DOWNLOADED_FILE_ALIASES = require('./utils/enums').DOWNLOADED_FILE_ALIASES;
+const getRequiredFiles = require('./utils/helper').getRequiredFiles;
 
 const DBLogger = require('./DBLogger');
 /**
@@ -229,7 +232,7 @@ class GoogleDriveApiFileManager {
     await fs.promises.mkdir(TMP_PATH, {recursive: true});
     const filePath = `${TMP_PATH}/${name}`;
 
-    console.log(`writing to ${filePath}`);
+    console.log(`\nSaving to ${filePath}`);
     const dest = fs.createWriteStream(filePath);
     let progress = 0;
 
@@ -256,6 +259,28 @@ class GoogleDriveApiFileManager {
       dest.on('finish', () => {
         dest.close();
       });
+    });
+  }
+
+  /**
+   * @param {Object[]} files An array of object of files
+   * @param {String} files[].id file id
+   * @param {String} files[].name Original name of the file
+   * @param {String|undefined} files[].alias Alternative name of the file
+   */
+  async downloadFiles(files) {
+    return new Promise(async (resolve, reject) => {
+      console.log('\Downloading multiple files:');
+      console.log(files);
+
+      for (const file of files) {
+        const fileName = file.alias || file.name;
+        await this.downloadFile(file, fileName)
+            .catch((err) => reject(new Error(`Failed to download file ${file.name}: ` + err)));
+      }
+
+      console.log('\nDone downloading multiple files.');
+      resolve();
     });
   }
 
@@ -310,7 +335,7 @@ class GoogleDriveApiFileManager {
         const p = new PDFHandler();
         const shortLink = await p.getLatestFolderLink().catch((err) => {
           isErr = true;
-          resolve(downloadStatus.DOWNLOADED_LATEST_FILE_FAILED);
+          resolve(DOWNLOAD_STATUS.DOWNLOADED_LATEST_FILE_FAILED);
         });
         if (isErr) return;
         // @TODO @DOGGO Until here
@@ -326,19 +351,30 @@ class GoogleDriveApiFileManager {
           if (folderID === previousFolderID) {
             console.log('\nPrevious folder ID is the same as target folder ID');
             console.log('Skipping the download of csv file');
-            resolve(downloadStatus.DOWNLOAD_SKIPPED);
+            resolve(DOWNLOAD_STATUS.DOWNLOAD_SKIPPED);
           } else {
             console.log('\nFolder ID: ' + folderID);
             console.log('Logging folder id...');
             await dbLogger.insertToUpdateSummary(folderID);
 
             await t.getFilesInRootFolder(folderID).then(async (files) => {
-              const file = files.filter( (data) => (-1 !== data.name.search('Case Information.csv')) );
-              if (file.length < 0) return reject(new Error('[GoogleDriveApiFileManager.js] Error Case information.csv not found'));
-              console.log('Latest file info(From PDF): ' + file[0]);
-              await t.downloadFile(file[0], 'Data.csv')
-                  .then(() => resolve(downloadStatus.DOWNLOADED_LATEST_FILE_SUCCESS))
-                  .catch((err) => reject(new Error('[GoogleDriveApiFileManager.js] Failed to download latest file: ' + err)));
+              const reqFiles = getRequiredFiles(files, FILES_TO_SEARCH);
+
+              // @TODO @DOGGO Make a function for adding alias
+              const reqFilesWithAliases = reqFiles.map((file) => {
+                if (-1 !== file.name.search(FILES_TO_SEARCH[0])) { // case information
+                  file.alias = DOWNLOADED_FILE_ALIASES.CASE_INFORMATION;
+                } else if (-1 !== file.name.search(FILES_TO_SEARCH[1])) { // DOH data collect - daily report
+                  file.alias = DOWNLOADED_FILE_ALIASES.DAILY_REPORT;
+                }
+                return file;
+              });
+
+              if (files.length < 0) return reject(new Error('[GoogleDriveApiFileManager.js] Error no files found.'));
+
+              await t.downloadFiles(reqFilesWithAliases)
+                  .then(() => resolve(DOWNLOAD_STATUS.DOWNLOADED_LATEST_FILE_SUCCESS))
+                  .catch((err) => reject(new Error('[GoogleDriveApiFileManager.js] ' + err)));
             }).catch((err) => console.log('[GoogleDriveApiFileManager.js] ' + err));
           }
         });
@@ -356,22 +392,22 @@ class GoogleDriveApiFileManager {
       console.log('Downloading latest csv file from latest pdf');
       await this.downloadLatestFileFromDataDrop().then((data) => {
         switch (data) {
-          case downloadStatus.DOWNLOAD_SKIPPED:
-            resolve(downloadStatus.DOWNLOAD_SKIPPED);
+          case DOWNLOAD_STATUS.DOWNLOAD_SKIPPED:
+            resolve(DOWNLOAD_STATUS.DOWNLOAD_SKIPPED);
             break;
 
-          case downloadStatus.DOWNLOADED_LATEST_FILE_FAILED:
+          case DOWNLOAD_STATUS.DOWNLOADED_LATEST_FILE_FAILED:
             console.log('\nDownloading latest csv file from archives instead');
             t.downloadLatestFileFromArchives()
-                .then(() => resolve(downloadStatus.DOWNLOADED_FROM_ARCHIVES))
+                .then(() => resolve(DOWNLOAD_STATUS.DOWNLOADED_FROM_ARCHIVES))
                 .catch((err) => {
                   console.log('\ncsv file also failed to be downloaded from archives');
                   reject(new Error(err));
                 });
             break;
 
-          case downloadStatus.DOWNLOADED_LATEST_FILE_SUCCESS:
-            resolve(downloadStatus.DOWNLOADED_LATEST_FILE_SUCCESS);
+          case DOWNLOAD_STATUS.DOWNLOADED_LATEST_FILE_SUCCESS:
+            resolve(DOWNLOAD_STATUS.DOWNLOADED_LATEST_FILE_SUCCESS);
             break;
 
           default:

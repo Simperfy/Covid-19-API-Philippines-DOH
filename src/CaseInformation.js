@@ -1,4 +1,5 @@
-/* eslint-disable require-jsdoc */
+/* eslint-disable require-jsdoc,max-len */
+const DOWNLOADED_FILE_ALIASES = require('./utils/enums').DOWNLOADED_FILE_ALIASES;
 class CaseInformation {
   set CaseCode(caseCode) {
     this.caseCode = caseCode;
@@ -163,7 +164,7 @@ class CaseInformation {
   constructor() {}
 
   static getFilename() {
-    return 'Data.csv';
+    return DOWNLOADED_FILE_ALIASES.CASE_INFORMATION;
   }
 }
 

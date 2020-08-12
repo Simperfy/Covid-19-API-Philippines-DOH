@@ -16,7 +16,7 @@ const DatabaseAdapter = require('./src/Database/DatabaseAdapter');
 // Database Logger
 const DBLogger = require('./src/DBLogger');
 // Enums
-const downloadStatus = require('./src/utils/enums').downloadStatus;
+const downloadStatus = require('./src/utils/enums').DOWNLOAD_STATUS;
 // Express related vars
 const updateInterval = parseFloat(process.env.UPDATE_INTERVAL) || 24;
 const maxLimit = 10000;
