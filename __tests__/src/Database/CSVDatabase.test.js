@@ -4,12 +4,6 @@ const CaseInformation = require('../../../src/CaseInformation');
 console.log = () => {}; // disable logs
 jest.mock('fs');
 
-test('Should be a singleton', async () => {
-  const csvDatabase1 = await new CSVDatabase(CaseInformation);
-  const csvDatabase2 = await new CSVDatabase(CaseInformation);
-  expect(csvDatabase1).toBe(csvDatabase2);
-});
-
 test('Should not be empty nor undefined', async () => {
   const csvDatabase = await new CSVDatabase(CaseInformation);
   return csvDatabase.get().then(async (data) => {

@@ -150,7 +150,7 @@ router.get('/get', async (req, res) => {
 
   await db.get({limit: limit, month: month, day: day, page: page, maxLimit: maxLimit}).then(async (data) => {
     jsonRespStructure.data = data;
-    const dbCount = await db.count();
+    const dbCount = await db.count('case_informations');
     const maxPage = Math.ceil(dbCount / limit);
 
     if (dbCount === 0) {

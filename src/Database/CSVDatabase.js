@@ -17,12 +17,9 @@ class CSVDatabase {
       this.csvClass = CSVClass;
       this.CSVDatabaseArray = [];
       this.csvFilePath = path.join(__dirname, `../../tmp/${this.csvClass.getFilename()}`);
-      if (!CSVDatabase.instance) {
-        CSVDatabase.instance = this;
-        await this.convertCsvToJson();
-      }
 
-      return CSVDatabase.instance;
+      await this.convertCsvToJson();
+      return this;
     })();
   }
 
@@ -96,7 +93,7 @@ class CSVDatabase {
   /**
      *
      * @param {int} size Max number of entries to return
-     * @return {Promise<[CaseInformation]>}
+     * @return {Promise<[CaseInformation]|[DailyReport]>}
      */
   async get(size=this.getSize()) {
     await this.assureCSIsLoaded();

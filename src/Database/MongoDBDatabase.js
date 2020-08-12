@@ -1,5 +1,9 @@
 /* eslint-disable require-jsdoc,max-len */
 const MongoDB = require('mongodb');
+const {getCSVInfoObj} = require('../utils/helper');
+
+const CaseInformation = require('../CaseInformation');
+const DailyReport = require('../DailyReport');
 
 class MongoDBDatabase {
   constructor() {
@@ -151,15 +155,16 @@ class MongoDBDatabase {
   }
 
   /**
+   * @param {String} dbName database name
    * @param {Object} objFilters contains the field and value
    * @return {Promise} contains the result of the query
    */
-  async count(objFilters = null) {
+  async count(dbName, objFilters = null) {
     // console.log(this.connection);
     return new Promise((resolve, reject) => {
       this.connection.then((client) => {
         const db = client.db();
-        let collection = db.collection('case_informations');
+        let collection = db.collection(dbName);
 
         if (objFilters !== null) {
           const field = objFilters.field;
@@ -442,8 +447,9 @@ class MongoDBDatabase {
     });
   }
 
+  // @TODO @DOGGO This function violates open/closed principle for now
   /**
-   * @param {CaseInformation[]} csArr
+   * @param {CaseInformation[]|DailyReport[]} csArr
    * @param {int} batchSize
    * @return {Promise<boolean>}
    */
@@ -463,38 +469,13 @@ class MongoDBDatabase {
       const csBatchArr = csArr.slice(sliceStart, sliceEnd);
       lastRowIndex = nextLastRowIndex;
 
-      const caseInfos = [];
-      csBatchArr.forEach((data, ind) => {
-        caseInfos.push({
-          'case_code': data.CaseCode,
-          'age': data.Age,
-          'age_group': data.AgeGroup,
-          'sex': data.Sex,
-          'date_specimen': data.DateSpecimen,
-          'date_result_release': data.DateResultRelease,
-          'date_rep_conf': data.DateRepConf,
-          'date_died': data.DateDied,
-          'date_recover': data.DateRecover,
-          'removal_type': data.RemovalType,
-          'admitted': data.Admitted,
-          'region_res': data.RegionRes,
-          'prov_res': data.ProvRes,
-          'city_mun_res': data.CityMunRes,
-          'city_muni_psgc': data.CityMuniPSGC,
-          'health_status': data.HealthStatus,
-          'quarantined': data.Quarantined,
-          'date_onset': data.DateOnset,
-          'pregnant_tab': data.Pregnanttab,
-          'validation_status': data.ValidationStatus,
-        });
-      });
+      const csvInfo = getCSVInfoObj(csBatchArr);
 
       await this.connection.then(async (client) => {
         const db = client.db();
-        await db.collection('case_informations').insertMany(caseInfos, {forceServerObjectId: true});
-        // db.close();
+        await db.collection(csvInfo.csvDbName).insertMany(csvInfo.csvArr, {forceServerObjectId: true});
       });
-      console.log(`Inserted: ${caseInfos.length} rows`);
+      console.log(`Inserted: ${csvInfo.csvArr.length} rows`);
     }
 
     return isSuccess;
@@ -507,18 +488,26 @@ class MongoDBDatabase {
    */
   async updateDatabaseFromCSV(csvDatabase) {
     console.log('\nBegin Updating Database.');
-    console.log('Truncating case_informations table, because it causes anomaly when we don\'t.');
-    await this.truncate('case_informations');
 
     const cs = await csvDatabase.get();
+    let dbName;
+
+    if (cs[0] instanceof CaseInformation) {
+      dbName = 'case_informations';
+    } else if (cs[0] instanceof DailyReport) {
+      dbName = 'facility_informations';
+    }
+
+    console.log(`Truncating ${dbName} table, because it causes anomaly when we don\'t.`);
+    await this.truncate(dbName);
 
     console.log('\nBefore Updating Database: ');
     console.log('cs length in csv: ' + cs.length);
-    console.log('cs length in database: ' + await this.count());
+    console.log('cs length in database: ' + await this.count(dbName));
     const res = await this.batchInsertDatabaseFromCSV(cs, 25000);
     console.log('\nAfter Updating Database: ');
     console.log('cs length in csv: ' + cs.length);
-    console.log('cs length in database: ' + await this.count());
+    console.log('cs length in database: ' + await this.count(dbName));
 
     if (res) console.log('\nSuccessfully transferred data from CSV to Database.\n');
     else console.log('\nFailed to transfer data from CSV to Database.\n');

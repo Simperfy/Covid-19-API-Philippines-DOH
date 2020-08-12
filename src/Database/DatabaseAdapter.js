@@ -1,6 +1,7 @@
 /* eslint-disable max-len */
 const CSVDatabase = require('./CSVDatabase');
 const CaseInformation = require('../CaseInformation');
+const DailyReport = require('../DailyReport');
 const MongoDBDatabase = require('./MongoDBDatabase');
 const MySQLDatabase = require('./MySQLDatabase');
 // const CaseInformation = require('../CaseInformation');
@@ -58,11 +59,12 @@ class DatabaseAdapter {
   }
 
   /**
+   * @param {String} dbName database name
    * @param {Object|null} objFilters contains the field and value
    * @return {Promise} contains the result of the query
    */
-  count(objFilters= null) {
-    return this.db.count(objFilters);
+  count(dbName, objFilters= null) {
+    return this.db.count(dbName, objFilters);
   }
 
   /**
@@ -145,7 +147,14 @@ class DatabaseAdapter {
    * @return {Promise<boolean>}
    */
   async updateDatabaseFromCSV() {
-    return this.db.updateDatabaseFromCSV(await new CSVDatabase(CaseInformation));
+    let result = true;
+    if (
+      !await this.db.updateDatabaseFromCSV(await new CSVDatabase(CaseInformation)) ||
+      !await this.db.updateDatabaseFromCSV(await new CSVDatabase(DailyReport))
+    ) {
+      result = false;
+    }
+    return result;
   }
 }
 
