@@ -15,6 +15,8 @@ const app = express();
 const DatabaseAdapter = require('./src/Database/DatabaseAdapter');
 // Database Logger
 const DBLogger = require('./src/DBLogger');
+// Enums
+const downloadStatus = require('./src/utils/enums').downloadStatus;
 // Express related vars
 const updateInterval = parseFloat(process.env.UPDATE_INTERVAL) || 24;
 const maxLimit = 10000;
@@ -90,17 +92,17 @@ async function autoUpdate() {
   console.log('\nAuto Update Initialized');
   console.log('Interval hr: ' + updateInterval);
   await GDriveApi.downloadLatestFile().then((data) => {
-    if (data === 'SKIP') {
+    if (data === downloadStatus.DOWNLOAD_SKIPPED) {
       shouldSkip = true;
       console.log('Skipping download of files');
     } else {
-      console.log('data: ', data);
+      console.log('download status: ', data);
     }
   }).catch((err) => {
     console.log('Error Downloading Latest Files: ' + err);
   });
 
-  console.log('SKIP ', shouldSkip);
+  console.log('SKIP? ', shouldSkip);
   if (!shouldSkip) {
     await db.updateDatabaseFromCSV().then((data) => {
       if (data === true) {
