@@ -47,8 +47,18 @@ class CSVDatabase {
               json.forEach((row) => {
                 // eslint-disable-next-line new-cap
                 c = new this.csvClass();
-                Object.assign(c, row);
-                this.CSVDatabaseArray.push(c);
+                if (c instanceof FacilityInformation) {
+                  // filter out empty updateddate
+                  if (row.updateddate !== '') {
+                    Object.assign(c, row);
+                    this.CSVDatabaseArray.push(c);
+                  }
+                } else if (c instanceof FacilityInformation) {
+                  Object.assign(c, row);
+                  this.CSVDatabaseArray.push(c);
+                } else {
+                  throw new Error('Cannot determine csv type for updateddate');
+                }
               });
             }).then(() => {
               if (this.CSVDatabaseArray[0] instanceof CaseInformation) {
