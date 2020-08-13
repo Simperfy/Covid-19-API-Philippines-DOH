@@ -102,7 +102,7 @@ async function autoUpdate() {
     console.log('Error Downloading Latest Files: ' + err);
   });
 
-  console.log('SKIP? ', shouldSkip);
+  console.log('\nSKIP? ', shouldSkip);
   if (!shouldSkip) {
     await db.updateDatabaseFromCSV().then((data) => {
       if (data === true) console.log('Database Updated Successfully');

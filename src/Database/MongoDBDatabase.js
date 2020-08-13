@@ -3,7 +3,7 @@ const MongoDB = require('mongodb');
 const {getCSVInfoObj} = require('../utils/helper');
 
 const CaseInformation = require('../CaseInformation');
-const DailyReport = require('../DailyReport');
+const FacilityInformation = require('../FacilityInformation');
 
 class MongoDBDatabase {
   constructor() {
@@ -375,14 +375,6 @@ class MongoDBDatabase {
         }
       });
     });
-    /* return new Promise((resolve, reject) => {
-      const query = `SELECT count(*) as cases, region_res as region FROM case_informations WHERE region_res <> '' GROUP BY region_res ORDER BY cases DESC`;
-
-      this.executeAndLogQuery(this.connection.query(query, function(err, rows, fields) {
-        if (err) return reject(new Error('[MySQLDatabase.js] ' + err));
-        resolve(rows);
-      }));
-    });*/
   }
 
   /**
@@ -449,7 +441,7 @@ class MongoDBDatabase {
 
   // @TODO @DOGGO This function violates open/closed principle for now
   /**
-   * @param {CaseInformation[]|DailyReport[]} csArr
+   * @param {CaseInformation[]|FacilityInformation[]} csArr
    * @param {int} batchSize
    * @return {Promise<boolean>}
    */
@@ -494,7 +486,7 @@ class MongoDBDatabase {
 
     if (cs[0] instanceof CaseInformation) {
       dbName = 'case_informations';
-    } else if (cs[0] instanceof DailyReport) {
+    } else if (cs[0] instanceof FacilityInformation) {
       dbName = 'facility_informations';
     }
 

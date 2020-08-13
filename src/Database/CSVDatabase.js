@@ -2,12 +2,12 @@
 /* eslint-disable require-jsdoc */
 const csv = require('csvtojson');
 const path = require('path');
-// const caseInformation = require('../CaseInformation');
 const fs = require('fs');
+const CaseInformation = require('../CaseInformation');
+const FacilityInformation = require('../FacilityInformation');
+const {filterLatestFacilityData} = require('../utils/helper');
 // eslint-disable-next-line no-unused-vars
 const {Converter} = require('csvtojson/v2/Converter');
-// const CaseInformation = caseInformation.CaseInformation;
-// const CSV_FILE_PATH = path.join(__dirname, '../../tmp/Data.csv');
 
 class CSVDatabase {
   // make this a singleton
@@ -51,14 +51,24 @@ class CSVDatabase {
                 this.CSVDatabaseArray.push(c);
               });
             }).then(() => {
-              console.log('Case Information loaded');
-              return true;
+              if (this.CSVDatabaseArray[0] instanceof CaseInformation) {
+                console.log('CaseInformation CSV loaded');
+                return true;
+              } else if (this.CSVDatabaseArray[0] instanceof FacilityInformation) {
+                console.log('FacilityInformation CSV loaded');
+                console.log('Grouping results by latest updateddate...');
+                this.CSVDatabaseArray = filterLatestFacilityData(this.CSVDatabaseArray);
+                console.log('Grouping done!');
+                return true;
+              } else {
+                throw new Error('[CSVDatabase.js]Cannot determine csv data type.');
+              }
             }).catch((err) => {
               console.log(err);
             });
       } else {
         this.isConverting = false;
-        console.error(`Cannot find ${this.csvFilePath}, Did you visit "/api/downloadLatestFiles"?`);
+        console.error(`Cannot find ${this.csvFilePath}, Did you visit "/api/updateDatabase"?`);
       }
     }
   }
@@ -93,7 +103,7 @@ class CSVDatabase {
   /**
      *
      * @param {int} size Max number of entries to return
-     * @return {Promise<[CaseInformation]|[DailyReport]>}
+     * @return {Promise<[CaseInformation]|[FacilityInformation]>}
      */
   async get(size=this.getSize()) {
     await this.assureCSIsLoaded();

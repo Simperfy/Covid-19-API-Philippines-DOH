@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 const CSVDatabase = require('./CSVDatabase');
 const CaseInformation = require('../CaseInformation');
-const DailyReport = require('../DailyReport');
+const FacilityInformation = require('../FacilityInformation');
 const MongoDBDatabase = require('./MongoDBDatabase');
 const MySQLDatabase = require('./MySQLDatabase');
 // const CaseInformation = require('../CaseInformation');
@@ -150,7 +150,7 @@ class DatabaseAdapter {
     let result = true;
     if (
       !await this.db.updateDatabaseFromCSV(await new CSVDatabase(CaseInformation)) ||
-      !await this.db.updateDatabaseFromCSV(await new CSVDatabase(DailyReport))
+      !await this.db.updateDatabaseFromCSV(await new CSVDatabase(FacilityInformation))
     ) {
       result = false;
     }
