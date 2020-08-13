@@ -53,7 +53,7 @@ class CSVDatabase {
                     Object.assign(c, row);
                     this.CSVDatabaseArray.push(c);
                   }
-                } else if (c instanceof FacilityInformation) {
+                } else if (c instanceof CaseInformation) {
                   Object.assign(c, row);
                   this.CSVDatabaseArray.push(c);
                 } else {
