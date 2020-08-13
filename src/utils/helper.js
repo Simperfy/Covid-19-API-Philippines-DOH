@@ -47,7 +47,7 @@ exports.getCSVInfoObj = (csBatchArr) => {
         'quarantined': data.Quarantined,
         'date_onset': data.DateOnset,
         'pregnant_tab': data.Pregnanttab,
-        'validation_status': data.ValidationStatus,
+        // 'validation_status': data.ValidationStatus,
       });
     });
   } else if (csBatchArr[0] instanceof DailyReport) {

@@ -1,4 +1,4 @@
-# Covid-19-API-Philippines-DOH (Alpha)
+# Covid-19-API-Philippines-DOH (Beta)
 
 ![License](https://img.shields.io/github/license/simperfy/Covid-19-API-Philippines-DOH?style=plastic&logo=github)
 ![Last Commit](https://img.shields.io/github/last-commit/simperfy/Covid-19-API-Philippines-DOH?style=plastic&logo=github)
@@ -106,7 +106,7 @@ GET api/timeline
 
 **Fetching all records** (Ordered by case_code)
 
-***UPDATE: Added pagination***
+***UPDATE: Removed validation_status***
 
 *`limit` cannot exceed `10000`*
 ```http
@@ -134,8 +134,7 @@ GET api/get?page=1&limit=10000
             "health_status": "recovered",
             "quarantined": "no",
             "date_onset": "",
-            "pregnant_tab": "no",
-            "validation_status": "Health Status is \"Recovered\", but no Date Recovered is recorded\nHealth Status is \"Recovered\", but no Date Recovered is recorded\nRemoval Type is \"Recovered\", but no Recovered Date is recorded\nRemoval Type is \"Recovered\", but no Recovered Date is recorded"
+            "pregnant_tab": "no"
         },
         {...}
     ],
@@ -147,7 +146,6 @@ GET api/get?page=1&limit=10000
     "result_count": 10000
 }
 ```
-
 **Fetching records by month**
 ```http
 GET api/get?month=03
@@ -192,7 +190,6 @@ GET api/filter/{field}/{value}
 | quarantined         | String           | yes, no                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | YES           |
 | date_onset          | Date(YYYY-MM-DD) | Date(YYYY-MM-DD)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | YES           |
 | pregnant_tab        | String           | yes, no                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | YES           |
-| validation_status   | Text             | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |               |
 <br>
 
 Examples:
@@ -200,7 +197,8 @@ Examples:
 ```http
 GET api/get?page=1&limit=10000
 GET api/get?page=2&limit=10000
-GET api/get?page=3&limit=10000
+...
+GET api/get?page=10&limit=10000
 ```
 
 * Fetching all covid-19 cases with age of 30
