@@ -15,7 +15,7 @@ class FacilityInformation {
     return this.ID;
   }
   set cfname(cfname) {
-    this.CFNAME = cfname;
+    this.CFNAME = cfname.toLowerCase();
   }
   get cfname() {
     return this.CFNAME;
@@ -279,7 +279,7 @@ class FacilityInformation {
     return this.DISCHARGED;
   }
   set region(region) {
-    this.REGION = region;
+    this.REGION = region.toLowerCase();
   }
   get region() {
     return this.REGION;
@@ -291,7 +291,7 @@ class FacilityInformation {
     return this.REGION_PSGC;
   }
   set province(province) {
-    this.PROVINCE = province;
+    this.PROVINCE = province.toLowerCase();
   }
   get province() {
     return this.PROVINCE;
@@ -303,7 +303,7 @@ class FacilityInformation {
     return this.PROVINCE_PSGC;
   }
   set city_mun(city_mun) {
-    this.CITY_MUN = city_mun;
+    this.CITY_MUN = city_mun.toLowerCase();
   }
   get city_mun() {
     return this.CITY_MUN;
