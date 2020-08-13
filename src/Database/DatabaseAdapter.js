@@ -52,6 +52,7 @@ class DatabaseAdapter {
    * @param {int} queries.page
    * @param {int} queries.limit
    * @param {int} queries.maxLimit
+   * @param {Object|undefined} queries.filters
    * @return {Promise}
    */
   get(queries) {
@@ -100,6 +101,18 @@ class DatabaseAdapter {
   getTopRegions() {
     return this.db.getTopRegions();
   }
+
+  // FACILITIES
+
+  /**
+   * @param {Object} queries
+   * @return {Promise}
+   */
+  getFacilities(queries) {
+    return this.db.getFacilities(queries);
+  }
+
+  // ./FACILITIES
 
   /**
    *

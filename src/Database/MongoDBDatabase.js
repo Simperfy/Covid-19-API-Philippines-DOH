@@ -44,6 +44,7 @@ class MongoDBDatabase {
    * @param {int} queries.page
    * @param {int} queries.limit
    * @param {int} queries.maxLimit
+   * @param {Object|undefined} queries.filters
    * @return {Promise} returns JSON of the result
    */
   get(queries) {
@@ -89,6 +90,15 @@ class MongoDBDatabase {
               {date_onset: date},
             ],
           };
+        }
+
+        // add filters
+        if (queries.filters) {
+          console.log(queries.filters);
+          for (const key of Object.keys(queries.filters)) {
+            if (!isNaN(queries.filters[key])) queries.filters[key] = Number(queries.filters[key]);
+            filter[key] = queries.filters[key] || '';
+          }
         }
 
         try {
@@ -188,6 +198,7 @@ class MongoDBDatabase {
   }
 
   /**
+   * @deprecated
    * @param {String} field
    * @param {String|Number} value
    * @return {Promise} Contains JSON
@@ -376,6 +387,42 @@ class MongoDBDatabase {
       });
     });
   }
+
+  // FACILITIES
+
+  /**
+   * @param {Object} queries
+   * @return {Promise}
+   */
+  getFacilities(queries) {
+    return new Promise(async (resolve, reject) => {
+      await this.connection.then(async (client) => {
+        const db = client.db();
+        const collection = db.collection('facility_informations');
+
+        for (const key of Object.keys(queries)) {
+          if (!isNaN(queries[key])) {
+            queries[key] = Number(queries[key]);
+          }
+        }
+
+        const filter = queries;
+        const opt = {
+          projection: {_id: 0},
+        };
+
+        try {
+          const result = await collection.find(filter, opt).sort({'cf_name': 1});
+          const res = await result.toArray();
+          resolve(res);
+        } catch (e) {
+          reject(new Error(e));
+        }
+      });
+    });
+  }
+
+  // ./FACILITIES
 
   /**
    * Truncates Database table

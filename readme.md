@@ -156,7 +156,18 @@ GET api/get?month=03
 GET api/get?month=03&date=01
 ```
 
-**Fetching records that matches the filter**
+**Fetching records with filters 🆕** 
+
+```http
+GET api/get?region_res=ncr&age_group=20-24
+```
+
+<br>
+
+**~~Fetching records that matches the filter~~**
+
+##### ⚠ DEPRECATED! please use /api/get?field=value instead
+
 ```http
 GET api/filter/{field}/{value}
 ```
