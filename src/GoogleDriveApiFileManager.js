@@ -270,16 +270,20 @@ class GoogleDriveApiFileManager {
    */
   async downloadFiles(files) {
     return new Promise(async (resolve, reject) => {
-      console.log('\Downloading multiple files:');
-      console.log(files);
-
-      for (const file of files) {
-        const fileName = file.alias || file.name;
-        await this.downloadFile(file, fileName)
-            .catch((err) => reject(new Error(`Failed to download file ${file.name}: ` + err)));
+      if (process.env.SKIP_DOWNLOADS.toLowerCase() === 'true') {
+        console.log('[DEBUG] SKIPPING DOWNLOAD OF CSV FILES');
+        console.log('Make sure you downloaded the csv files.');
+      } else {
+        console.log('\Downloading multiple files:');
+        console.log(files);
+        for (const file of files) {
+          const fileName = file.alias || file.name;
+          await this.downloadFile(file, fileName)
+              .catch((err) => reject(new Error(`Failed to download file ${file.name}: ` + err)));
+        }
+        console.log('\nDone downloading multiple files.');
       }
 
-      console.log('\nDone downloading multiple files.');
       resolve();
     });
   }

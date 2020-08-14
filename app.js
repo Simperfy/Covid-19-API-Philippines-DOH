@@ -93,7 +93,7 @@ async function autoUpdate() {
   console.log('Interval hr: ' + updateInterval);
   await GDriveApi.downloadLatestFile().then((data) => {
     if (data === downloadStatus.DOWNLOAD_SKIPPED) {
-      shouldSkip = true;
+      shouldSkip = process.env.FORCE_NOT_SKIP.toLowerCase() !== 'true';
       console.log('Skipping download of files');
     } else {
       console.log('download status: ', data);

@@ -1,4 +1,4 @@
-/* eslint-disable max-len */
+/* eslint-disable max-len,new-cap */
 /* eslint-disable require-jsdoc */
 const csv = require('csvtojson');
 const path = require('path');
@@ -33,15 +33,37 @@ class CSVDatabase {
   /**
    * @return {Promise<Converter>}
    */
-  convertCsvToJson() {
+  async convertCsvToJson() {
     if (!this.isConverting) { // prevent multiple attempts to convert the json
       this.isConverting = true;
       const pathToCSV = this.csvFilePath;
+      let dateThreshold = new Date();
+      dateThreshold = dateThreshold.setDate(dateThreshold.getDate() - 7);
+      const isFacilityInfo = ((await new this.csvClass()) instanceof FacilityInformation);
+      const isCaseInfo = ((await new this.csvClass()) instanceof CaseInformation);
+      const updatedDateIndex = 3;
 
       if (fs.existsSync(pathToCSV)) {
         // Invoking csv returns a promise
-        return this.converter = csv()
+        return this.converter = csv({
+          trim: true,
+        })
             .fromFile(pathToCSV)
+            .preFileLine((fileLineString) => {
+              return new Promise(async (resolve, reject)=>{
+                if (isFacilityInfo) {
+                  fileLineString = fileLineString.split(',');
+                  // console.log(fileLineString[3] + '\n');
+                  const upDate = new Date(fileLineString[updatedDateIndex]);
+                  if (upDate < (dateThreshold)) resolve('');
+                  else resolve(fileLineString.join(','));
+                } else if (isCaseInfo) {
+                  resolve(fileLineString);
+                } else {
+                  throw new Error('Cannot determine csv data type while parsing csv file.');
+                }
+              });
+            })
             .then((json) => {
               let c;
               json.forEach((row) => {
@@ -60,7 +82,8 @@ class CSVDatabase {
                   throw new Error('Cannot determine csv type for updateddate');
                 }
               });
-            }).then(() => {
+            })
+            .then(() => {
               if (this.CSVDatabaseArray[0] instanceof CaseInformation) {
                 console.log('CaseInformation CSV loaded');
                 return true;
@@ -73,7 +96,8 @@ class CSVDatabase {
               } else {
                 throw new Error('[CSVDatabase.js]Cannot determine csv data type.');
               }
-            }).catch((err) => {
+            })
+            .catch((err) => {
               console.log(err);
             });
       } else {
