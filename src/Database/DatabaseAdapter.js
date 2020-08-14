@@ -161,12 +161,26 @@ class DatabaseAdapter {
    */
   async updateDatabaseFromCSV() {
     let result = true;
-    if (
-      !await this.db.updateDatabaseFromCSV(await new CSVDatabase(CaseInformation)) ||
-      !await this.db.updateDatabaseFromCSV(await new CSVDatabase(FacilityInformation))
-    ) {
-      result = false;
-    }
+    let lowMemory = true;
+
+    this.db.updateDatabaseFromCSV(await new CSVDatabase(CaseInformation))
+        .then(async (res) => {
+          if (!res) result = false;
+
+          while (lowMemory) {
+            const memUsed = process.memoryUsage().heapTotal / 1000000;
+            if (memUsed < 150) lowMemory = false;
+            global.gc();
+          }
+
+          return this.db.updateDatabaseFromCSV(await new CSVDatabase(FacilityInformation));
+        })
+        .then((res) => {
+          if (!res) result = false;
+          global.gc();
+        }).catch((err) => {
+          throw new Error(err);
+        });
     return result;
   }
 }
