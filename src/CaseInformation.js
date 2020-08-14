@@ -10,27 +10,27 @@ class CaseInformation {
   }
 
   set Age(age) {
-    this.age = age;
+    this.age = (age === '') ? 0 : parseInt(age);
   }
 
   get Age() {
-    return this.age === '' ? 0 : parseInt(this.age);
+    return this.age;
   }
 
   set AgeGroup(ageGroup) {
-    this.ageGroup = ageGroup;
+    this.ageGroup = ageGroup.replace(' to ', '-');
   }
 
   get AgeGroup() {
-    return this.ageGroup.replace(' to ', '-');
+    return this.ageGroup;
   }
 
   set Sex(sex) {
-    this.sex = sex;
+    this.sex = sex.toLowerCase();
   }
 
   get Sex() {
-    return this.sex.toLowerCase();
+    return this.sex;
   }
 
   set DateSpecimen(dateSpecimen) {
@@ -74,23 +74,23 @@ class CaseInformation {
   }
 
   set RemovalType(removalType) {
-    this.removalType = removalType;
+    this.removalType = removalType.toLowerCase();
   }
 
   get RemovalType() {
-    return this.removalType.toLowerCase();
+    return this.removalType;
   }
 
   set Admitted(admitted) {
-    this.admitted = admitted;
+    this.admitted = admitted.toLowerCase();
   }
 
   get Admitted() {
-    return this.admitted.toLowerCase();
+    return this.admitted;
   }
 
   set RegionRes(regionRes) {
-    this.regionRes = regionRes;
+    this.regionRes = regionRes.toLowerCase();
   }
 
   get RegionRes() {
@@ -98,19 +98,19 @@ class CaseInformation {
   }
 
   set ProvRes(provRes) {
-    this.provRes = provRes;
+    this.provRes = provRes.toLowerCase();
   }
 
   get ProvRes() {
-    return this.provRes.toLowerCase();
+    return this.provRes;
   }
 
   set CityMunRes(cityMunRes) {
-    this.cityMunRes = cityMunRes;
+    this.cityMunRes = cityMunRes.toLowerCase();
   }
 
   get CityMunRes() {
-    return this.cityMunRes.toLowerCase();
+    return this.cityMunRes;
   }
 
   set CityMuniPSGC(cityMuniPSGC) {
@@ -122,19 +122,19 @@ class CaseInformation {
   }
 
   set HealthStatus(healthStatus) {
-    this.healthStatus = healthStatus;
+    this.healthStatus = healthStatus.toLowerCase();
   }
 
   get HealthStatus() {
-    return this.healthStatus.toLowerCase();
+    return this.healthStatus;
   }
 
   set Quarantined(quarantined) {
-    this.quarantined = quarantined;
+    this.quarantined = quarantined.toLowerCase();
   }
 
   get Quarantined() {
-    return this.quarantined.toLowerCase();
+    return this.quarantined;
   }
 
   set DateOnset(dateOnset) {
@@ -146,11 +146,11 @@ class CaseInformation {
   }
 
   set Pregnanttab(pregnanttab) {
-    this.pregnanttab = pregnanttab;
+    this.pregnanttab = pregnanttab.toLowerCase();
   }
 
   get Pregnanttab() {
-    return this.pregnanttab.toLowerCase();
+    return this.pregnanttab;
   }
 
   set ValidationStatus(validationStatus) {

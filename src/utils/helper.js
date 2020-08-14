@@ -1,6 +1,7 @@
 /* eslint-disable max-len */
 const CaseInformation = require('../CaseInformation');
-const DailyReport = require('../DailyReport');
+const FacilityInformation = require('../FacilityInformation');
+
 /**
  * @param {Object[]} arr
  * @param {String} arr.id
@@ -50,13 +51,13 @@ exports.getCSVInfoObj = (csBatchArr) => {
         // 'validation_status': data.ValidationStatus,
       });
     });
-  } else if (csBatchArr[0] instanceof DailyReport) {
+  } else if (csBatchArr[0] instanceof FacilityInformation) {
     csvOBJ.csvDbName = 'facility_informations';
 
     csBatchArr.forEach((data) => {
       csvOBJ.csvArr.push({
         'hfhudcode': data.hfhudcode,
-        'id': data.id,
+        // 'id': data.id,
         'cf_name': data.cfname,
         'updated_date': data.updateddate,
         'added_date': data.addeddate,
@@ -75,9 +76,9 @@ exports.getCSVInfoObj = (csBatchArr) => {
         'nonicu_o_nc': data.nonicu_o_nc,
         'mechvent_v_nc': data.mechvent_v_nc,
         'mechvent_o_nc': data.mechvent_o_nc,
-        'qnurse': data.qnurse,
-        'qdoctor': data.qdoctor,
-        'qother': data.qother,
+        'q_nurse': data.qnurse,
+        'q_doctor': data.qdoctor,
+        'q_other': data.qother,
         'nurse_adm': data.nurse_adm,
         'doctor_adm': data.doctor_adm,
         'other_adm': data.other_adm,
@@ -96,10 +97,10 @@ exports.getCSVInfoObj = (csBatchArr) => {
         'conf_severe': data.conf_severe,
         'conf_crit': data.conf_crit,
         'conf_died': data.conf_died,
-        'tpatient_adm': data.tpatient_adm,
-        'tpatient_er': data.tpatient_er,
-        'tpatient_icu': data.tpatient_icu,
-        'trans_ttmf': data.trans_ttmf,
+        't_patient_adm': data.tpatient_adm,
+        't_patient_er': data.tpatient_er,
+        't_patient_icu': data.tpatient_icu,
+        'trans_ttmf': data.trans_ttmf, // Temporary Treatment and Monitoring Facilities
         'discharged': data.discharged,
         'region': data.region,
         'region_psgc': data.region_psgc,
@@ -117,4 +118,35 @@ exports.getCSVInfoObj = (csBatchArr) => {
 
 
   return csvOBJ;
+};
+
+exports.filterLatestFacilityData = (arr) => {
+  // group array by hfhudcode
+  const grpObj = arr.reduce(function(rv, x) {
+    (rv[x['HFHUDCODE']] = rv[x['HFHUDCODE']] || []).push(x);
+    return rv;
+  }, {});
+
+  // function to get most recent updateddate
+  const mostRecentDate = (arr) => new Date(Math.max.apply(null, arr.map( (el) => {
+    return new Date(el.updateddate);
+  })));
+
+  // function to get object with most recent updateddate
+  const mostRecentObject = (arr) => arr.filter( (el) => {
+    const d = new Date( el.updateddate );
+    return d.getTime() === mostRecentDate(arr).getTime();
+  })[0];
+
+  const newArr = [];
+
+  // get the most updated record in each group objects
+  // store the result to the resulting array
+  for (const key of Object.keys(grpObj)) {
+    const res = mostRecentObject(grpObj[key]);
+    newArr.push(res);
+  }
+
+  // console.log(newArr.filter((a) => a.hfhudcode === 'DOH000000000005796'));
+  return newArr;
 };

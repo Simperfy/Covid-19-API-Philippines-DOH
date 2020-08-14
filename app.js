@@ -102,7 +102,7 @@ async function autoUpdate() {
     console.log('Error Downloading Latest Files: ' + err);
   });
 
-  console.log('SKIP? ', shouldSkip);
+  console.log('\nSKIP? ', shouldSkip);
   if (!shouldSkip) {
     await db.updateDatabaseFromCSV().then((data) => {
       if (data === true) console.log('Database Updated Successfully');
@@ -134,6 +134,7 @@ router.get('/filter/:field/:value', async (req, res) => {
 
   await db.filter(field, value).then((data) => {
     jsonRespStructure.data = data;
+    jsonRespStructure.WARNING = 'DEPRECATED please use /api/get?field=value instead';
     jsonRespStructure.result_count = data.length;
     res.json(jsonRespStructure);
   }).catch((err) => {
@@ -148,7 +149,14 @@ router.get('/get', async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || maxLimit;
 
-  await db.get({limit: limit, month: month, day: day, page: page, maxLimit: maxLimit}).then(async (data) => {
+  delete req.query.month;
+  delete req.query.day;
+  delete req.query.page;
+  delete req.query.limit;
+
+  const queries = {limit: limit, month: month, day: day, page: page, maxLimit: maxLimit, filters: req.query};
+
+  await db.get(queries).then(async (data) => {
     jsonRespStructure.data = data;
     const dbCount = await db.count('case_informations');
     const maxPage = Math.ceil(dbCount / limit);
@@ -216,6 +224,16 @@ router.get('/summary', async (req, res) => {
       fatalityRate: jsonRespStructure.data.fatality_rate,
       recoveryRate: jsonRespStructure.data.recovery_rate} = data);
 
+    res.json(jsonRespStructure);
+  }).catch((err) => {
+    jsonRespStructure.error = err.message;
+    res.json(jsonRespStructure);
+  });
+});
+
+router.get('/facilities', async (req, res) => {
+  await db.getFacilities(req.query).then((data) => {
+    jsonRespStructure.data = data;
     res.json(jsonRespStructure);
   }).catch((err) => {
     jsonRespStructure.error = err.message;

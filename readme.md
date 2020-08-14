@@ -146,6 +146,78 @@ GET api/get?page=1&limit=10000
     "result_count": 10000
 }
 ```
+
+**Fetching facility/hospital records 🆕** 
+
+```http
+GET api/facilities
+
+GET api/facilities?{field1}={value1}&{field2}={value2}
+```
+
+```JSON
+{
+    "data": [
+        {
+            "hfhudcode": "DOH000000000034464",
+            "cf_name": "ZONE MEDICAL AND INTERVENTION HOSPITAL, INC.",
+            "updated_date": "2020-08-11T20:24:06.000Z",
+            "added_date": "2020-08-11T20:24:06.000Z",
+            "report_date": "2020-08-11T16:00:00.000Z",
+            "icu_v": 0,
+            "icu_o": 0,
+            "isolbed_v": 0,
+            "isolbed_o": 0,
+            "beds_ward_v": 0,
+            "beds_ward_o": 0,
+            "mechvent_v": 0,
+            "mechvent_o": 0,
+            "icu_v_nc": 0,
+            "icu_o_nc": 0,
+            "nonicu_v_nc": 31,
+            "nonicu_o_nc": 23,
+            "mechvent_v_nc": 0,
+            "mechvent_o_nc": 0,
+            "q_nurse": 0,
+            "q_doctor": 0,
+            "q_other": 0,
+            "nurse_adm": 0,
+            "doctor_adm": 0,
+            "other_adm": 0,
+            "susp_asym": 0,
+            "susp_mild": 0,
+            "susp_severe": 0,
+            "susp_crit": 0,
+            "susp_died": 0,
+            "prob_asym": 0,
+            "prob_mild": 0,
+            "prob_severe": 0,
+            "prob_crit": 0,
+            "prob_died": 0,
+            "conf_asym": 0,
+            "conf_mild": 0,
+            "conf_severe": 0,
+            "conf_crit": 0,
+            "conf_died": 0,
+            "t_patient_adm": 0,
+            "t_patient_er": 0,
+            "t_patient_icu": 0,
+            "trans_ttmf": 0,
+            "discharged": 0,
+            "region": "REGION V (BICOL REGION)",
+            "region_psgc": "PH050000000",
+            "province": "ALBAY",
+            "province_psgc": "PH050500000",
+            "city_mun": "CITY OF LIGAO",
+            "city_mun_psgc": "PH050508000",
+            "north_coord": "0.0",
+            "east_coord": "0.0"
+        },
+        {...}
+    ]
+}
+```
+
 **Fetching records by month**
 ```http
 GET api/get?month=03
@@ -156,7 +228,18 @@ GET api/get?month=03
 GET api/get?month=03&date=01
 ```
 
-**Fetching records that matches the filter**
+**Fetching records with filters 🆕** 
+
+```http
+GET api/get?region_res=ncr&age_group=20-24
+```
+
+<br>
+
+**~~Fetching records that matches the filter~~**
+
+##### ⚠ DEPRECATED! please use /api/get?field=value instead
+
 ```http
 GET api/filter/{field}/{value}
 ```

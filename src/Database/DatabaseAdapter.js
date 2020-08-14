@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 const CSVDatabase = require('./CSVDatabase');
 const CaseInformation = require('../CaseInformation');
-const DailyReport = require('../DailyReport');
+const FacilityInformation = require('../FacilityInformation');
 const MongoDBDatabase = require('./MongoDBDatabase');
 const MySQLDatabase = require('./MySQLDatabase');
 // const CaseInformation = require('../CaseInformation');
@@ -52,6 +52,7 @@ class DatabaseAdapter {
    * @param {int} queries.page
    * @param {int} queries.limit
    * @param {int} queries.maxLimit
+   * @param {Object|undefined} queries.filters
    * @return {Promise}
    */
   get(queries) {
@@ -100,6 +101,18 @@ class DatabaseAdapter {
   getTopRegions() {
     return this.db.getTopRegions();
   }
+
+  // FACILITIES
+
+  /**
+   * @param {Object} queries
+   * @return {Promise}
+   */
+  getFacilities(queries) {
+    return this.db.getFacilities(queries);
+  }
+
+  // ./FACILITIES
 
   /**
    *
@@ -150,7 +163,7 @@ class DatabaseAdapter {
     let result = true;
     if (
       !await this.db.updateDatabaseFromCSV(await new CSVDatabase(CaseInformation)) ||
-      !await this.db.updateDatabaseFromCSV(await new CSVDatabase(DailyReport))
+      !await this.db.updateDatabaseFromCSV(await new CSVDatabase(FacilityInformation))
     ) {
       result = false;
     }
