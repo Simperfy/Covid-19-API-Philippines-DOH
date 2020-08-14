@@ -4,9 +4,11 @@ const cors = require('cors');
 const morgan = require('morgan');
 const compression = require('compression');
 const apicache = require('apicache');
+// Swagger api docs
+const swaggerJsDoc = require('swagger-jsdoc');
+const swaggerUI = require('swagger-ui-express');
 // GOOGLE DRIVE VARS
-const googleDriveApi = require('./src/GoogleDriveApiClient');
-const GoogleDriveApi = googleDriveApi.GoogleDriveApi;
+const GoogleDriveApi = require('./src/GoogleDriveApiClient').GoogleDriveApi;
 const GDriveApi = new GoogleDriveApi();
 // SERVER VARS
 const express = require('express');
@@ -24,6 +26,36 @@ let db;
 let jsonRespStructure = {
   'data': [],
 };
+
+// swaggerUI.setup Options
+const options = {
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: 'Covid-19 Philippines API DOH',
+};
+// swaggerJsDoc Options
+const swaggerOptions = {
+  swaggerDefinition: {
+    'openapi': '3.0.0',
+    'info': {
+      title: 'COVID-19 API Philippines DOH',
+      description: 'COVID-19 API Philippines from DOH DATA DROP',
+      contact: {
+        'name': 'Github',
+        'url': 'https://github.com/Simperfy/Covid-19-API-Philippines-DOH',
+      },
+      version: '0.8.0',
+      servers: [
+        {
+          'url': 'https://covid19-api-philippines.herokuapp.com/',
+          'description': 'Production server',
+        },
+      ],
+    },
+  },
+  apis: ['app.js'],
+};
+
+const swaggerDocs = swaggerJsDoc(swaggerOptions);
 
 // Middlewares
 app.use(cors());
@@ -125,6 +157,31 @@ router.get('/updateDatabase', async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/filter/{field}/{value}:
+ *  get:
+ *    tags: [Case Informations]
+ *    deprecated: true
+ *    description: DEPRECATED, use /api/get?field=value/ instead
+ *    produces:
+ *      - application/json
+ *    parameters:
+ *      - name: field
+ *        description: field to filter
+ *        in: path
+ *        required: true
+ *        type: string
+ *      - name: value
+ *        description: value to filter
+ *        in: path
+ *        required: true
+ *        type: string
+ *    responses:
+ *      '200':
+ *        description: A Successful response
+ *
+ */
 router.get('/filter/:field/:value', async (req, res) => {
   let field = req.params.field.trim();
   let value = req.params.value.trim();
@@ -143,6 +200,44 @@ router.get('/filter/:field/:value', async (req, res) => {
   });
 });
 
+/**
+ * @swagger
+ * /api/get:
+ *  get:
+ *    tags: [Case Informations]
+ *    description: Use to fetch all case informations
+ *    produces:
+ *      - application/json
+ *    parameters:
+ *      - name: page
+ *        description: page for entries
+ *        in: query
+ *        required: false
+ *        type: integer
+ *        example: 1
+ *      - name: limit
+ *        description: limit for entries
+ *        in: query
+ *        required: false
+ *        type: integer
+ *        example: 10
+ *      - name: month
+ *        description: returns record with this month
+ *        in: query
+ *        required: false
+ *        type: string
+ *        example: '03'
+ *      - name: day
+ *        description: returns record with this day
+ *        in: query
+ *        required: false
+ *        type: string
+ *        example: '30'
+ *    responses:
+ *      '200':
+ *        description: A Successful response
+ *
+ */
 router.get('/get', async (req, res) => {
   const month = req.query.month;
   const day = req.query.day;
@@ -193,6 +288,19 @@ router.get('/get', async (req, res) => {
   });
 });
 
+/**
+ * @swagger
+ * /api/timeline:
+ *  get:
+ *    tags: [Case Informations]
+ *    description: Use to fetch cases timeline
+ *    produces:
+ *      - application/json
+ *    responses:
+ *      '200':
+ *        description: A Successful response
+ *
+ */
 router.get('/timeline', async (req, res) => {
   await db.getTimeline().then((data) => {
     jsonRespStructure.data = data;
@@ -203,6 +311,19 @@ router.get('/timeline', async (req, res) => {
   });
 });
 
+/**
+ * @swagger
+ * /api/top-regions:
+ *  get:
+ *    tags: [Case Informations]
+ *    description: Use to fetch regions by ranking of highest covid cases
+ *    produces:
+ *      - application/json
+ *    responses:
+ *      '200':
+ *        description: A Successful response
+ *
+ */
 router.get('/top-regions', async (req, res) => {
   await db.getTopRegions().then((data) => {
     jsonRespStructure.data = data;
@@ -213,6 +334,26 @@ router.get('/top-regions', async (req, res) => {
   });
 });
 
+/**
+ * @swagger
+ * /api/summary:
+ *  get:
+ *    tags: [Case Informations]
+ *    description: Use to fetch summary of covid cases
+ *    produces:
+ *      - application/json
+ *    parameters:
+ *      - name: region
+ *        description: returns summary of covid cases of that region
+ *        in: query
+ *        required: false
+ *        type: string
+ *        example: 'ncr'
+ *    responses:
+ *      '200':
+ *        description: A Successful response
+ *
+ */
 router.get('/summary', async (req, res) => {
   if (req.query.region === undefined && req.query.region_res !== undefined) {
     req.query.region = req.query.region_res;
@@ -231,6 +372,19 @@ router.get('/summary', async (req, res) => {
   });
 });
 
+/**
+ * @swagger
+ * /api/facilities:
+ *  get:
+ *    tags: [Facilities]
+ *    description: Use to fetch facilities/hospital data
+ *    produces:
+ *      - application/json
+ *    responses:
+ *      '200':
+ *        description: A Successful response
+ *
+ */
 router.get('/facilities', async (req, res) => {
   await db.getFacilities(req.query).then((data) => {
     jsonRespStructure.data = data;
@@ -243,8 +397,6 @@ router.get('/facilities', async (req, res) => {
 
 app.use('/api', router); // Add prefix "/api" to routes above
 
-app.get('/', async (req, res) => {
-  res.send('<html>Endpoints and documentation are available <a href="https://github.com/Simperfy/Covid-19-API-Philippines-DOH#-endpoints">here</a></html>');
-});
+app.use('/', swaggerUI.serve, swaggerUI.setup(swaggerDocs, options));
 
 module.exports = app;

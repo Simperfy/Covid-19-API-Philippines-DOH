@@ -29,7 +29,9 @@
     "mongodb": "^3.6.0",
     "morgan": "^1.10.0",
     "mysql": "^2.18.1",
-    "pdf-parse": "^1.1.1"
+    "pdf-parse": "^1.1.1",
+    "swagger-jsdoc": "^4.0.0",
+    "swagger-ui-express": "^4.1.4"
   },
   "devDependencies": {
     "eslint": "^7.4.0",
