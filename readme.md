@@ -320,7 +320,7 @@ GET api/filter/age_group/15-19
 
 ### Steps
 
-1. Make sure you have [Node.js](https://nodejs.org) & run the command:
+1. run the command:
 
 ```
 $ npm install
@@ -337,6 +337,16 @@ $ npm install
 ```
 $ npm run dev
 ```
+
+5. Done
+
+<br>
+
+API documentation uses:
+
+[Swagger express ui](https://www.npmjs.com/package/swagger-ui-express) - renders openapi.json
+
+[Optic](https://useoptic.com/) - generates openapi.json
 
 <br>
 
