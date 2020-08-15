@@ -4,9 +4,11 @@ const cors = require('cors');
 const morgan = require('morgan');
 const compression = require('compression');
 const apicache = require('apicache');
+// Swagger api docs
+const swaggerUI = require('swagger-ui-express');
+const openApiJson = require('./openapi.json');
 // GOOGLE DRIVE VARS
-const googleDriveApi = require('./src/GoogleDriveApiClient');
-const GoogleDriveApi = googleDriveApi.GoogleDriveApi;
+const GoogleDriveApi = require('./src/GoogleDriveApiClient').GoogleDriveApi;
 const GDriveApi = new GoogleDriveApi();
 // SERVER VARS
 const express = require('express');
@@ -23,6 +25,12 @@ const maxLimit = 10000;
 let db;
 let jsonRespStructure = {
   'data': [],
+};
+
+// swaggerUI.setup Options
+const options = {
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: 'Covid-19 Philippines API DOH',
 };
 
 // Middlewares
@@ -130,7 +138,10 @@ router.get('/filter/:field/:value', async (req, res) => {
   let value = req.params.value.trim();
 
   if (field === 'age') value = parseInt(value);
-  if (field === 'region') field = 'region_res';
+  if (field === 'region') {
+    field = 'region_res';
+    value = value.toLowerCase();
+  }
 
   await db.filter(field, value).then((data) => {
     jsonRespStructure.data = data;
@@ -243,8 +254,6 @@ router.get('/facilities', async (req, res) => {
 
 app.use('/api', router); // Add prefix "/api" to routes above
 
-app.get('/', async (req, res) => {
-  res.send('<html>Endpoints and documentation are available <a href="https://github.com/Simperfy/Covid-19-API-Philippines-DOH#-endpoints">here</a></html>');
-});
+app.use('/', swaggerUI.serve, swaggerUI.setup(openApiJson, options));
 
 module.exports = app;

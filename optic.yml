@@ -1,0 +1,10 @@
+name: COVID-19 API Philippines DOH
+tasks:
+  # The default task, invoke using `api run start`
+  # Learn how to finish setting up Optic at https://docs.useoptic.com/setup
+  start:
+    command: node --expose-gc index.js
+    baseUrl: http://localhost:3000
+ignoreRequests:
+# For more information on configuration, visit https://docs.useoptic.com/captures
+- OPTIONS (.*)
