@@ -77,6 +77,6 @@ test('GET /api/filter/region_res/Region IV-A: CALABARZON', async () => {
 
   expect(res.status).toBe(200);
   expect(res.body).toHaveProperty('data');
-  expect(res.body.data).not.toHaveLength(0);
+  expect(res.body.data).toHaveLength(0);
   expect(res.body).toHaveProperty('last_update');
 });
