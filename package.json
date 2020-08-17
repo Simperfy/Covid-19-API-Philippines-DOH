@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon --expose-gc index.js",
-    "start": "node --expose-gc index.js",
+    "dev": "nodemon --optimize_for_size --max_old_space_size=2560 --expose-gc index.js",
+    "start": "node --optimize_for_size --max_old_space_size=2560 --expose-gc index.js",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
