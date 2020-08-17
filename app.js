@@ -134,7 +134,11 @@ router.get('/updateDatabase', async (req, res) => {
 });
 
 router.get('/filter/:field/:value', async (req, res) => {
-  let field = req.params.field.trim();
+  jsonRespStructure.data = [];
+  jsonRespStructure.WARNING = 'DEPRECATED please use /api/get?field=value instead';
+  jsonRespStructure.result_count = jsonRespStructure.data.length;
+  res.json(jsonRespStructure);
+  /* let field = req.params.field.trim();
   let value = req.params.value.trim();
 
   if (field === 'age') value = parseInt(value);
@@ -151,7 +155,7 @@ router.get('/filter/:field/:value', async (req, res) => {
   }).catch((err) => {
     jsonRespStructure.error = err.message;
     res.json(jsonRespStructure);
-  });
+  });*/
 });
 
 router.get('/get', async (req, res) => {

@@ -163,7 +163,7 @@ class DatabaseAdapter {
     let result = true;
     let lowMemory = true;
 
-    this.db.updateDatabaseFromCSV(await new CSVDatabase(CaseInformation))
+    await this.db.updateDatabaseFromCSV(await new CSVDatabase(CaseInformation))
         .then(async (res) => {
           if (!res) result = false;
 
@@ -181,6 +181,14 @@ class DatabaseAdapter {
         }).catch((err) => {
           throw new Error(err);
         });
+
+    lowMemory = true;
+    while (lowMemory) {
+      const memUsed = process.memoryUsage().heapTotal / 1000000;
+      if (memUsed < 150) lowMemory = false;
+      global.gc();
+    }
+
     return result;
   }
 }
