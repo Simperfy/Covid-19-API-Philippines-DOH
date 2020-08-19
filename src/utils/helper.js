@@ -1,6 +1,8 @@
 /* eslint-disable max-len */
 const CaseInformation = require('../CaseInformation');
 const FacilityInformation = require('../FacilityInformation');
+const path = require('path');
+const fs = require('fs');
 
 /**
  * @param {Object[]} arr
@@ -149,4 +151,15 @@ exports.filterLatestFacilityData = (arr) => {
 
   // console.log(newArr.filter((a) => a.hfhudcode === 'DOH000000000005796'));
   return newArr;
+};
+
+exports.deleteTmpFolder = () => {
+  const filePath = path.join(__dirname, '/../../tmp');
+  fs.stat(filePath, (err, stats) => {
+    if (err) return console.log(`tmp folder stat: ${err.message}`);
+    fs.rmdir(filePath, {recursive: true}, (err) => {
+      if (err) return console.log(`Failed to delete files in tmp: ${err.message}`);
+      console.log(`${filePath} is deleted!`);
+    });
+  });
 };

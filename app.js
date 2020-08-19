@@ -19,6 +19,8 @@ const DatabaseAdapter = require('./src/Database/DatabaseAdapter');
 const DBLogger = require('./src/DBLogger');
 // Enums
 const downloadStatus = require('./src/utils/enums').DOWNLOAD_STATUS;
+// helpers
+const {deleteTmpFolder} = require('./src/utils/helper');
 // Express related vars
 const updateInterval = parseFloat(process.env.UPDATE_INTERVAL) || 24;
 const maxLimit = 10000;
@@ -119,6 +121,9 @@ async function autoUpdate() {
       console.log('Error Updating Database: ' + err);
     });
   }
+
+  console.log('\nDeleting tmp folder...');
+  deleteTmpFolder();
 }
 
 router.get('/updateDatabase', async (req, res) => {
@@ -128,6 +133,8 @@ router.get('/updateDatabase', async (req, res) => {
     }).catch((err) => {
       res.json({'success': false});
     });
+
+
   } else {
     res.send('You cannot manually update database in production.');
   }
