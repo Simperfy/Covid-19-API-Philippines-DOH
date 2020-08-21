@@ -218,7 +218,7 @@ router.get('/get', async (req, res) => {
 });
 
 router.get('/timeline', async (req, res) => {
-  await db.getTimeline().then((data) => {
+  await db.getTimeline(req.query).then((data) => {
     jsonRespStructure.data = data;
     res.json(jsonRespStructure);
   }).catch((err) => {

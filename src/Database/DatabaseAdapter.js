@@ -89,10 +89,11 @@ class DatabaseAdapter {
   }
 
   /**
+   * @param {Object} queries
    * @return {Promise}
    */
-  getTimeline() {
-    return this.db.getTimeline();
+  getTimeline(queries) {
+    return this.db.getTimeline(queries);
   }
 
   /**

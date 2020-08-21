@@ -323,16 +323,22 @@ class MongoDBDatabase {
   }
 
   /**
+   * @param {Object} queries
    * @return {Promise}
    */
-  getTimeline() {
+  getTimeline(queries) {
     return new Promise(async (resolve, reject) => {
       await this.connection.then(async (client) => {
         const db = client.db();
         const collection = db.collection('case_informations');
 
+        const filter = {};
+        if (queries.region) queries.region_res = queries.region;
+        if (queries.region_res) filter['region_res'] = queries.region;
+
         try {
           const result = await collection.aggregate([
+            {$match: filter},
             {$match: {$or: [{'date_onset': {'$ne': ''}}, {'date_specimen': {'$ne': ''}}]}},
             {
               $group: {
