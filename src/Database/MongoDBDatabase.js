@@ -493,7 +493,7 @@ class MongoDBDatabase {
           const res = await result.toArray();
           res[0].occupancy_rate = res[0].beds.total_occupied / (res[0].beds.total_occupied + res[0].beds.total_vacant);
           res[0].occupancy_rate = parseFloat(res[0].occupancy_rate.toFixed(2));
-          resolve(res);
+          resolve(res[0]);
         } catch (e) {
           reject(new Error(e));
         }
