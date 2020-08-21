@@ -38,7 +38,12 @@ class CSVDatabase {
       this.isConverting = true;
       const pathToCSV = this.csvFilePath;
       let dateThreshold = new Date();
-      dateThreshold = dateThreshold.setDate(dateThreshold.getDate() - 7);
+      dateThreshold = dateThreshold.setDate(dateThreshold.getDate() - (parseInt(process.env.FACILITIES_THRESHOLD) || 360));
+
+      let msg = process.env.FACILITIES_THRESHOLD || 'facilities threshold not found in .env, setting to 360';
+      msg += '\nIf this causes Out of memory error lower the value to 7 or 30';
+      console.log('Facilities Threshold: ', msg);
+
       const isFacilityInfo = ((await new this.csvClass()) instanceof FacilityInformation);
       const isCaseInfo = ((await new this.csvClass()) instanceof CaseInformation);
       const updatedDateIndex = 3;

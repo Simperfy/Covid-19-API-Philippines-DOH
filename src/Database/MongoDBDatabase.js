@@ -422,6 +422,79 @@ class MongoDBDatabase {
     });
   }
 
+  /**
+   * @param {Object} queries
+   * @return {Promise}
+   */
+  getFacilitiesSummary(queries) {
+    return new Promise(async (resolve, reject) => {
+      await this.connection.then(async (client) => {
+        const db = client.db();
+        const collection = db.collection('facility_informations');
+
+        const filter = {};
+        if (queries.region) filter['region'] = queries.region.toLowerCase();
+
+        try {
+          const result = await collection.aggregate([
+            {$match: filter},
+            {
+              $group: {
+                _id: null,
+                total_facilities: {$sum: 1},
+                icu_v: {$sum: '$icu_v'},
+                icu_o: {$sum: '$icu_o'},
+                isolbed_v: {$sum: '$isolbed_v'},
+                isolbed_o: {$sum: '$isolbed_o'},
+                beds_ward_v: {$sum: '$beds_ward_v'},
+                beds_ward_o: {$sum: '$beds_ward_o'},
+                nonicu_v_nc: {$sum: '$nonicu_v_nc'},
+                nonicu_o_nc: {$sum: '$nonicu_o_nc'},
+                mechvent_v: {$sum: '$mechvent_v'},
+                mechvent_o: {$sum: '$mechvent_o'},
+              },
+            },
+            {
+              $project: {
+                _id: 0,
+                total_facilities: '$total_facilities',
+                occupancy_rate: '0.0',
+                beds: {
+                  total_vacant: {
+                    $add: ['$icu_v',
+                      '$isolbed_v',
+                      '$beds_ward_v'],
+                  },
+                  total_occupied: {
+                    $add: ['$icu_o',
+                      '$isolbed_o',
+                      '$beds_ward_o'],
+                  },
+                  icu_v: '$icu_v',
+                  icu_o: '$icu_o',
+                  isolbed_v: '$isolbed_v',
+                  isolbed_o: '$isolbed_o',
+                  beds_ward_v: '$beds_ward_v',
+                  beds_ward_o: '$beds_ward_o',
+                },
+                equipments: {
+                  mechvent_v: '$mechvent_v',
+                  mechvent_o: '$mechvent_o',
+                },
+              },
+            },
+          ]);
+          const res = await result.toArray();
+          res[0].occupancy_rate = res[0].beds.total_occupied / (res[0].beds.total_occupied + res[0].beds.total_vacant);
+          res[0].occupancy_rate = parseFloat(res[0].occupancy_rate.toFixed(2));
+          resolve(res);
+        } catch (e) {
+          reject(new Error(e));
+        }
+      });
+    });
+  }
+
   // ./FACILITIES
 
   /**

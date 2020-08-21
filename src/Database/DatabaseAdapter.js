@@ -112,6 +112,14 @@ class DatabaseAdapter {
     return this.db.getFacilities(queries);
   }
 
+  /**
+   * @param {Object} queries
+   * @return {Promise}
+   */
+  getFacilitiesSummary(queries) {
+    return this.db.getFacilitiesSummary(queries);
+  }
+
   // ./FACILITIES
 
   /**

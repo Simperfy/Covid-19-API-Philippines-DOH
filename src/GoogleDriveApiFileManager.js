@@ -352,7 +352,7 @@ class GoogleDriveApiFileManager {
           const dbLogger = await new DBLogger();
           const previousFolderID = await dbLogger.getLatestFolderID();
 
-          if (folderID === previousFolderID) {
+          if (folderID === previousFolderID && process.env.BYPASS_FOLDERID_CHECK.toLowerCase() === 'false') {
             console.log('\nPrevious folder ID is the same as target folder ID');
             console.log('Skipping the download of csv file');
             resolve(DOWNLOAD_STATUS.DOWNLOAD_SKIPPED);
