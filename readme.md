@@ -147,13 +147,37 @@ GET api/get?page=1&limit=10000
 }
 ```
 
-**Fetching facility/hospital records 🆕** 
+**Fetching facilities summary 🆕** 
+```http
+GET api/facilities/summary
+```
 
-*returns hospitals data with updated_date within 7 days*
+```JSON
+{
+    "data": [
+        {
+            "total_facilities": 1925,
+            "occupancy_rate": 0.49,
+            "beds": {
+                "total_vacant": 9947,
+                "total_occupied": 9489,
+                "icu_v": 829,
+                "icu_o": 851,
+                "isolbed_v": 6678,
+                "isolbed_o": 6102,
+                "beds_ward_v": 2440,
+                "beds_ward_o": 2536
+            },
+            "equipments": {
+                "mechvent_v": 1521,
+                "mechvent_o": 645
+            }
+        }
+    ]
+}
+```
 
-*all hospitals that have updated_date older than 7 days are removed*
-
-*DATA IS NOT CONSISTENT after each update*
+**Fetching raw facility/hospital records 🆕**
 
 ```http
 GET api/facilities
