@@ -83,6 +83,8 @@ GET api/top-regions
 **Fetching No. of Cases Timeline**
 ```http
 GET api/timeline
+
+GET api/timeline?region={region_name}
 ```
 ```JSON
 {
