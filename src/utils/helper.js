@@ -42,7 +42,7 @@ exports.getCSVInfoObj = (csBatchArr) => {
         'date_recover': data.DateRecover,
         'removal_type': data.RemovalType,
         'admitted': data.Admitted,
-        'region_res': data.RegionRes,
+        'region_res': getRegionAlias(data.RegionRes),
         'prov_res': data.ProvRes,
         'city_mun_res': data.CityMunRes,
         'city_muni_psgc': data.CityMuniPSGC,
@@ -104,7 +104,7 @@ exports.getCSVInfoObj = (csBatchArr) => {
         't_patient_icu': data.tpatient_icu,
         'trans_ttmf': data.trans_ttmf, // Temporary Treatment and Monitoring Facilities
         'discharged': data.discharged,
-        'region': data.region,
+        'region': getRegionAlias(data.region),
         'region_psgc': data.region_psgc,
         'province': data.province,
         'province_psgc': data.province_psgc,
@@ -162,4 +162,39 @@ exports.deleteTmpFolder = () => {
       console.log(`${filePath} is deleted!`);
     });
   });
+};
+
+getRegionAlias = (region) => {
+  // alias : [matchers]
+  const aliasArr = [
+    {'barmm': ['BARMM', 'AUTONOMOUS REGION IN MUSLIM MINDANAO (ARMM)']},
+    {'car': ['CAR', 'CORDILLERA ADMINISTRA TIVE REGION (CAR)']},
+    {'caraga': ['CARAGA', 'REGION XIII (CARAGA)']},
+    {'ncr': ['NCR', 'NATIONAL CAPITAL REGION (NCR)']},
+    {'region i: ilocos region': ['Region I: Ilocos Region', 'REGION I (ILOCOS REGION)']},
+    {'region ii: cagayan valley': ['Region II: Cagayan Valley', 'REGION II (CAGAYAN VALLEY)']},
+    {'region iii: central luzon': ['Region III: Central Luzon', 'REGION III (CENTRAL LUZON)']},
+    {'region iv-a: calabarzon': ['Region IV-A: CALABARZON', 'REGION IV-A (CALABAR ZON)']},
+    {'region iv-b: mimaropa': ['Region IV-B: MIMAROPA', 'REGION IV-B (MIMAROPA)']},
+    {'region ix: zamboanga peninsula': ['Region IX: Zamboanga Peninsula', 'REGION IX (ZAMBOANGA PENINSULA)']},
+    {'region v: bicol region': ['Region V: Bicol Region', 'REGION V (BICOL REGION)']},
+    {'region vi: western visayas': ['Region VI: Western Visayas', 'REGION VI (WESTERN VISAYAS)']},
+    {'region vii: central visayas': ['Region VII: Central Visayas', 'REGION VII (CENTRAL VISAYAS)']},
+    {'region viii: eastern visayas': ['Region VIII: Eastern Visayas', 'REGION VIII (EASTERN VISAYAS)']},
+    {'region x: northern mindanao': ['Region X: Northern Mindanao', 'REGION X (NORTHERN MINDANAO)']},
+    {'region xi: davao region': ['Region XI: Davao Region', 'REGION XI (DAVAO REGION)']},
+    {'region xii: soccsksargen': ['Region XII: SOCCSKSARGEN', 'REGION XII (SOCCSKSA RGEN)']},
+    {'repatriate': ['REPATRIATE']},
+    {'': ['']},
+  ];
+
+  for (const objA of (aliasArr)) {
+    for (const aliasesKey of Object.keys(objA)) {
+      for (const alias of objA[aliasesKey]) {
+        if (region.toLowerCase() === alias.toLowerCase()) return aliasesKey;
+      }
+    }
+  }
+
+  throw (Error('ERROR: ALIAS NOT FOUND FOR: ' + region));
 };
