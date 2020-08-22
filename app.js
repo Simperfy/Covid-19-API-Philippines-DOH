@@ -103,7 +103,7 @@ async function autoUpdate() {
   console.log('Interval hr: ' + updateInterval);
   await GDriveApi.downloadLatestFile().then((data) => {
     if (data === downloadStatus.DOWNLOAD_SKIPPED) {
-      shouldSkip = process.env.FORCE_NOT_SKIP.toLowerCase() !== 'true';
+      shouldSkip = process.env.DISABLE_SKIP_DATABASE_UPDATE.toLowerCase() !== 'true';
       console.log('Skipping download of files');
     } else {
       console.log('download status: ', data);
@@ -122,8 +122,12 @@ async function autoUpdate() {
     });
   }
 
-  console.log('\nDeleting tmp folder...');
-  deleteTmpFolder();
+  if (process.env.DISABLE_TMP_DELETION.toLowerCase() !== 'true') {
+    console.log('\nDeleting tmp folder...');
+    deleteTmpFolder();
+  } else {
+    console.log('Skipping deletion of tmp folder.');
+  }
 }
 
 router.get('/updateDatabase', async (req, res) => {
@@ -133,8 +137,6 @@ router.get('/updateDatabase', async (req, res) => {
     }).catch((err) => {
       res.json({'success': false});
     });
-
-
   } else {
     res.send('You cannot manually update database in production.');
   }
@@ -216,7 +218,7 @@ router.get('/get', async (req, res) => {
 });
 
 router.get('/timeline', async (req, res) => {
-  await db.getTimeline().then((data) => {
+  await db.getTimeline(req.query).then((data) => {
     jsonRespStructure.data = data;
     res.json(jsonRespStructure);
   }).catch((err) => {
@@ -255,6 +257,16 @@ router.get('/summary', async (req, res) => {
 
 router.get('/facilities', async (req, res) => {
   await db.getFacilities(req.query).then((data) => {
+    jsonRespStructure.data = data;
+    res.json(jsonRespStructure);
+  }).catch((err) => {
+    jsonRespStructure.error = err.message;
+    res.json(jsonRespStructure);
+  });
+});
+
+router.get('/facilities/summary', async (req, res) => {
+  await db.getFacilitiesSummary(req.query).then((data) => {
     jsonRespStructure.data = data;
     res.json(jsonRespStructure);
   }).catch((err) => {
