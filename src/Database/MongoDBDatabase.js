@@ -333,8 +333,9 @@ class MongoDBDatabase {
         const collection = db.collection('case_informations');
 
         const filter = {};
-        if (queries.region) queries.region_res = queries.region;
-        if (queries.region_res) filter['region_res'] = queries.region;
+        // accept either region or region_res
+        if (queries.region) filter['region_res'] = queries.region.toLowerCase();
+        else if (queries.region_res) filter['region_res'] = queries.region_res.toLowerCase();
 
         try {
           const result = await collection.aggregate([
