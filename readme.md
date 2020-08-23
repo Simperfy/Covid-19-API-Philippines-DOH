@@ -19,17 +19,21 @@
 ## 📌 Endpoints
 Base URL: https://covid19-api-philippines.herokuapp.com/
 
-Currently available API endpoints:
+[Documentation in POSTMAN are available here](https://documenter.getpostman.com/view/10808728/SzS8rjbc?version=latest#7934d316-f751-4914-9909-39f1901caeb8)
 
-<details style="margin-bottom: 2em">
-  <summary><h2 style="display: inline-block; color: orange">Case Informations</h2></summary>
+Available API endpoints:
+
+## Case Informations
+
+<details>
+  <summary><b><i>View Endpoints </i></b></summary>
 
 **Fetching summary**
 ```http
 GET api/summary
 GET api/summary?region={region}
 ```
-<details style="margin-bottom: 2em">
+<details>
   <summary><i>Example Response</i></summary>
 
 ```JSON
@@ -47,12 +51,14 @@ GET api/summary?region={region}
 
 </details>
 
+<br>
+
 **Fetching Top Regions**
 ```http
 GET api/top-regions
 ```
 
-<details style="margin-bottom: 2em">
+<details>
   <summary><i>Example Response</i></summary>
 
 ```JSON
@@ -77,13 +83,16 @@ GET api/top-regions
 
 </details>
 
+<br>
+
+
 **Fetching No. of Cases Timeline**
 ```http
 GET api/timeline
 GET api/timeline?region={region_name}
 ```
 
-<details style="margin-bottom: 2em">
+<details>
   <summary><i>Example Response</i></summary>
 
 ```JSON
@@ -108,6 +117,9 @@ GET api/timeline?region={region_name}
 
 </details>
 
+<br>
+
+
 **Fetching raw data** (Ordered by case_code)
 *`limit` cannot exceed `10000`*
 ```http
@@ -129,7 +141,7 @@ GET api/get?month=03&date=01
 ```http
 GET api/get?region_res=ncr&age_group=20-24
 ```
-<details style="margin-bottom: 2em">
+<details>
   <summary><i>Example Response</i></summary>
 
   ```JSON
@@ -168,17 +180,25 @@ GET api/get?region_res=ncr&age_group=20-24
   ```
 
 </details>
+
+<br>
+
 </details>
 
-<details style="margin-bottom: 2em">
-  <summary><h2 style="display: inline-block; color: orange">Facilities Informations</h2></summary>
+<br>
+
+
+## Facilities Informations
+
+<details>
+  <summary><b><i>View Endpoints </i></b></summary>
 
 **Fetching facilities summary 🆕**
 ```http
 GET api/facilities/summary
 ```
 
-<details style="margin-bottom: 2em">
+<details>
   <summary><i>Example Response</i></summary>
 
 ```JSON
@@ -206,7 +226,11 @@ GET api/facilities/summary
 }
 ```
 
+<br>
 </details>
+
+
+
 
 **Fetching raw facility/hospital records**
 
@@ -216,7 +240,7 @@ GET api/facilities
 GET api/facilities?{field1}={value1}&{field2}={value2}
 ```
 
-<details style="margin-bottom: 2em">
+<details>
   <summary><i>Example Response</i></summary>
 
 ```JSON
@@ -284,10 +308,11 @@ GET api/facilities?{field1}={value1}&{field2}={value2}
 
 </details>
 
+<br>
+
 </details>
 
 ---
-
 <br>
 
 ## Field and Values Reference
