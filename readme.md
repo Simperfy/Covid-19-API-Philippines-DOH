@@ -188,12 +188,12 @@ GET api/get?region_res=ncr&age_group=20-24
 <br>
 
 
-## Facilities Informations
+## Facilities Informations <sup>🆕</sup>
 
 <details>
   <summary><b><i>View Endpoints </i></b></summary>
 
-**Fetching facilities summary 🆕**
+**Fetching facilities summary**
 ```http
 GET api/facilities/summary
 ```
@@ -229,15 +229,12 @@ GET api/facilities/summary
 <br>
 </details>
 
-
-
-
 **Fetching raw facility/hospital records**
 
 ```http
 GET api/facilities
-
-GET api/facilities?{field1}={value1}&{field2}={value2}
+GET api/facilities?region={region name}
+GET api/facilities?hospital_name={hospital name}
 ```
 
 <details>

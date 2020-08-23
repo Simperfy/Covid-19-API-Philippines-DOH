@@ -441,6 +441,7 @@ class MongoDBDatabase {
 
         const filter = {};
         if (queries.region) filter['region'] = queries.region.toLowerCase();
+        if (queries.hospital_name) filter['cf_name'] = queries.hospital_name.toLowerCase();
 
         try {
           const result = await collection.aggregate([
@@ -492,8 +493,10 @@ class MongoDBDatabase {
             },
           ]);
           const res = await result.toArray();
+
           res[0].occupancy_rate = res[0].beds.total_occupied / (res[0].beds.total_occupied + res[0].beds.total_vacant);
-          res[0].occupancy_rate = parseFloat(res[0].occupancy_rate.toFixed(2));
+          res[0].occupancy_rate = parseFloat(res[0].occupancy_rate.toFixed(2)) || 0;
+
           resolve(res[0]);
         } catch (e) {
           reject(new Error(e));
