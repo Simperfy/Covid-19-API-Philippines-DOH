@@ -21,10 +21,17 @@ Base URL: https://covid19-api-philippines.herokuapp.com/
 
 Currently available API endpoints:
 
+<details style="margin-bottom: 2em">
+  <summary><h2 style="display: inline-block; color: orange">Case Informations</h2></summary>
+
 **Fetching summary**
 ```http
 GET api/summary
+GET api/summary?region={region}
 ```
+<details style="margin-bottom: 2em">
+  <summary><i>Example Response</i></summary>
+
 ```JSON
 {
   "data": {
@@ -38,28 +45,16 @@ GET api/summary
 }
 ```
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  **Fetching summary by region** [list of regions](#field-and-values-reference)
-
-```http
-    GET api/summary?region=ncr
-```
-```JSON
-    {
-      "data": {
-        "total": 50611,
-        "recoveries": 34545,
-        "deaths": 1025,
-        "active_cases": 15041,
-        "fatality_rate": "2.03",
-        "recovery_rate": "68.26"
-      }
-    }
-```
+</details>
 
 **Fetching Top Regions**
 ```http
 GET api/top-regions
 ```
+
+<details style="margin-bottom: 2em">
+  <summary><i>Example Response</i></summary>
+
 ```JSON
 {
     "data": [
@@ -80,12 +75,17 @@ GET api/top-regions
 }
 ```
 
+</details>
+
 **Fetching No. of Cases Timeline**
 ```http
 GET api/timeline
-
 GET api/timeline?region={region_name}
 ```
+
+<details style="margin-bottom: 2em">
+  <summary><i>Example Response</i></summary>
+
 ```JSON
 {
   "data": [
@@ -106,53 +106,80 @@ GET api/timeline?region={region_name}
 }
 ```
 
-**Fetching all records** (Ordered by case_code)
+</details>
 
-***UPDATE: Removed validation_status***
-
+**Fetching raw data** (Ordered by case_code)
 *`limit` cannot exceed `10000`*
 ```http
 GET api/get?page=1&limit=10000
 ```
-```JSON
-{
-    "data": [
-        {
-            "case_code": "C100018",
-            "age": 53,
-            "age_group": "50-54",
-            "sex": "female",
-            "date_specimen": "2020-04-30",
-            "date_result_release": "2020-05-09",
-            "date_rep_conf": "2020-05-11",
-            "date_died": "",
-            "date_recover": "",
-            "removal_type": "recovered",
-            "admitted": "no",
-            "region_res": "Region IV-A: CALABARZON",
-            "prov_res": "laguna",
-            "city_mun_res": "city of san pedro",
-            "city_muni_psgc": "PH043425000",
-            "health_status": "recovered",
-            "quarantined": "no",
-            "date_onset": "",
-            "pregnant_tab": "no"
-        },
-        {...}
-    ],
-    "pagination": {
-        "next_page": 2,
-        "limit": 10000,
-        "max_page": 10
-    },
-    "result_count": 10000
-}
+
+**Fetching records by month**
+```http
+GET api/get?month=03
 ```
 
-**Fetching facilities summary 🆕** 
+**Fetching all by specific date**
+```http
+GET api/get?month=03&date=01
+```
+
+**Fetching raw data with filters 🆕**
+
+```http
+GET api/get?region_res=ncr&age_group=20-24
+```
+<details style="margin-bottom: 2em">
+  <summary><i>Example Response</i></summary>
+
+  ```JSON
+  {
+      "data": [
+          {
+              "case_code": "C100018",
+              "age": 53,
+              "age_group": "50-54",
+              "sex": "female",
+              "date_specimen": "2020-04-30",
+              "date_result_release": "2020-05-09",
+              "date_rep_conf": "2020-05-11",
+              "date_died": "",
+              "date_recover": "",
+              "removal_type": "recovered",
+              "admitted": "no",
+              "region_res": "Region IV-A: CALABARZON",
+              "prov_res": "laguna",
+              "city_mun_res": "city of san pedro",
+              "city_muni_psgc": "PH043425000",
+              "health_status": "recovered",
+              "quarantined": "no",
+              "date_onset": "",
+              "pregnant_tab": "no"
+          },
+          {...}
+      ],
+      "pagination": {
+          "next_page": 2,
+          "limit": 10000,
+          "max_page": 10
+      },
+      "result_count": 10000
+  }
+  ```
+
+</details>
+</details>
+
+<details style="margin-bottom: 2em">
+  <summary><h2 style="display: inline-block; color: orange">Facilities Informations</h2></summary>
+
+**Fetching facilities summary 🆕**
 ```http
 GET api/facilities/summary
 ```
+
+<details style="margin-bottom: 2em">
+  <summary><i>Example Response</i></summary>
 
 ```JSON
 {
@@ -179,13 +206,18 @@ GET api/facilities/summary
 }
 ```
 
-**Fetching raw facility/hospital records 🆕**
+</details>
+
+**Fetching raw facility/hospital records**
 
 ```http
 GET api/facilities
 
 GET api/facilities?{field1}={value1}&{field2}={value2}
 ```
+
+<details style="margin-bottom: 2em">
+  <summary><i>Example Response</i></summary>
 
 ```JSON
 {
@@ -250,33 +282,9 @@ GET api/facilities?{field1}={value1}&{field2}={value2}
 }
 ```
 
-**Fetching records by month**
-```http
-GET api/get?month=03
-```
+</details>
 
-**Fetching all by specific date**
-```http
-GET api/get?month=03&date=01
-```
-
-**Fetching records with filters 🆕** 
-
-```http
-GET api/get?region_res=ncr&age_group=20-24
-```
-
-<br>
-
-**~~Fetching records that matches the filter~~**
-
-##### ⚠ DEPRECATED! please use /api/get?field=value instead
-
-```http
-GET api/filter/{field}/{value}
-```
-
-<br>
+</details>
 
 ---
 
@@ -307,31 +315,6 @@ GET api/filter/{field}/{value}
 | pregnant_tab        | String           | yes, no                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | YES           |
 <br>
 
-Examples:
-* Fetching 10000 covid-19 cases at a time
-```http
-GET api/get?page=1&limit=10000
-GET api/get?page=2&limit=10000
-...
-GET api/get?page=10&limit=10000
-```
-
-* Fetching all covid-19 cases with age of 30
-```http
-GET api/filter/age/30
-``` 
-
-* Fetching all covid-19 cases in NCR
-```http
-GET api/filter/region_res/NCR
-```
-
-* Fetching all covid-19 cases between 15 and 19 years old
-```http
-GET api/filter/age_group/15-19
-```
-
-<br>
 
 ---
 
