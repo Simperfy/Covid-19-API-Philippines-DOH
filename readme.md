@@ -19,12 +19,23 @@
 ## 📌 Endpoints
 Base URL: https://covid19-api-philippines.herokuapp.com/
 
-Currently available API endpoints:
+[Documentation in POSTMAN are available here](https://documenter.getpostman.com/view/12463261/T1LV9jLU?version=latest)
+
+<br>
+
+## Case Informations
+
+<details>
+  <summary><b><i>View Endpoints </i></b></summary>
 
 **Fetching summary**
 ```http
 GET api/summary
+GET api/summary?region={region}
 ```
+<details>
+  <summary><i>Example Response</i></summary>
+
 ```JSON
 {
   "data": {
@@ -38,28 +49,18 @@ GET api/summary
 }
 ```
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  **Fetching summary by region** [list of regions](#field-and-values-reference)
+</details>
 
-```http
-    GET api/summary?region=ncr
-```
-```JSON
-    {
-      "data": {
-        "total": 50611,
-        "recoveries": 34545,
-        "deaths": 1025,
-        "active_cases": 15041,
-        "fatality_rate": "2.03",
-        "recovery_rate": "68.26"
-      }
-    }
-```
+<br>
 
 **Fetching Top Regions**
 ```http
 GET api/top-regions
 ```
+
+<details>
+  <summary><i>Example Response</i></summary>
+
 ```JSON
 {
     "data": [
@@ -80,12 +81,20 @@ GET api/top-regions
 }
 ```
 
+</details>
+
+<br>
+
+
 **Fetching No. of Cases Timeline**
 ```http
 GET api/timeline
-
 GET api/timeline?region={region_name}
 ```
+
+<details>
+  <summary><i>Example Response</i></summary>
+
 ```JSON
 {
   "data": [
@@ -106,53 +115,91 @@ GET api/timeline?region={region_name}
 }
 ```
 
-**Fetching all records** (Ordered by case_code)
+</details>
 
-***UPDATE: Removed validation_status***
+<br>
 
+---
+
+<br>
+
+**Fetching raw data** (Ordered by case_code)
 *`limit` cannot exceed `10000`*
 ```http
 GET api/get?page=1&limit=10000
 ```
-```JSON
-{
-    "data": [
-        {
-            "case_code": "C100018",
-            "age": 53,
-            "age_group": "50-54",
-            "sex": "female",
-            "date_specimen": "2020-04-30",
-            "date_result_release": "2020-05-09",
-            "date_rep_conf": "2020-05-11",
-            "date_died": "",
-            "date_recover": "",
-            "removal_type": "recovered",
-            "admitted": "no",
-            "region_res": "Region IV-A: CALABARZON",
-            "prov_res": "laguna",
-            "city_mun_res": "city of san pedro",
-            "city_muni_psgc": "PH043425000",
-            "health_status": "recovered",
-            "quarantined": "no",
-            "date_onset": "",
-            "pregnant_tab": "no"
-        },
-        {...}
-    ],
-    "pagination": {
-        "next_page": 2,
-        "limit": 10000,
-        "max_page": 10
-    },
-    "result_count": 10000
-}
+
+**Fetching raw data by month**
+```http
+GET api/get?month=03
 ```
 
-**Fetching facilities summary 🆕** 
+**Fetching raw data by specific date**
+```http
+GET api/get?month=03&date=01
+```
+
+**Fetching raw data with filters**
+
+```http
+GET api/get?region_res=ncr&age_group=20-24
+```
+<details>
+  <summary><i>Example Response</i></summary>
+
+  ```JSON
+  {
+      "data": [
+          {
+              "case_code": "C100018",
+              "age": 53,
+              "age_group": "50-54",
+              "sex": "female",
+              "date_specimen": "2020-04-30",
+              "date_result_release": "2020-05-09",
+              "date_rep_conf": "2020-05-11",
+              "date_died": "",
+              "date_recover": "",
+              "removal_type": "recovered",
+              "admitted": "no",
+              "region_res": "Region IV-A: CALABARZON",
+              "prov_res": "laguna",
+              "city_mun_res": "city of san pedro",
+              "city_muni_psgc": "PH043425000",
+              "health_status": "recovered",
+              "quarantined": "no",
+              "date_onset": "",
+              "pregnant_tab": "no"
+          },
+          {...}
+      ],
+      "pagination": {
+          "next_page": 2,
+          "limit": 10000,
+          "max_page": 10
+      },
+      "result_count": 10000
+  }
+  ```
+
+</details>
+
+<br>
+
+</details>
+
+## Facilities Informations <sup>🆕</sup>
+
+<details>
+  <summary><b><i>View Endpoints </i></b></summary>
+
+**Fetching facilities summary**
 ```http
 GET api/facilities/summary
 ```
+
+<details>
+  <summary><i>Example Response</i></summary>
 
 ```JSON
 {
@@ -179,13 +226,19 @@ GET api/facilities/summary
 }
 ```
 
-**Fetching raw facility/hospital records 🆕**
+<br>
+</details>
+
+**Fetching raw facility/hospital records**
 
 ```http
 GET api/facilities
-
-GET api/facilities?{field1}={value1}&{field2}={value2}
+GET api/facilities?region={region name}
+GET api/facilities?hospital_name={hospital name}
 ```
+
+<details>
+  <summary><i>Example Response</i></summary>
 
 ```JSON
 {
@@ -250,31 +303,11 @@ GET api/facilities?{field1}={value1}&{field2}={value2}
 }
 ```
 
-**Fetching records by month**
-```http
-GET api/get?month=03
-```
-
-**Fetching all by specific date**
-```http
-GET api/get?month=03&date=01
-```
-
-**Fetching records with filters 🆕** 
-
-```http
-GET api/get?region_res=ncr&age_group=20-24
-```
+</details>
 
 <br>
 
-**~~Fetching records that matches the filter~~**
-
-##### ⚠ DEPRECATED! please use /api/get?field=value instead
-
-```http
-GET api/filter/{field}/{value}
-```
+</details>
 
 <br>
 
@@ -297,7 +330,7 @@ GET api/filter/{field}/{value}
 | date_recover        | Date(YYYY-MM-DD) | Date(YYYY-MM-DD)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | YES           |
 | removal_type        | String           | recovered, died                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | YES           |
 | admitted            | String           | yes, no                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | YES           |
-| region_res          | String           | BARMM, CAR, CARAGA, NCR, Region I: Ilocos Region, Region II: Cagayan Valley, Region III: Central Luzon, Region IV-A: CALABARZON, Region IV-B: MIMAROPA, Region IX: Zamboanga Peninsula, Region V: Bicol Region, Region VI: Western Visayas, Region VII: Central Visayas, Region VIII: Eastern Visayas, Region X: Northern Mindanao, Region XI: Davao Region, Region XII: SOCCSKSARGEN, REPATRIATE                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | YES           |
+| region_res/region   | String           | BARMM, CAR, CARAGA, NCR, Region I: Ilocos Region, Region II: Cagayan Valley, Region III: Central Luzon, Region IV-A: CALABARZON, Region IV-B: MIMAROPA, Region IX: Zamboanga Peninsula, Region V: Bicol Region, Region VI: Western Visayas, Region VII: Central Visayas, Region VIII: Eastern Visayas, Region X: Northern Mindanao, Region XI: Davao Region, Region XII: SOCCSKSARGEN, REPATRIATE                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | YES           |
 | prov_res            | String           | abra,  agusan del norte,  agusan del sur,  aklan,  albay,  antique,  apayao,  aurora,  basilan,  bataan,  batangas,  benguet,  biliran,  bohol,  bukidnon,  bulacan,  cagayan,  camarines norte,  camarines sur,  camiguin,  capiz,  catanduanes,  cavite,  cebu,  city of isabela (not a province), cotabato (north cotabato) cotabato city (not a province),  davao de oro,  davao del norte,  davao del sur,  davao occidental,  davao oriental,  eastern samar,  guimaras,  ifugao,  ilocos norte,  ilocos sur,  iloilo,  isabela,  kalinga,  la union,  laguna,  lanao del norte,  lanao del sur,  leyte,  maguindanao,  marinduque,  masbate,  misamis occidental,  misamis oriental,  mountain province,  ncr,  negros occidental,  negros oriental,  northern samar,  nueva ecija,  nueva vizcaya,  occidental mindoro,  oriental mindoro,  palawan,  pampanga,  pangasinan,  quezon,  rizal,  romblon,  samar (western samar),  sarangani,  siquijor,  sorsogon,  south cotabato,  southern leyte,  sultan kudarat,  sulu,  surigao del norte,  surigao del sur,  tarlac,  tawi-tawi,  zambales,  zamboanga del norte,  zamboanga del sur,  zamboanga sibugay, | YES           |
 | city_mun_res        | String           | https://pastebin.com/EmP2MQDH                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | YES           |
 | city_muni_psgc      | String           | Unique ID (eg: PH012802000)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | YES           |
@@ -307,31 +340,6 @@ GET api/filter/{field}/{value}
 | pregnant_tab        | String           | yes, no                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | YES           |
 <br>
 
-Examples:
-* Fetching 10000 covid-19 cases at a time
-```http
-GET api/get?page=1&limit=10000
-GET api/get?page=2&limit=10000
-...
-GET api/get?page=10&limit=10000
-```
-
-* Fetching all covid-19 cases with age of 30
-```http
-GET api/filter/age/30
-``` 
-
-* Fetching all covid-19 cases in NCR
-```http
-GET api/filter/region_res/NCR
-```
-
-* Fetching all covid-19 cases between 15 and 19 years old
-```http
-GET api/filter/age_group/15-19
-```
-
-<br>
 
 ---
 

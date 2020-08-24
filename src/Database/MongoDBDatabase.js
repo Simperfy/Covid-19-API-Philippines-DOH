@@ -441,6 +441,7 @@ class MongoDBDatabase {
 
         const filter = {};
         if (queries.region) filter['region'] = queries.region.toLowerCase();
+        if (queries.hospital_name) filter['cf_name'] = queries.hospital_name.toLowerCase();
 
         try {
           const result = await collection.aggregate([
@@ -449,16 +450,23 @@ class MongoDBDatabase {
               $group: {
                 _id: null,
                 total_facilities: {$sum: 1},
+                // for covid patients
                 icu_v: {$sum: '$icu_v'},
                 icu_o: {$sum: '$icu_o'},
                 isolbed_v: {$sum: '$isolbed_v'},
                 isolbed_o: {$sum: '$isolbed_o'},
                 beds_ward_v: {$sum: '$beds_ward_v'},
                 beds_ward_o: {$sum: '$beds_ward_o'},
-                nonicu_v_nc: {$sum: '$nonicu_v_nc'},
-                nonicu_o_nc: {$sum: '$nonicu_o_nc'},
                 mechvent_v: {$sum: '$mechvent_v'},
                 mechvent_o: {$sum: '$mechvent_o'},
+
+                // for non-covid patients
+                icu_v_nc: {$sum: '$icu_v_nc'},
+                icu_o_nc: {$sum: '$icu_o_nc'},
+                nonicu_v_nc: {$sum: '$nonicu_v_nc'},
+                nonicu_o_nc: {$sum: '$nonicu_o_nc'},
+                mechvent_v_nc: {$sum: '$mechvent_v_nc'},
+                mechvent_o_nc: {$sum: '$mechvent_v_nc'},
               },
             },
             {
@@ -477,12 +485,25 @@ class MongoDBDatabase {
                       '$isolbed_o',
                       '$beds_ward_o'],
                   },
-                  icu_v: '$icu_v',
-                  icu_o: '$icu_o',
-                  isolbed_v: '$isolbed_v',
-                  isolbed_o: '$isolbed_o',
-                  beds_ward_v: '$beds_ward_v',
-                  beds_ward_o: '$beds_ward_o',
+                  // for covid patients
+                  covid: {
+                    icu_v: '$icu_v',
+                    icu_o: '$icu_o',
+                    isolbed_v: '$isolbed_v',
+                    isolbed_o: '$isolbed_o',
+                    beds_ward_v: '$beds_ward_v',
+                    beds_ward_o: '$beds_ward_o',
+                  },
+
+                  // for non-covid patients
+                  non_covid: {
+                    icu_v_nc: '$icu_v_nc',
+                    icu_o_nc: '$icu_o_nc',
+                    nonicu_v_nc: '$nonicu_v_nc',
+                    nonicu_o_nc: '$nonicu_o_nc',
+                    mechvent_v_nc: '$mechvent_v_nc',
+                    mechvent_o_nc: '$mechvent_v_nc',
+                  },
                 },
                 equipments: {
                   mechvent_v: '$mechvent_v',
@@ -492,8 +513,10 @@ class MongoDBDatabase {
             },
           ]);
           const res = await result.toArray();
+
           res[0].occupancy_rate = res[0].beds.total_occupied / (res[0].beds.total_occupied + res[0].beds.total_vacant);
-          res[0].occupancy_rate = parseFloat(res[0].occupancy_rate.toFixed(2));
+          res[0].occupancy_rate = parseFloat(res[0].occupancy_rate.toFixed(2)) || 0;
+
           resolve(res[0]);
         } catch (e) {
           reject(new Error(e));
