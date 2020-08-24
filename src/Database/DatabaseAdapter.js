@@ -124,6 +124,15 @@ class DatabaseAdapter {
   // ./FACILITIES
 
   /**
+   * @param {String} field
+   * @param {String} dataset
+   * @return {Promise}
+   */
+  getListOf(field, dataset) {
+    return this.db.getListOf(field, dataset);
+  }
+
+  /**
    *
    * @return {Promise<String>}
    */

@@ -23,6 +23,20 @@ Base URL: https://covid19-api-philippines.herokuapp.com/
 
 <br>
 
+**Get list of all possible values for the specified field 🆕**
+
+*datasets: `case_informations`, `facilities_informations`*
+
+*(DEFAULT: `case_informations`)*
+```http
+GET api/list-of/:field
+GET api/list-of/:field?dataset=case_informations
+
+eg:
+GET api/list-of/regions
+GET api/list-of/age_groups
+```
+
 ## Case Informations
 
 <details>
