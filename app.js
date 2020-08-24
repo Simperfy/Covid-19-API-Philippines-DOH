@@ -277,7 +277,7 @@ router.get('/facilities/summary', async (req, res) => {
 
 // API that lists values
 router.get('/list-of/:field', async (req, res) => {
-  if (!req.query.dataset) req.query.dataset = 'case_informations';
+  if (!req.query.dataset) req.query.dataset = 'case_information';
 
   await db.getListOf(req.params.field, req.query.dataset).then((data) => {
     jsonRespStructure.data = data;

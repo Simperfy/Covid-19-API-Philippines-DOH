@@ -539,7 +539,7 @@ class MongoDBDatabase {
         let collection;
 
         switch (dataset.toLowerCase()) {
-          case 'case_informations':
+          case 'case_information':
             collection = db.collection('case_informations');
 
             switch (field.toLowerCase()) {
@@ -561,7 +561,7 @@ class MongoDBDatabase {
             }
             break;
 
-          case 'facilities_informations':
+          case 'facilities_information':
             collection = db.collection('facilities_informations');
 
             switch (field.toLowerCase()) {
