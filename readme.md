@@ -19,7 +19,7 @@
 ## 📌 Endpoints
 Base URL: https://covid19-api-philippines.herokuapp.com/
 
-[Documentation in POSTMAN are available here](https://documenter.getpostman.com/view/10808728/SzS8rjbc?version=latest#7934d316-f751-4914-9909-39f1901caeb8)
+[Documentation in POSTMAN are available here](https://documenter.getpostman.com/view/12463261/T1LV9jLU?version=latest)
 
 <br>
 
