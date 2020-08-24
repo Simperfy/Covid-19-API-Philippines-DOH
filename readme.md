@@ -119,6 +119,9 @@ GET api/timeline?region={region_name}
 
 <br>
 
+---
+
+<br>
 
 **Fetching raw data** (Ordered by case_code)
 *`limit` cannot exceed `10000`*
@@ -126,17 +129,17 @@ GET api/timeline?region={region_name}
 GET api/get?page=1&limit=10000
 ```
 
-**Fetching records by month**
+**Fetching raw data by month**
 ```http
 GET api/get?month=03
 ```
 
-**Fetching all by specific date**
+**Fetching raw data by specific date**
 ```http
 GET api/get?month=03&date=01
 ```
 
-**Fetching raw data with filters 🆕**
+**Fetching raw data with filters**
 
 ```http
 GET api/get?region_res=ncr&age_group=20-24
@@ -184,9 +187,6 @@ GET api/get?region_res=ncr&age_group=20-24
 <br>
 
 </details>
-
-<br>
-
 
 ## Facilities Informations <sup>🆕</sup>
 
@@ -309,7 +309,10 @@ GET api/facilities?hospital_name={hospital name}
 
 </details>
 
+<br>
+
 ---
+
 <br>
 
 ## Field and Values Reference
