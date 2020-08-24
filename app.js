@@ -290,6 +290,8 @@ router.get('/list-of/:field', async (req, res) => {
 
 app.use('/api', router); // Add prefix "/api" to routes above
 
-app.use('/', swaggerUI.serve, swaggerUI.setup(openApiJson, options));
+// app.use('/', swaggerUI.serve, swaggerUI.setup(openApiJson, options));
+
+app.use('/', (req, res) => res.redirect('https://documenter.getpostman.com/view/12463261/T1LV9jLU'));
 
 module.exports = app;
