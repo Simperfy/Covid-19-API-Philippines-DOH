@@ -588,7 +588,7 @@ class MongoDBDatabase {
             break;
 
           case 'facilities_information':
-            collection = db.collection('facilities_informations');
+            collection = db.collection('facility_informations');
 
             switch (field.toLowerCase()) {
               case 'regions':
@@ -599,6 +599,9 @@ class MongoDBDatabase {
                 break;
               case 'cities':
                 field = 'city_mun';
+                break;
+              case 'hospitals':
+                field = 'cf_name';
                 break;
             }
 
