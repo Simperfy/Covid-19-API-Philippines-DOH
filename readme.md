@@ -17,7 +17,11 @@
 <br>
 
 ## 📌 Endpoints
-Base URL: https://covid19-api-philippines.herokuapp.com/
+Base URL 
+
+(MAIN): https://covid19-api-philippines.herokuapp.com/
+
+(Optional) https://covid19-ph-api.herokuapp.com/ 🆕
 
 [Documentation in POSTMAN are available here](https://documenter.getpostman.com/view/12463261/T1LV9jLU?version=latest)
 
