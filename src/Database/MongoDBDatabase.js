@@ -528,6 +528,90 @@ class MongoDBDatabase {
   // ./FACILITIES
 
   /**
+   * @param {String} field
+   * @param {String} dataset
+   * @return {Promise}
+   */
+  getListOf(field, dataset) {
+    return new Promise(async (resolve, reject) => {
+      await this.connection.then(async (client) => {
+        const db = client.db();
+        let collection;
+
+        switch (dataset.toLowerCase()) {
+          case 'case_information':
+            collection = db.collection('case_informations');
+
+            switch (field.toLowerCase()) {
+              case 'regions':
+                field = 'region_res';
+                break;
+              case 'provinces':
+                field = 'prov_res';
+                break;
+              case 'cities':
+                field = 'city_mun_res';
+                break;
+              case 'removal_types':
+                field = 'removal_type';
+                break;
+              case 'age_groups':
+                field = 'age_group';
+                break;
+            }
+            break;
+
+          case 'facilities_information':
+            collection = db.collection('facilities_informations');
+
+            switch (field.toLowerCase()) {
+              case 'regions':
+                field = 'region';
+                break;
+              case 'provinces':
+                field = 'province';
+                break;
+              case 'cities':
+                field = 'city_mun';
+                break;
+            }
+
+            break;
+
+          default:
+            return reject(new Error(`Invalid dataset: ${dataset}`));
+        }
+
+        const project = {};
+        project[field.toLowerCase()] = 1;
+
+        const output = {_id: 0};
+        output[field.toLowerCase()] = '$_id';
+
+        console.log(field);
+        try {
+          const result = await collection.aggregate([
+            {$project: project},
+            {
+              $group: {
+                _id: `\$${field.toLowerCase()}`,
+              },
+            },
+            {$sort: {_id: 1}},
+            {$project: output},
+          ]);
+          const res = await result.toArray();
+
+          // console.log(res);
+          resolve(res);
+        } catch (e) {
+          reject(new Error(e));
+        }
+      });
+    });
+  }
+
+  /**
    * Truncates Database table
    * @param {String} tableName
    * @return {Promise<void>}
