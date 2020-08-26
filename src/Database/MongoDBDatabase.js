@@ -466,17 +466,60 @@ class MongoDBDatabase {
         const collection = db.collection('facility_informations');
 
         const filter = {};
+        const output = {};
+
         if (queries.region) filter['region'] = queries.region.toLowerCase();
         if (queries.hospital_name) filter['cf_name'] = queries.hospital_name.toLowerCase();
+
+        // Copy the default output after adding hospital name if needed
+        Object.assign(output, {
+          _id: (queries.hospital_name ? 1 : 0),
+          total_facilities: '$total_facilities',
+          occupancy_rate: '0.0',
+          beds: {
+            total_vacant: {
+              $add: ['$icu_v',
+                '$isolbed_v',
+                '$beds_ward_v'],
+            },
+            total_occupied: {
+              $add: ['$icu_o',
+                '$isolbed_o',
+                '$beds_ward_o'],
+            },
+            // for covid patients
+            covid: {
+              icu_v: '$icu_v',
+              icu_o: '$icu_o',
+              isolbed_v: '$isolbed_v',
+              isolbed_o: '$isolbed_o',
+              beds_ward_v: '$beds_ward_v',
+              beds_ward_o: '$beds_ward_o',
+            },
+
+            // for non-covid patients
+            non_covid: {
+              icu_v_nc: '$icu_v_nc',
+              icu_o_nc: '$icu_o_nc',
+              nonicu_v_nc: '$nonicu_v_nc',
+              nonicu_o_nc: '$nonicu_o_nc',
+            },
+          },
+          equipments: {
+            mechvent_v: '$mechvent_v',
+            mechvent_o: '$mechvent_o',
+            mechvent_v_nc: '$mechvent_v_nc',
+            mechvent_o_nc: '$mechvent_v_nc',
+          },
+        });
 
         try {
           const result = await collection.aggregate([
             {$match: filter},
             {
               $group: {
-                _id: null,
+                _id: (queries.hospital_name ? '$cf_name' : null),
                 total_facilities: {$sum: 1},
-                // for covid patients
                 icu_v: {$sum: '$icu_v'},
                 icu_o: {$sum: '$icu_o'},
                 isolbed_v: {$sum: '$isolbed_v'},
@@ -495,50 +538,11 @@ class MongoDBDatabase {
                 mechvent_o_nc: {$sum: '$mechvent_v_nc'},
               },
             },
-            {
-              $project: {
-                _id: 0,
-                total_facilities: '$total_facilities',
-                occupancy_rate: '0.0',
-                beds: {
-                  total_vacant: {
-                    $add: ['$icu_v',
-                      '$isolbed_v',
-                      '$beds_ward_v'],
-                  },
-                  total_occupied: {
-                    $add: ['$icu_o',
-                      '$isolbed_o',
-                      '$beds_ward_o'],
-                  },
-                  // for covid patients
-                  covid: {
-                    icu_v: '$icu_v',
-                    icu_o: '$icu_o',
-                    isolbed_v: '$isolbed_v',
-                    isolbed_o: '$isolbed_o',
-                    beds_ward_v: '$beds_ward_v',
-                    beds_ward_o: '$beds_ward_o',
-                  },
-
-                  // for non-covid patients
-                  non_covid: {
-                    icu_v_nc: '$icu_v_nc',
-                    icu_o_nc: '$icu_o_nc',
-                    nonicu_v_nc: '$nonicu_v_nc',
-                    nonicu_o_nc: '$nonicu_o_nc',
-                  },
-                },
-                equipments: {
-                  mechvent_v: '$mechvent_v',
-                  mechvent_o: '$mechvent_o',
-                  mechvent_v_nc: '$mechvent_v_nc',
-                  mechvent_o_nc: '$mechvent_v_nc',
-                },
-              },
-            },
+            {$project: output},
           ]);
           const res = await result.toArray();
+
+          if (res[0] === undefined) return reject(new Error('Your query didn\'t match any records.'));
 
           res[0].occupancy_rate = res[0].beds.total_occupied / (res[0].beds.total_occupied + res[0].beds.total_vacant);
           res[0].occupancy_rate = parseFloat(res[0].occupancy_rate.toFixed(2)) || 0;
