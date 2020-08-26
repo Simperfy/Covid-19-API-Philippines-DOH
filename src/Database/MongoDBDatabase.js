@@ -469,11 +469,14 @@ class MongoDBDatabase {
         const output = {};
 
         if (queries.region) filter['region'] = queries.region.toLowerCase();
-        if (queries.hospital_name) filter['cf_name'] = queries.hospital_name.toLowerCase();
+        if (queries.hospital_name) {
+          output['hospital_name'] = '$_id';
+          filter['cf_name'] = queries.hospital_name.toLowerCase();
+        };
 
         // Copy the default output after adding hospital name if needed
         Object.assign(output, {
-          _id: (queries.hospital_name ? 1 : 0),
+          _id: 0,
           total_facilities: '$total_facilities',
           occupancy_rate: '0.0',
           beds: {
