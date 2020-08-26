@@ -247,6 +247,34 @@ GET api/facilities/summary
 <br>
 </details>
 
+**Fetching list of facilities**
+```http
+GET api/list-of/hospitals?dataset=facilities_information
+```
+
+<details>
+  <summary><i>Example Response</i></summary>
+
+```JSON
+{
+    "data": [
+        {
+            "cf_name": "a. de la cruz maternity hospital"
+        },
+        {
+            "cf_name": "a. zarate general hospital"
+        },
+        {...},
+        {
+            "cf_name": "zone medical and intervention hospital, inc."
+        }
+    ]
+}
+```
+
+<br>
+</details>
+
 **Fetching raw facility/hospital records**
 
 ```http

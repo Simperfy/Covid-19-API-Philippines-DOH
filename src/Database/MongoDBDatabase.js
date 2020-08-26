@@ -615,7 +615,26 @@ class MongoDBDatabase {
         project[field.toLowerCase()] = 1;
 
         const output = {_id: 0};
-        output[field.toLowerCase()] = '$_id';
+
+        // @TODO @DOGGO Make a separate function for this
+        // ALIASES FOR JSON RESPONSE
+        switch (field.toLowerCase()) {
+          case 'cf_name':
+            output['name'] = '$_id';
+            break;
+          case 'city_mun':
+          case 'city_mun_res':
+            output['city'] = '$_id';
+            break;
+          case 'region_res':
+            output['region'] = '$_id';
+            break;
+          case 'prov_res':
+            output['province'] = '$_id';
+            break;
+          default:
+            output[field.toLowerCase()] = '$_id';
+        }
 
         console.log(field);
         try {
