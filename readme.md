@@ -252,8 +252,7 @@ GET api/facilities/summary
             "mechvent_v_nc": 2399,
             "mechvent_o_nc": 2399
         }
-    },
-    "last_update": "8/26/2020, 9:12:39 PM"
+    }
 }
 ```
 
