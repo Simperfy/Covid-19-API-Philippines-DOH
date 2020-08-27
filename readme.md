@@ -46,6 +46,8 @@ GET api/list-of/age_groups
 <details>
   <summary><b><i>View Endpoints </i></b></summary>
 
+<br>
+
 **Fetching summary**
 ```http
 GET api/summary
@@ -210,6 +212,8 @@ GET api/get?region_res=ncr&age_group=20-24
 
 <details>
   <summary><b><i>View Endpoints </i></b></summary>
+ 
+<br>
 
 **Fetching facilities summary**
 ```http
@@ -253,8 +257,9 @@ GET api/facilities/summary
 }
 ```
 
-<br>
 </details>
+
+<br>
 
 **Fetching list of facilities**
 ```http
@@ -281,8 +286,9 @@ GET api/list-of/hospitals?dataset=facilities_information
 }
 ```
 
-<br>
 </details>
+
+<br>
 
 **Fetching raw facility/hospital records**
 
