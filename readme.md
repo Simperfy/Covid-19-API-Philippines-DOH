@@ -222,32 +222,31 @@ GET api/facilities/summary
 ```JSON
 {
     "data": {
-        "hospital_name": "amai pakpak medical center",
-        "total_facilities": 1,
-        "occupancy_rate": 0.58,
+        "total_facilities": 1912,
+        "occupancy_rate": 0.49,
         "beds": {
-            "total_vacant": 23,
-            "total_occupied": 32,
+            "total_vacant": 9945,
+            "total_occupied": 9730,
             "covid": {
-                "icu_v": 1,
-                "icu_o": 2,
-                "isolbed_v": 0,
-                "isolbed_o": 22,
-                "beds_ward_v": 22,
-                "beds_ward_o": 8
+                "icu_v": 774,
+                "icu_o": 831,
+                "isolbed_v": 6638,
+                "isolbed_o": 6240,
+                "beds_ward_v": 2533,
+                "beds_ward_o": 2659
             },
             "non_covid": {
-                "icu_v_nc": 25,
-                "icu_o_nc": 18,
-                "nonicu_v_nc": 20,
-                "nonicu_o_nc": 78
+                "icu_v_nc": 3345,
+                "icu_o_nc": 2938,
+                "nonicu_v_nc": 41335,
+                "nonicu_o_nc": 42019
             }
         },
         "equipments": {
-            "mechvent_v": 3,
-            "mechvent_o": 0,
-            "mechvent_v_nc": 4,
-            "mechvent_o_nc": 4
+            "mechvent_v": 1537,
+            "mechvent_o": 607,
+            "mechvent_v_nc": 2399,
+            "mechvent_o_nc": 2399
         }
     },
     "last_update": "8/26/2020, 9:12:39 PM"
