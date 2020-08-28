@@ -351,10 +351,36 @@ class MongoDBDatabase {
                   },
                 },
                 cases: {$sum: 1},
+                recovered: {
+                  $sum: {
+                    '$switch': {
+                      'branches': [
+                        {
+                          'case': {'$eq': ['$removal_type', 'recovered']},
+                          'then': 1,
+                        },
+                      ],
+                      'default': 0,
+                    },
+                  },
+                },
+                died: {
+                  $sum: {
+                    '$switch': {
+                      'branches': [
+                        {
+                          'case': {'$eq': ['$removal_type', 'died']},
+                          'then': 1,
+                        },
+                      ],
+                      'default': 0,
+                    },
+                  },
+                },
               },
             },
             {$sort: {'_id.date': 1}},
-            {$project: {'_id': 0, 'date': '$_id.date', 'cases': 1}},
+            {$project: {'_id': 0, 'date': '$_id.date', 'cases': 1, 'recovered': 1, 'died': 1}},
           ]);
           const res = await result.toArray();
           resolve(res);
@@ -381,10 +407,36 @@ class MongoDBDatabase {
               $group: {
                 _id: '$region_res',
                 cases: {$sum: 1},
+                recovered: {
+                  $sum: {
+                    '$switch': {
+                      'branches': [
+                        {
+                          'case': {'$eq': ['$removal_type', 'recovered']},
+                          'then': 1,
+                        },
+                      ],
+                      'default': 0,
+                    },
+                  },
+                },
+                deaths: {
+                  $sum: {
+                    '$switch': {
+                      'branches': [
+                        {
+                          'case': {'$eq': ['$removal_type', 'died']},
+                          'then': 1,
+                        },
+                      ],
+                      'default': 0,
+                    },
+                  },
+                },
               },
             },
             {$sort: {'cases': -1}},
-            {$project: {'_id': 0, 'region': '$_id', 'cases': '$cases'}},
+            {$project: {'_id': 0, 'region': '$_id', 'cases': '$cases', 'recovered': '$recovered', 'deaths': '$deaths'}},
           ]);
           const res = await result.toArray();
           resolve(res);
@@ -440,17 +492,63 @@ class MongoDBDatabase {
         const collection = db.collection('facility_informations');
 
         const filter = {};
+        const output = {};
+
         if (queries.region) filter['region'] = queries.region.toLowerCase();
-        if (queries.hospital_name) filter['cf_name'] = queries.hospital_name.toLowerCase();
+        if (queries.hospital_name) {
+          output['hospital_name'] = '$_id';
+          filter['cf_name'] = queries.hospital_name.toLowerCase();
+        };
+
+        // Copy the default output after adding hospital name if needed
+        Object.assign(output, {
+          _id: 0,
+          total_facilities: '$total_facilities',
+          occupancy_rate: '0.0',
+          beds: {
+            total_vacant: {
+              $add: ['$icu_v',
+                '$isolbed_v',
+                '$beds_ward_v'],
+            },
+            total_occupied: {
+              $add: ['$icu_o',
+                '$isolbed_o',
+                '$beds_ward_o'],
+            },
+            // for covid patients
+            covid: {
+              icu_v: '$icu_v',
+              icu_o: '$icu_o',
+              isolbed_v: '$isolbed_v',
+              isolbed_o: '$isolbed_o',
+              beds_ward_v: '$beds_ward_v',
+              beds_ward_o: '$beds_ward_o',
+            },
+
+            // for non-covid patients
+            non_covid: {
+              icu_v_nc: '$icu_v_nc',
+              icu_o_nc: '$icu_o_nc',
+              nonicu_v_nc: '$nonicu_v_nc',
+              nonicu_o_nc: '$nonicu_o_nc',
+            },
+          },
+          equipments: {
+            mechvent_v: '$mechvent_v',
+            mechvent_o: '$mechvent_o',
+            mechvent_v_nc: '$mechvent_v_nc',
+            mechvent_o_nc: '$mechvent_v_nc',
+          },
+        });
 
         try {
           const result = await collection.aggregate([
             {$match: filter},
             {
               $group: {
-                _id: null,
+                _id: (queries.hospital_name ? '$cf_name' : null),
                 total_facilities: {$sum: 1},
-                // for covid patients
                 icu_v: {$sum: '$icu_v'},
                 icu_o: {$sum: '$icu_o'},
                 isolbed_v: {$sum: '$isolbed_v'},
@@ -469,50 +567,11 @@ class MongoDBDatabase {
                 mechvent_o_nc: {$sum: '$mechvent_v_nc'},
               },
             },
-            {
-              $project: {
-                _id: 0,
-                total_facilities: '$total_facilities',
-                occupancy_rate: '0.0',
-                beds: {
-                  total_vacant: {
-                    $add: ['$icu_v',
-                      '$isolbed_v',
-                      '$beds_ward_v'],
-                  },
-                  total_occupied: {
-                    $add: ['$icu_o',
-                      '$isolbed_o',
-                      '$beds_ward_o'],
-                  },
-                  // for covid patients
-                  covid: {
-                    icu_v: '$icu_v',
-                    icu_o: '$icu_o',
-                    isolbed_v: '$isolbed_v',
-                    isolbed_o: '$isolbed_o',
-                    beds_ward_v: '$beds_ward_v',
-                    beds_ward_o: '$beds_ward_o',
-                  },
-
-                  // for non-covid patients
-                  non_covid: {
-                    icu_v_nc: '$icu_v_nc',
-                    icu_o_nc: '$icu_o_nc',
-                    nonicu_v_nc: '$nonicu_v_nc',
-                    nonicu_o_nc: '$nonicu_o_nc',
-                    mechvent_v_nc: '$mechvent_v_nc',
-                    mechvent_o_nc: '$mechvent_v_nc',
-                  },
-                },
-                equipments: {
-                  mechvent_v: '$mechvent_v',
-                  mechvent_o: '$mechvent_o',
-                },
-              },
-            },
+            {$project: output},
           ]);
           const res = await result.toArray();
+
+          if (res[0] === undefined) return reject(new Error('Your query didn\'t match any records.'));
 
           res[0].occupancy_rate = res[0].beds.total_occupied / (res[0].beds.total_occupied + res[0].beds.total_vacant);
           res[0].occupancy_rate = parseFloat(res[0].occupancy_rate.toFixed(2)) || 0;
@@ -562,7 +621,7 @@ class MongoDBDatabase {
             break;
 
           case 'facilities_information':
-            collection = db.collection('facilities_informations');
+            collection = db.collection('facility_informations');
 
             switch (field.toLowerCase()) {
               case 'regions':
@@ -573,6 +632,9 @@ class MongoDBDatabase {
                 break;
               case 'cities':
                 field = 'city_mun';
+                break;
+              case 'hospitals':
+                field = 'cf_name';
                 break;
             }
 
@@ -586,7 +648,26 @@ class MongoDBDatabase {
         project[field.toLowerCase()] = 1;
 
         const output = {_id: 0};
-        output[field.toLowerCase()] = '$_id';
+
+        // @TODO @DOGGO Make a separate function for this
+        // ALIASES FOR JSON RESPONSE
+        switch (field.toLowerCase()) {
+          case 'cf_name':
+            output['name'] = '$_id';
+            break;
+          case 'city_mun':
+          case 'city_mun_res':
+            output['city'] = '$_id';
+            break;
+          case 'region_res':
+            output['region'] = '$_id';
+            break;
+          case 'prov_res':
+            output['province'] = '$_id';
+            break;
+          default:
+            output[field.toLowerCase()] = '$_id';
+        }
 
         console.log(field);
         try {

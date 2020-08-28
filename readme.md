@@ -17,7 +17,11 @@
 <br>
 
 ## 📌 Endpoints
-Base URL: https://covid19-api-philippines.herokuapp.com/
+Base URL 
+
+(MAIN): https://covid19-api-philippines.herokuapp.com/
+
+(Optional) https://covid19-ph-api.herokuapp.com/ 🆕
 
 [Documentation in POSTMAN are available here](https://documenter.getpostman.com/view/12463261/T1LV9jLU?version=latest)
 
@@ -41,6 +45,8 @@ GET api/list-of/age_groups
 
 <details>
   <summary><b><i>View Endpoints </i></b></summary>
+
+<br>
 
 **Fetching summary**
 ```http
@@ -79,17 +85,23 @@ GET api/top-regions
 {
     "data": [
         {
-            "region": "NCR",
-            "cases": 71145
+            "region": "ncr",
+            "cases": 115906,
+            "recovered": 75658,
+            "deaths": 1553
         },
         {
-            "region": "Region VII: Central Visayas",
-            "cases": 17524
+            "region": "region iv-a: calabarzon",
+            "cases": 30489,
+            "recovered": 17281,
+            "deaths": 282
         },
         {...},
         {
-            "region": "CARAGA",
-            "cases": 306
+            "region": "caraga",
+            "cases": 490,
+            "recovered": 298,
+            "deaths": 4
         }
     ]
 }
@@ -113,18 +125,24 @@ GET api/timeline?region={region_name}
 {
   "data": [
     {
-      "cases": 1,
-      "date": "2020-01-16"
+        "cases": 43,
+        "recovered": 38,
+        "died": 4,
+        "date": "2020-03-01"
     },
     {
-      "cases": 1,
-      "date": "2020-01-17"
+        "cases": 18,
+        "recovered": 14,
+        "died": 4,
+        "date": "2020-03-02"
     },
     {...},
     {
-      "cases": 2398,
-      "date": "2020-07-17"
-    }
+        "cases": 2109,
+        "recovered": 1992,
+        "died": 12,
+        "date": "2020-07-17"
+    },
   ]
 }
 ```
@@ -206,6 +224,8 @@ GET api/get?region_res=ncr&age_group=20-24
 
 <details>
   <summary><b><i>View Endpoints </i></b></summary>
+ 
+<br>
 
 **Fetching facilities summary**
 ```http
@@ -217,31 +237,69 @@ GET api/facilities/summary
 
 ```JSON
 {
+    "data": {
+        "total_facilities": 1912,
+        "occupancy_rate": 0.49,
+        "beds": {
+            "total_vacant": 9945,
+            "total_occupied": 9730,
+            "covid": {
+                "icu_v": 774,
+                "icu_o": 831,
+                "isolbed_v": 6638,
+                "isolbed_o": 6240,
+                "beds_ward_v": 2533,
+                "beds_ward_o": 2659
+            },
+            "non_covid": {
+                "icu_v_nc": 3345,
+                "icu_o_nc": 2938,
+                "nonicu_v_nc": 41335,
+                "nonicu_o_nc": 42019
+            }
+        },
+        "equipments": {
+            "mechvent_v": 1537,
+            "mechvent_o": 607,
+            "mechvent_v_nc": 2399,
+            "mechvent_o_nc": 2399
+        }
+    }
+}
+```
+
+</details>
+
+<br>
+
+**Fetching list of facilities**
+```http
+GET api/list-of/hospitals?dataset=facilities_information
+```
+
+<details>
+  <summary><i>Example Response</i></summary>
+
+```JSON
+{
     "data": [
         {
-            "total_facilities": 1925,
-            "occupancy_rate": 0.49,
-            "beds": {
-                "total_vacant": 9947,
-                "total_occupied": 9489,
-                "icu_v": 829,
-                "icu_o": 851,
-                "isolbed_v": 6678,
-                "isolbed_o": 6102,
-                "beds_ward_v": 2440,
-                "beds_ward_o": 2536
-            },
-            "equipments": {
-                "mechvent_v": 1521,
-                "mechvent_o": 645
-            }
+            "name": "a. de la cruz maternity hospital"
+        },
+        {
+            "name": "a. zarate general hospital"
+        },
+        {...},
+        {
+            "name": "zone medical and intervention hospital, inc."
         }
     ]
 }
 ```
 
-<br>
 </details>
+
+<br>
 
 **Fetching raw facility/hospital records**
 

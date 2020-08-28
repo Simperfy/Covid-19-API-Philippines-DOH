@@ -5,8 +5,8 @@ const morgan = require('morgan');
 const compression = require('compression');
 const apicache = require('apicache');
 // Swagger api docs
-const swaggerUI = require('swagger-ui-express');
-const openApiJson = require('./openapi.json');
+// const swaggerUI = require('swagger-ui-express');
+// const openApiJson = require('./openapi.json');
 // GOOGLE DRIVE VARS
 const GoogleDriveApi = require('./src/GoogleDriveApiClient').GoogleDriveApi;
 const GDriveApi = new GoogleDriveApi();
@@ -30,10 +30,10 @@ let jsonRespStructure = {
 };
 
 // swaggerUI.setup Options
-const options = {
-  customCss: '.swagger-ui .topbar { display: none }',
-  customSiteTitle: 'Covid-19 Philippines API DOH',
-};
+// const options = {
+//   customCss: '.swagger-ui .topbar { display: none }',
+//   customSiteTitle: 'Covid-19 Philippines API DOH',
+// };
 
 // Middlewares
 app.use(cors());
