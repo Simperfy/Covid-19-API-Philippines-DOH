@@ -351,10 +351,36 @@ class MongoDBDatabase {
                   },
                 },
                 cases: {$sum: 1},
+                recovered: {
+                  $sum: {
+                    '$switch': {
+                      'branches': [
+                        {
+                          'case': {'$eq': ['$removal_type', 'recovered']},
+                          'then': 1,
+                        },
+                      ],
+                      'default': 0,
+                    },
+                  },
+                },
+                died: {
+                  $sum: {
+                    '$switch': {
+                      'branches': [
+                        {
+                          'case': {'$eq': ['$removal_type', 'died']},
+                          'then': 1,
+                        },
+                      ],
+                      'default': 0,
+                    },
+                  },
+                },
               },
             },
             {$sort: {'_id.date': 1}},
-            {$project: {'_id': 0, 'date': '$_id.date', 'cases': 1}},
+            {$project: {'_id': 0, 'date': '$_id.date', 'cases': 1, 'recovered': 1, 'died': 1}},
           ]);
           const res = await result.toArray();
           resolve(res);
