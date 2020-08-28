@@ -85,17 +85,23 @@ GET api/top-regions
 {
     "data": [
         {
-            "region": "NCR",
-            "cases": 71145
+            "region": "ncr",
+            "cases": 115906,
+            "recovered": 75658,
+            "deaths": 1553
         },
         {
-            "region": "Region VII: Central Visayas",
-            "cases": 17524
+            "region": "region iv-a: calabarzon",
+            "cases": 30489,
+            "recovered": 17281,
+            "deaths": 282
         },
         {...},
         {
-            "region": "CARAGA",
-            "cases": 306
+            "region": "caraga",
+            "cases": 490,
+            "recovered": 298,
+            "deaths": 4
         }
     ]
 }
@@ -119,18 +125,24 @@ GET api/timeline?region={region_name}
 {
   "data": [
     {
-      "cases": 1,
-      "date": "2020-01-16"
+        "cases": 43,
+        "recovered": 38,
+        "died": 4,
+        "date": "2020-03-01"
     },
     {
-      "cases": 1,
-      "date": "2020-01-17"
+        "cases": 18,
+        "recovered": 14,
+        "died": 4,
+        "date": "2020-03-02"
     },
     {...},
     {
-      "cases": 2398,
-      "date": "2020-07-17"
-    }
+        "cases": 2109,
+        "recovered": 1992,
+        "died": 12,
+        "date": "2020-07-17"
+    },
   ]
 }
 ```
@@ -272,14 +284,14 @@ GET api/list-of/hospitals?dataset=facilities_information
 {
     "data": [
         {
-            "cf_name": "a. de la cruz maternity hospital"
+            "name": "a. de la cruz maternity hospital"
         },
         {
-            "cf_name": "a. zarate general hospital"
+            "name": "a. zarate general hospital"
         },
         {...},
         {
-            "cf_name": "zone medical and intervention hospital, inc."
+            "name": "zone medical and intervention hospital, inc."
         }
     ]
 }
