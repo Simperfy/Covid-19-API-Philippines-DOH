@@ -9,7 +9,6 @@
     "esModuleInterop": true,
     "types": [
       "node",
-      "reflect-metadata",
       "jest"
     ],
     "typeRoots": [
@@ -19,7 +18,9 @@
   },
   "mode": "development",
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "**/__mocks__/**/*",
+    "**/__tests__/**/*"
   ],
   "include": [
     "**/*.ts"

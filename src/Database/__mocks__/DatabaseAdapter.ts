@@ -154,6 +154,107 @@ class DatabaseAdapter {
     }]);
   }
 
+  // FACILITIES
+
+  /**
+   * @param {Object} queries
+   * @return {Promise}
+   */
+  getFacilities(queries: any) {
+    return Promise.resolve([{
+      'hfhudcode': 'DOH000000000000467',
+      'cf_name': 'a. de la cruz maternity hospital',
+      'updated_date': '2020-08-20T04:23:44.000Z',
+      'added_date': '2020-08-20T04:23:44.000Z',
+      'report_date': '2020-08-19T16:00:00.000Z',
+      'icu_v': 0,
+      'icu_o': 0,
+      'isolbed_v': 1,
+      'isolbed_o': 0,
+      'beds_ward_v': 0,
+      'beds_ward_o': 0,
+      'mechvent_v': 0,
+      'mechvent_o': 0,
+      'icu_v_nc': 0,
+      'icu_o_nc': 0,
+      'nonicu_v_nc': 5,
+      'nonicu_o_nc': 4,
+      'mechvent_v_nc': 0,
+      'mechvent_o_nc': 0,
+      'q_nurse': 1,
+      'q_doctor': 0,
+      'q_other': 0,
+      'nurse_adm': 0,
+      'doctor_adm': 0,
+      'other_adm': 0,
+      'susp_asym': 0,
+      'susp_mild': 0,
+      'susp_severe': 0,
+      'susp_crit': 0,
+      'susp_died': 0,
+      'prob_asym': 0,
+      'prob_mild': 0,
+      'prob_severe': 0,
+      'prob_crit': 0,
+      'prob_died': 0,
+      'conf_asym': 0,
+      'conf_mild': 0,
+      'conf_severe': 0,
+      'conf_crit': 0,
+      'conf_died': 0,
+      't_patient_adm': 0,
+      't_patient_er': 0,
+      't_patient_icu': 0,
+      'trans_ttmf': 0,
+      'discharged': 0,
+      'region': 'region iv-a: calabarzon',
+      'region_psgc': 'PH040000000',
+      'province': 'cavite',
+      'province_psgc': 'PH042100000',
+      'city_mun': 'cavite city',
+      'city_mun_psgc': 'PH042105000',
+      'north_coord': '0.0',
+      'east_coord': '0.0',
+    }]);
+  }
+
+  /**
+   * @param {Object} queries
+   * @return {Promise}
+   */
+  getFacilitiesSummary(queries: any) {
+    return Promise.resolve({
+      'total_facilities': 1925,
+      'occupancy_rate': 0.49,
+      'beds': {
+        'total_vacant': 9947,
+        'total_occupied': 9489,
+        'covid': {
+          'icu_v': 829,
+          'icu_o': 851,
+          'isolbed_v': 6678,
+          'isolbed_o': 6102,
+          'beds_ward_v': 2440,
+          'beds_ward_o': 2536,
+        },
+        'non_covid': {
+          'icu_v_nc': 3322,
+          'icu_o_nc': 2950,
+          'nonicu_v_nc': 42120,
+          'nonicu_o_nc': 40696,
+        },
+      },
+      'equipments': {
+        'mechvent_v': 1521,
+        'mechvent_o': 645,
+        'mechvent_v_nc': 2397,
+        'mechvent_o_nc': 2397,
+      },
+    });
+  }
+
+  // ./FACILITIES
+
   /**
    *
    * @return {Promise<String>}

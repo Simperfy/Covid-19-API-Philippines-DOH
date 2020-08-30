@@ -91,3 +91,33 @@ test('GET /api/filter/region_res/Region IV-A: CALABARZON', async () => {
   expect(res.body.data).toHaveLength(0);
   expect(res.body).toHaveProperty('last_update');
 });
+
+test('GET /api/facilities', async () => {
+  const res = await request(app).get('/api/facilities');
+
+  expect(res.status).toBe(200);
+  expect(res.body).toHaveProperty('data');
+  expect(res.body.data).not.toHaveLength(0);
+  expect(res.body).toHaveProperty('last_update');
+});
+
+test('GET /api/facilities/summary', async () => {
+  const res = await request(app).get('/api/facilities/summary');
+  const res2 = await request(app).get('/api/facilities/summary?hospital_name=zafra%20medical%20clinic%20%26%20hosp.');
+
+  expect(res.status).toBe(200);
+  expect(res.body).toHaveProperty('data');
+  expect(res.body.data).toHaveProperty('total_facilities');
+  expect(res.body.data).toHaveProperty('occupancy_rate');
+  expect(res.body.data).toHaveProperty('beds');
+  expect(res.body.data).toHaveProperty('equipments');
+  expect(res.body).toHaveProperty('last_update');
+
+  expect(res2.status).toBe(200);
+  expect(res2.body).toHaveProperty('data');
+  expect(res2.body.data).toHaveProperty('total_facilities');
+  expect(res2.body.data).toHaveProperty('occupancy_rate');
+  expect(res2.body.data).toHaveProperty('beds');
+  expect(res2.body.data).toHaveProperty('equipments');
+  expect(res2.body).toHaveProperty('last_update');
+});
