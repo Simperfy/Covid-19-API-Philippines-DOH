@@ -1,13 +1,29 @@
 /* eslint-disable max-len */
+console.log = () => null; // disable logs
+
+import fs from '../../../__mocks__/fs';
+jest.mock('fs', () => {
+  return {
+    __esModule: true,
+    default: fs,
+  };
+});
+
+import {csv} from '../../../__mocks__/csvtojson';
+jest.mock('csvtojson', () => {
+  return {
+    __esModule: true,
+    default: csv,
+  };
+});
+
 import CSVDatabase from '../../../src/Database/CSVDatabase';
 import CaseInformation from '../../../src/CaseInformation';
+
 import FacilityInformation from '../../../src/FacilityInformation';
 
-console.log = () => null; // disable logs
-jest.mock('fs');
-
 test('Should not be empty nor undefined', async () => {
-  const csvDatabase = await new CSVDatabase().init(CaseInformation);
+  const csvDatabase: CSVDatabase = await new CSVDatabase().init(CaseInformation);
 
   return csvDatabase.get().then(async (data) => {
     expect(data.length).not.toBe(0);

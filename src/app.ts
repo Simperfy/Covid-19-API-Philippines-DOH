@@ -71,7 +71,7 @@ app.use(morgan((tokens: any, req : express.Request, res : express.Response) => {
 }));
 // Custom middleware
 app.use(async (req, res, next) => {
-  const dbLogger = await new DBLogger();
+  const dbLogger = await new DBLogger().init();
   // Clear data before every request
   jsonRespStructure = {
     'data': [],
@@ -192,7 +192,7 @@ router.get('/get', async (req: express.Request, res: express.Response) => {
 
   await db.get(queries).then(async (data: any) => {
     jsonRespStructure.data = data;
-    const dbCount = await db.count('case_informations');
+    const dbCount: number = await db.count('case_informations');
     const maxPage = Math.ceil(dbCount / limit);
 
     if (dbCount === 0) {

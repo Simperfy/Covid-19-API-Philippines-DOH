@@ -4,27 +4,26 @@
  * Handles Database
  */
 class DatabaseAdapter {
+  private static instance: DatabaseAdapter;
   /**
    * Initialize Database and make this a singleton
    * @return {Promise<DatabaseAdapter>}
    */
-  constructor() {
-    return (async () => {
-      if (!DatabaseAdapter.instance) {
-        DatabaseAdapter.instance=this;
+  async init() {
+    if (!DatabaseAdapter.instance) {
+      DatabaseAdapter.instance=this;
 
-        console.log('Using Mocked DatabaseAdapter');
-      }
+      console.log('Using Mocked DatabaseAdapter');
+    }
 
-      return DatabaseAdapter.instance;
-    })();
+    return DatabaseAdapter.instance;
   }
 
   /**
    * @param {*} database Database Class
    * @return {Promise<String>} Returns a message whether connection is success or not
    */
-  connect(database) {
+  connect(database: any) {
     return Promise.resolve('Mocked Database Connected Successfully');
   }
 
@@ -37,12 +36,12 @@ class DatabaseAdapter {
    * @param {int} queries.maxLimit
    * @return {Promise}
    */
-  get(queries) {
+  get(queries: any) {
     return new Promise((resolve, reject) => {
       if (queries.month > 12) return reject(new Error('Error: the month cannot be greater than 12'));
       if (queries.day > 31) return reject(new Error('Error: the day cannot be greater than 31'));
       if (queries.page < 1 || queries.limit < 1) return reject(new Error('Error: page or limit query can\'t be less than 1.'));
-      if (queries.limit > queries.maxLimit) return reject(new Error(`Error: limit query can\'t be greater than ${queries.maxLimit}.`));
+      if (queries.limit > queries.maxLimit) return reject(new Error(`Error: limit query can't be greater than ${queries.maxLimit}.`));
 
       const res = [];
 
@@ -89,7 +88,7 @@ class DatabaseAdapter {
    * @param {String|Number} value
    * @return {Promise} Contains JSON
    */
-  filter(field, value) {
+  filter(field: string, value: string|number) {
     return Promise.resolve([{
       '_id': '5f29a6dcc4ce73be6be92915',
       'case_code': 'C626471',
@@ -176,8 +175,8 @@ class DatabaseAdapter {
    * @param {String} tableName
    * @return {Promise<void>}
    */
-  truncate(tableName) {
-    return this.db.truncate(tableName);
+  truncate(tableName: string) {
+    return Promise.resolve();
   }
 
   /**
@@ -185,7 +184,7 @@ class DatabaseAdapter {
    * @param {Object} fieldValueObj
    * @return {Promise<String>}
    */
-  insert(tableName, fieldValueObj) {
+  insert(tableName: string, fieldValueObj: any) {
     return Promise.resolve('Mocked Inserted');
     // return this.db.insert(tableName, fieldValueObj);
   }
@@ -207,4 +206,4 @@ class DatabaseAdapter {
   }
 }
 
-module.exports = DatabaseAdapter;
+export default DatabaseAdapter;

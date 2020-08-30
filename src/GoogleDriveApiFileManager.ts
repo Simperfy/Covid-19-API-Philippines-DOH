@@ -353,7 +353,7 @@ class GoogleDriveApiFileManager {
           if (err) return reject(new Error('[GoogleDriveApiFileManager.js] ' + err));
           console.log('Long url: ' + longUrl);
           const folderID = this.extractFolderIDFromURL(longUrl);
-          const dbLogger = await new DBLogger();
+          const dbLogger = await new DBLogger().init();
           const previousFolderID = await dbLogger.getLatestFolderID();
 
           if (folderID === previousFolderID && (process.env.BYPASS_FOLDERID_CHECK as string).toLowerCase() === 'false') {

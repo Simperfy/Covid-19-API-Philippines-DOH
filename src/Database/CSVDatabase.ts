@@ -14,17 +14,14 @@ class CSVDatabase {
   csvFilePath!: string;
   converter: any;
 
-  // make this a singleton
   async init(CsvClass: any) {
-    return (async () => {
-      this.isConverting = false;
-      this.csvClass = CsvClass;
-      this.CSVDatabaseArray = [];
-      this.csvFilePath = path.join(__dirname, `../../tmp/${this.csvClass.getFilename()}`);
+    this.isConverting = false;
+    this.csvClass = CsvClass;
+    this.CSVDatabaseArray = [];
+    this.csvFilePath = path.join(__dirname, `../../tmp/${this.csvClass.getFilename()}`);
 
-      await this.convertCsvToJson();
-      return this;
-    })();
+    await this.convertCsvToJson();
+    return this;
   }
 
   /**

@@ -1,10 +1,20 @@
 /* eslint-disable max-len */
+console.log = () => null; // disable logs
+
 import request from 'supertest';
+import DatabaseAdapter from '../../src/Database/__mocks__/DatabaseAdapter';
+
+jest.mock('../../src/Database/DatabaseAdapter', () => {
+  return {
+    __esModule: true,
+    default: DatabaseAdapter,
+  };
+});
+
+
 // disable logs
 import app from '../../src/app';
 
-console.log = () => null;
-jest.mock('../../src/Database/DatabaseAdapter');
 
 jest.setTimeout(300000);
 test('GET /api/summary', async () => {

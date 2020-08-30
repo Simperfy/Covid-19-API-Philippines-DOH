@@ -1,9 +1,10 @@
 /* eslint-disable max-len,require-jsdoc */
+console.log = () => null; // disable logs
+
 import dotenv from 'dotenv';
 dotenv.config();
 
 import DBLogger from '../../src/DBLogger';
-console.log = () => null; // disable logs
 
 class DatabaseAdapterMock {
   executeRaw(query: string) {
@@ -25,8 +26,8 @@ beforeAll(async () => {
 });
 
 test('Should be a singleton', async () => {
-  const dbLogger1 = await new DBLogger();
-  const dbLogger2 = await new DBLogger();
+  const dbLogger1 = await new DBLogger().init();
+  const dbLogger2 = await new DBLogger().init();
 
   expect(dbLogger1).toBe(dbLogger2);
   // expect(mockConnect).toHaveBeenCalled();

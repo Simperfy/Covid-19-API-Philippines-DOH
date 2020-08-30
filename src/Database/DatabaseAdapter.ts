@@ -11,30 +11,32 @@ import MongoDBDatabase from './MongoDBDatabase';
  */
 class DatabaseAdapter {
   private static instance: DatabaseAdapter;
-  private db: any;
+  private db!: MongoDBDatabase;
 
   /**
    * return {DatabaseAdapter} instance of the database adapter
    */
-  async init() {
-    if (!DatabaseAdapter.instance) {
-      DatabaseAdapter.instance= new DatabaseAdapter();
+  async init(): Promise<DatabaseAdapter> {
+    return new Promise(async (resolve, reject) => {
+      if (!DatabaseAdapter.instance) {
+        DatabaseAdapter.instance= this;
 
-      console.log('Connecting to database');
-      let msg;
-      console.log('Database Type: ' + process.env.DATABASE_TYPE);
-      if (String(process.env.DATABASE_TYPE).toLowerCase() === 'nosql') {
-        msg = await this.connect(new MongoDBDatabase());
-      } else if (String(process.env.DATABASE_TYPE).toLowerCase() === 'mysql') {
-        // msg = await this.connect(new MySQLDatabase());
-        throw new Error('MYSQL Database is deprecated');
-      } else {
-        throw new Error('Please specify "DATABASE_TYPE" in environment variables');
+        console.log('Connecting to database');
+        let msg;
+        console.log('Database Type: ' + process.env.DATABASE_TYPE);
+        if (String(process.env.DATABASE_TYPE).toLowerCase() === 'nosql') {
+          msg = await this.connect(new MongoDBDatabase());
+        } else if (String(process.env.DATABASE_TYPE).toLowerCase() === 'mysql') {
+          // msg = await this.connect(new MySQLDatabase());
+          reject(new Error('MYSQL Database is deprecated'));
+        } else {
+          reject(new Error('Please specify "DATABASE_TYPE" in environment variables'));
+        }
+        console.log(msg);
       }
-      console.log(msg);
-    }
 
-    return DatabaseAdapter.instance;
+      return resolve(DatabaseAdapter.instance);
+    });
   }
 
 
@@ -42,7 +44,7 @@ class DatabaseAdapter {
    * @param {*} database Database Class
    * @return {Promise<String>} Returns a message whether connection is success or not
    */
-  connect(database: any) {
+  connect(database: MongoDBDatabase) {
     this.db = database;
     return this.db.connect();
   }
@@ -66,7 +68,7 @@ class DatabaseAdapter {
    * @param {Object|null} objFilters contains the field and value
    * @return {Promise} contains the result of the query
    */
-  count(dbName: string, objFilters: any = null) {
+  count(dbName: string, objFilters: any = null): Promise<number> {
     return this.db.count(dbName, objFilters);
   }
 

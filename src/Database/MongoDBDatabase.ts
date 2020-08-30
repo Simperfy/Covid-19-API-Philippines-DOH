@@ -176,7 +176,7 @@ class MongoDBDatabase {
    * @param {Object} objFilters contains the field and value
    * @return {Promise} contains the result of the query
    */
-  async count(dbName: string, objFilters: any = null) {
+  async count(dbName: string, objFilters: any = null): Promise<number> {
     // console.log(this.connection);
     return new Promise((resolve, reject) => {
       this.connection.then((client) => {
