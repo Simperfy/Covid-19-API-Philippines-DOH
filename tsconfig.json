@@ -7,16 +7,21 @@
     "outDir": "./dist",
     "strict": true,
     "esModuleInterop": true,
-    "types": ["node"]
+    "types": [
+      "node",
+      "reflect-metadata",
+      "jest"
+    ],
+    "typeRoots": [
+      "./types",
+      "./node_modules/@types"
+    ]
   },
   "mode": "development",
   "exclude": [
-    "node_modules",
-    "**/*.spec.ts",
-    "**/*.test.ts",
-    "**/*.spec.js",
-    "**/*.test.js"
+    "node_modules"
   ],
-  "include": ["./src/**/*"],
-  
+  "include": [
+    "**/*.ts"
+  ]
 }

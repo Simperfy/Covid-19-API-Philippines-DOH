@@ -1,6 +1,6 @@
 /* eslint-disable require-jsdoc */
-const fs = jest.genMockFromModule('fs');
+const fs: any = jest.genMockFromModule('fs');
 
 fs.existsSync = () => true;
 
-module.exports = fs;
+export default fs;

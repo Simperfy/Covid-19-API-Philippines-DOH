@@ -305,4 +305,4 @@ app.use('/api', router); // Add prefix "/api" to routes above
 
 app.use('/', (req, res) => res.redirect('https://documenter.getpostman.com/view/12463261/T1LV9jLU'));
 
-export {app};
+export default app;

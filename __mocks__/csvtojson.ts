@@ -1,14 +1,14 @@
 /* eslint-disable require-jsdoc */
 class MockCSV {
-  fromFile(path) {
+  fromFile(path: any) {
     return this;
   }
 
-  preFileLine(callback) {
+  preFileLine(callback: any) {
     return Promise.resolve([{'someDate': 'someValue'}]);
   }
 }
 
-csv = () => new MockCSV();
-
-module.exports = csv;
+export function csv(): MockCSV {
+  return new MockCSV();
+}

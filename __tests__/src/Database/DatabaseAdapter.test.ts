@@ -1,7 +1,9 @@
 /* eslint-disable max-len,require-jsdoc */
-require('dotenv').config();
-const DatabaseAdapter = require('../../../src/Database/DatabaseAdapter');
-console.log = () => {}; // disable logs
+import dotenv from 'dotenv';
+dotenv.config();
+
+import DatabaseAdapter from '../../../src/Database/DatabaseAdapter';
+console.log = () => null; // disable logs
 
 /* jest.mock('../../../src/Database/MySQLDatabase');
 

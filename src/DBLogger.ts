@@ -3,7 +3,7 @@ import DatabaseAdapter from './Database/DatabaseAdapter';
 
 class DBLogger {
   private static instance: DBLogger;
-  private dba!: DatabaseAdapter;
+  dba!: DatabaseAdapter;
 
   async init() {
     if (!DBLogger.instance) {

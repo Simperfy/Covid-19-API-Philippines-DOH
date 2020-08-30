@@ -1,25 +1,27 @@
 /* eslint-disable max-len,require-jsdoc */
-require('dotenv').config();
-const DBLogger = require('../../src/DBLogger');
-console.log = () => {}; // disable logs
+import dotenv from 'dotenv';
+dotenv.config();
+
+import DBLogger from '../../src/DBLogger';
+console.log = () => null; // disable logs
 
 class DatabaseAdapterMock {
-  executeRaw(query) {
+  executeRaw(query: string) {
     return [{'folder_id': 'folder 3'}];
   }
 
-  insert(tableName, fieldValueObj) {
+  insert(tableName: string, fieldValueObj: any) {
     return 'success';
   }
 }
 
-let dbLogger = null;
-let realDB = null;
+let dbLogger: any;
+let realDB: any;
 
 beforeAll(async () => {
-  dbLogger = await new DBLogger();
+  dbLogger = await new DBLogger().init();
   realDB = dbLogger.dba;
-  dbLogger.dbaa = new DatabaseAdapterMock();
+  dbLogger.dba = new DatabaseAdapterMock();
 });
 
 test('Should be a singleton', async () => {

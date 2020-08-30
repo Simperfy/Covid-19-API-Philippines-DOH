@@ -1,8 +1,9 @@
 /* eslint-disable max-len */
-const request = require('supertest');
-console.log = () => {}; // disable logs
-const app = require('../../src/app');
+import request from 'supertest';
+// disable logs
+import app from '../../src/app';
 
+console.log = () => null;
 jest.mock('../../src/Database/DatabaseAdapter');
 
 jest.setTimeout(300000);
