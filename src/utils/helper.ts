@@ -1,8 +1,8 @@
-/* eslint-disable max-len */
-const CaseInformation = require('../CaseInformation');
-const FacilityInformation = require('../FacilityInformation');
-const path = require('path');
-const fs = require('fs');
+/* eslint-disable max-len,require-jsdoc */
+import CaseInformation from '../CaseInformation';
+import FacilityInformation from '../FacilityInformation';
+import path from 'path';
+import fs from 'fs';
 
 /**
  * @param {Object[]} arr
@@ -11,25 +11,27 @@ const fs = require('fs');
  * @param {String[]} filesToDL
  * @return {Object[]} res
  */
-exports.getRequiredFiles = (arr, filesToDL) => arr.filter((file) => {
-  let result = false;
-  filesToDL.forEach((fl) => {
-    if (-1 !== file.name.search(fl)) {
-      result = true;
-    }
+export function getRequiredFiles(arr: any[], filesToDL: string[]) : any {
+  return arr.filter((file) => {
+    let result = false;
+    filesToDL.forEach((fl) => {
+      if (-1 !== file.name.search(fl)) {
+        result = true;
+      }
+    });
+    return result;
   });
-  return result;
-});
+}
 
-exports.getCSVInfoObj = (csBatchArr) => {
-  const csvOBJ = {
+export function getCSVInfoObj(csBatchArr: any): any {
+  const csvOBJ: any = {
     csvArr: [],
     csvDbName: '',
   };
 
   if (csBatchArr[0] instanceof CaseInformation) {
     csvOBJ.csvDbName = 'case_informations';
-    csBatchArr.forEach((data) => {
+    csBatchArr.forEach((data: any) => {
       csvOBJ.csvArr.push({
         'case_code': data.CaseCode,
         'age': data.Age,
@@ -42,7 +44,7 @@ exports.getCSVInfoObj = (csBatchArr) => {
         'date_recover': data.DateRecover,
         'removal_type': data.RemovalType,
         'admitted': data.Admitted,
-        'region_res': getRegionAlias(data.RegionRes),
+        'region_res': exports.getRegionAlias(data.RegionRes),
         'prov_res': data.ProvRes,
         'city_mun_res': data.CityMunRes,
         'city_muni_psgc': data.CityMuniPSGC,
@@ -56,7 +58,7 @@ exports.getCSVInfoObj = (csBatchArr) => {
   } else if (csBatchArr[0] instanceof FacilityInformation) {
     csvOBJ.csvDbName = 'facility_informations';
 
-    csBatchArr.forEach((data) => {
+    csBatchArr.forEach((data: any) => {
       csvOBJ.csvArr.push({
         'hfhudcode': data.hfhudcode,
         // 'id': data.id,
@@ -104,7 +106,7 @@ exports.getCSVInfoObj = (csBatchArr) => {
         't_patient_icu': data.tpatient_icu,
         'trans_ttmf': data.trans_ttmf, // Temporary Treatment and Monitoring Facilities
         'discharged': data.discharged,
-        'region': getRegionAlias(data.region),
+        'region': exports.getRegionAlias(data.region),
         'region_psgc': data.region_psgc,
         'province': data.province,
         'province_psgc': data.province_psgc,
@@ -120,9 +122,9 @@ exports.getCSVInfoObj = (csBatchArr) => {
 
 
   return csvOBJ;
-};
+}
 
-exports.filterLatestFacilityData = (arr) => {
+export function filterLatestFacilityData(arr: any[]): any {
   // group array by hfhudcode
   const grpObj = arr.reduce(function(rv, x) {
     (rv[x['HFHUDCODE']] = rv[x['HFHUDCODE']] || []).push(x);
@@ -130,12 +132,12 @@ exports.filterLatestFacilityData = (arr) => {
   }, {});
 
   // function to get most recent updateddate
-  const mostRecentDate = (arr) => new Date(Math.max.apply(null, arr.map( (el) => {
+  const mostRecentDate = (arr: any) => new Date(Math.max.apply(null, arr.map( (el: any) => {
     return new Date(el.updateddate);
   })));
 
   // function to get object with most recent updateddate
-  const mostRecentObject = (arr) => arr.filter( (el) => {
+  const mostRecentObject = (arr: any) => arr.filter( (el: any) => {
     const d = new Date( el.updateddate );
     return d.getTime() === mostRecentDate(arr).getTime();
   })[0];
@@ -151,9 +153,9 @@ exports.filterLatestFacilityData = (arr) => {
 
   // console.log(newArr.filter((a) => a.hfhudcode === 'DOH000000000005796'));
   return newArr;
-};
+}
 
-exports.deleteTmpFolder = () => {
+export function deleteTmpFolder(): any {
   const filePath = path.join(__dirname, '/../../tmp');
   fs.stat(filePath, (err, stats) => {
     if (err) return console.log(`tmp folder stat: ${err.message}`);
@@ -162,11 +164,11 @@ exports.deleteTmpFolder = () => {
       console.log(`${filePath} is deleted!`);
     });
   });
-};
+}
 
-getRegionAlias = (region) => {
+export function getRegionAlias(region: string): any {
   // alias : [matchers]
-  const aliasArr = [
+  const aliasArr: any = [
     {'barmm': ['BARMM', 'AUTONOMOUS REGION IN MUSLIM MINDANAO (ARMM)']},
     {'car': ['CAR', 'CORDILLERA ADMINISTRA TIVE REGION (CAR)']},
     {'caraga': ['CARAGA', 'REGION XIII (CARAGA)']},
@@ -197,4 +199,4 @@ getRegionAlias = (region) => {
   }
 
   throw (Error('ERROR: ALIAS NOT FOUND FOR: ' + region));
-};
+}

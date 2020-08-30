@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 const request = require('supertest');
 console.log = () => {}; // disable logs
-const app = require('../../app');
+const app = require('../../src/app');
 
 jest.mock('../../src/Database/DatabaseAdapter');
 

@@ -1,20 +1,24 @@
 /* eslint-disable max-len,new-cap */
 /* eslint-disable require-jsdoc */
-const csv = require('csvtojson');
-const path = require('path');
-const fs = require('fs');
-const CaseInformation = require('../CaseInformation');
-const FacilityInformation = require('../FacilityInformation');
-const {filterLatestFacilityData} = require('../utils/helper');
-// eslint-disable-next-line no-unused-vars
-const {Converter} = require('csvtojson/v2/Converter');
+import csv from 'csvtojson';
+import path from 'path';
+import fs from 'fs';
+import CaseInformation from '../CaseInformation';
+import FacilityInformation from '../FacilityInformation';
+import {filterLatestFacilityData} from '../utils/helper';
 
 class CSVDatabase {
+  isConverting!: boolean;
+  csvClass: any;
+  CSVDatabaseArray!: any[];
+  csvFilePath!: string;
+  converter: any;
+
   // make this a singleton
-  constructor(CSVClass) {
+  async init(CsvClass: any) {
     return (async () => {
       this.isConverting = false;
-      this.csvClass = CSVClass;
+      this.csvClass = CsvClass;
       this.CSVDatabaseArray = [];
       this.csvFilePath = path.join(__dirname, `../../tmp/${this.csvClass.getFilename()}`);
 
@@ -37,8 +41,8 @@ class CSVDatabase {
     if (!this.isConverting) { // prevent multiple attempts to convert the json
       this.isConverting = true;
       const pathToCSV = this.csvFilePath;
-      let dateThreshold = new Date();
-      dateThreshold = dateThreshold.setDate(dateThreshold.getDate() - (parseInt(process.env.FACILITIES_THRESHOLD) || 360));
+      let dateThreshold: Date|number = new Date();
+      dateThreshold = dateThreshold.setDate(dateThreshold.getDate() - (parseInt(process.env.FACILITIES_THRESHOLD as string) || 360));
 
       let msg = process.env.FACILITIES_THRESHOLD || 'facilities threshold not found in .env, setting to 360';
       msg += '\nIf this causes Out of memory error lower the value to 7 or 30';
@@ -54,16 +58,16 @@ class CSVDatabase {
           trim: true,
         })
             .fromFile(pathToCSV)
-            .preFileLine((fileLineString) => {
+            .preFileLine((fileLineString: string|string[]) => {
               return new Promise(async (resolve, reject)=>{
                 if (isFacilityInfo) {
-                  fileLineString = fileLineString.split(',');
+                  fileLineString = (fileLineString as string).split(',');
                   // console.log(fileLineString[3] + '\n');
                   const upDate = new Date(fileLineString[updatedDateIndex]);
                   if (upDate < (dateThreshold)) resolve('');
                   else resolve(fileLineString.join(','));
                 } else if (isCaseInfo) {
-                  resolve(fileLineString);
+                  resolve(<string>fileLineString);
                 } else {
                   throw new Error('Cannot determine csv data type while parsing csv file.');
                 }
@@ -101,10 +105,7 @@ class CSVDatabase {
               } else {
                 throw new Error('[CSVDatabase.js]Cannot determine csv data type.');
               }
-            })
-            .catch((err) => {
-              console.log(err);
-            });
+            }, (err) => console.log(err));
       } else {
         this.isConverting = false;
         console.error(`Cannot find ${this.csvFilePath}, Did you visit "/api/updateDatabase"?`);
@@ -134,7 +135,7 @@ class CSVDatabase {
      * @param {String} field
      * @param {String} value
      */
-  async filter(field, value) {
+  async filter(field: string, value: string) {
     await this.assureCSIsLoaded();
     return this.CSVDatabaseArray.filter((ci) => ci[field] == value);
   }
@@ -161,7 +162,7 @@ class CSVDatabase {
    * @param {String} field
    * @return {Promise<[CaseInformation]>}
    */
-  async sort(field) {
+  async sort(field: string) {
     const cs = await this.get();
     return cs.sort(this.getSortOrder(field));
   }
@@ -170,8 +171,8 @@ class CSVDatabase {
    * @param {String} property Property of Case Information
    * @return {Function}
    */
-  getSortOrder(property) {
-    return function(a, b) {
+  getSortOrder(property: string) {
+    return function(a: any, b: any) {
       if (a[property] > b[property]) {
         return 1;
       } else if (a[property] < b[property]) {
@@ -186,9 +187,9 @@ class CSVDatabase {
    * @param {String} caseCode
    * @return {int} position of the case code in the array
    */
-  findIndex(csArr, caseCode) {
+  findIndex(csArr: CaseInformation[], caseCode: string) {
     return csArr.findIndex((cs) => cs.CaseCode == caseCode);
   }
 }
 
-module.exports = CSVDatabase;
+export default CSVDatabase;

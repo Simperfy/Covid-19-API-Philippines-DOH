@@ -1,46 +1,48 @@
 /* eslint-disable max-len */
-const CSVDatabase = require('./CSVDatabase');
-const CaseInformation = require('../CaseInformation');
-const FacilityInformation = require('../FacilityInformation');
-const MongoDBDatabase = require('./MongoDBDatabase');
-const MySQLDatabase = require('./MySQLDatabase');
+import CSVDatabase from './CSVDatabase';
+import CaseInformation from '../CaseInformation';
+import FacilityInformation from '../FacilityInformation';
+import MongoDBDatabase from './MongoDBDatabase';
+// import MySQLDatabase from './MySQLDatabase';
 // const CaseInformation = require('../CaseInformation');
 
 /**
  * Handles Database
  */
 class DatabaseAdapter {
+  private static instance: DatabaseAdapter;
+  private db: any;
+
   /**
-   * Initialize Database and make this a singleton
-   * @return {Promise<DatabaseAdapter>}
+   * return {DatabaseAdapter} instance of the database adapter
    */
-  constructor() {
-    return (async () => {
-      if (!DatabaseAdapter.instance) {
-        DatabaseAdapter.instance=this;
+  async init() {
+    if (!DatabaseAdapter.instance) {
+      DatabaseAdapter.instance= new DatabaseAdapter();
 
-        console.log('Connecting to database');
-        let msg;
-        console.log('Database Type: ' + process.env.DATABASE_TYPE);
-        if (String(process.env.DATABASE_TYPE).toLowerCase() === 'nosql') {
-          msg = await this.connect(new MongoDBDatabase());
-        } else if (String(process.env.DATABASE_TYPE).toLowerCase() === 'mysql') {
-          msg = await this.connect(new MySQLDatabase());
-        } else {
-          throw new Error('Please specify "DATABASE_TYPE" in environment variables');
-        }
-        console.log(msg);
+      console.log('Connecting to database');
+      let msg;
+      console.log('Database Type: ' + process.env.DATABASE_TYPE);
+      if (String(process.env.DATABASE_TYPE).toLowerCase() === 'nosql') {
+        msg = await this.connect(new MongoDBDatabase());
+      } else if (String(process.env.DATABASE_TYPE).toLowerCase() === 'mysql') {
+        // msg = await this.connect(new MySQLDatabase());
+        throw new Error('MYSQL Database is deprecated');
+      } else {
+        throw new Error('Please specify "DATABASE_TYPE" in environment variables');
       }
+      console.log(msg);
+    }
 
-      return DatabaseAdapter.instance;
-    })();
+    return DatabaseAdapter.instance;
   }
+
 
   /**
    * @param {*} database Database Class
    * @return {Promise<String>} Returns a message whether connection is success or not
    */
-  connect(database) {
+  connect(database: any) {
     this.db = database;
     return this.db.connect();
   }
@@ -55,7 +57,7 @@ class DatabaseAdapter {
    * @param {Object|undefined} queries.filters
    * @return {Promise}
    */
-  get(queries) {
+  get(queries: {[key: string]: string|number|undefined}) {
     return this.db.get(queries);
   }
 
@@ -64,7 +66,7 @@ class DatabaseAdapter {
    * @param {Object|null} objFilters contains the field and value
    * @return {Promise} contains the result of the query
    */
-  count(dbName, objFilters= null) {
+  count(dbName: string, objFilters: any = null) {
     return this.db.count(dbName, objFilters);
   }
 
@@ -73,7 +75,7 @@ class DatabaseAdapter {
    * @param {String|Number} value
    * @return {Promise} Contains JSON
    */
-  filter(field, value) {
+  filter(field: string, value: string|number) {
     return this.db.filter(field, value);
   }
 
@@ -84,7 +86,7 @@ class DatabaseAdapter {
    * @return {Promise<Object>} result.fatalityRate
    * @return {Promise<Object>} result.recoveryRate
    */
-  getSummary(region = null) {
+  getSummary(region: any = null) {
     return this.db.getSummary(region);
   }
 
@@ -92,7 +94,7 @@ class DatabaseAdapter {
    * @param {Object} queries
    * @return {Promise}
    */
-  getTimeline(queries) {
+  getTimeline(queries: any) {
     return this.db.getTimeline(queries);
   }
 
@@ -109,7 +111,7 @@ class DatabaseAdapter {
    * @param {Object} queries
    * @return {Promise}
    */
-  getFacilities(queries) {
+  getFacilities(queries: any) {
     return this.db.getFacilities(queries);
   }
 
@@ -117,7 +119,7 @@ class DatabaseAdapter {
    * @param {Object} queries
    * @return {Promise}
    */
-  getFacilitiesSummary(queries) {
+  getFacilitiesSummary(queries: any) {
     return this.db.getFacilitiesSummary(queries);
   }
 
@@ -128,7 +130,7 @@ class DatabaseAdapter {
    * @param {String} dataset
    * @return {Promise}
    */
-  getListOf(field, dataset) {
+  getListOf(field: string, dataset: string) {
     return this.db.getListOf(field, dataset);
   }
 
@@ -153,7 +155,7 @@ class DatabaseAdapter {
    * @param {String} tableName
    * @return {Promise<void>}
    */
-  truncate(tableName) {
+  truncate(tableName: string) {
     return this.db.truncate(tableName);
   }
 
@@ -162,7 +164,7 @@ class DatabaseAdapter {
    * @param {Object} fieldValueObj
    * @return {Promise<String>}
    */
-  insert(tableName, fieldValueObj) {
+  insert(tableName: string, fieldValueObj: any) {
     return this.db.insert(tableName, fieldValueObj);
   }
 
@@ -181,8 +183,8 @@ class DatabaseAdapter {
     let result = true;
     let lowMemory = true;
 
-    await this.db.updateDatabaseFromCSV(await new CSVDatabase(CaseInformation))
-        .then(async (res) => {
+    await this.db.updateDatabaseFromCSV(await new CSVDatabase().init(CaseInformation))
+        .then(async (res: any) => {
           if (!res) result = false;
 
           while (lowMemory) {
@@ -191,12 +193,12 @@ class DatabaseAdapter {
             global.gc();
           }
 
-          return this.db.updateDatabaseFromCSV(await new CSVDatabase(FacilityInformation));
+          return this.db.updateDatabaseFromCSV(await new CSVDatabase().init(FacilityInformation));
         })
-        .then((res) => {
+        .then((res: any) => {
           if (!res) result = false;
           global.gc();
-        }).catch((err) => {
+        }).catch((err: any) => {
           throw new Error(err);
         });
 
@@ -211,4 +213,4 @@ class DatabaseAdapter {
   }
 }
 
-module.exports = DatabaseAdapter;
+export default DatabaseAdapter;
