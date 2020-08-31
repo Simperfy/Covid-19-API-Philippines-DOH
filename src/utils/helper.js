@@ -185,6 +185,8 @@ getRegionAlias = (region) => {
     {'region xi: davao region': ['Region XI: Davao Region', 'REGION XI (DAVAO REGION)']},
     {'region xii: soccsksargen': ['Region XII: SOCCSKSARGEN', 'REGION XII (SOCCSKSA RGEN)']},
     {'repatriate': ['REPATRIATE']},
+    {'unknown_region': ['Unknown Region']},
+    {'rof': ['ROF']},
     {'': ['']},
   ];
 
