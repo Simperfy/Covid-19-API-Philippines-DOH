@@ -1,7 +1,9 @@
 /* eslint-disable camelcase,require-jsdoc,max-len */
-const DOWNLOADED_FILE_ALIASES = require('./utils/enums').DOWNLOADED_FILE_ALIASES;
+import {DOWNLOADED_FILE_ALIASES} from './utils/enums';
 
 class FacilityInformation {
+  [key: string]: any;
+
   set hfhudcode(hfhudcode) {
     this.HFHUDCODE = hfhudcode;
   }
@@ -327,11 +329,9 @@ class FacilityInformation {
     return this.EAST_COORD;
   }
 
-  constructor() {}
-
   static getFilename() {
     return DOWNLOADED_FILE_ALIASES.DAILY_REPORT;
   }
 }
 
-module.exports = FacilityInformation;
+export default FacilityInformation;

@@ -1,16 +1,17 @@
 /* eslint-disable require-jsdoc,max-len */
-const DatabaseAdapter = require('./Database/DatabaseAdapter');
+import DatabaseAdapter from './Database/DatabaseAdapter';
 
 class DBLogger {
-  constructor() {
-    return (async () => {
-      if (!DBLogger.instance) {
-        DBLogger.instance = this;
-        this.dba = await new DatabaseAdapter();
-      }
+  private static instance: DBLogger;
+  dba!: DatabaseAdapter;
 
-      return DBLogger.instance;
-    })();
+  async init() {
+    if (!DBLogger.instance) {
+      DBLogger.instance = this;
+      this.dba = await new DatabaseAdapter().init();
+    }
+
+    return DBLogger.instance;
   }
 
   /**
@@ -21,10 +22,10 @@ class DBLogger {
     return this.dba.getLatestFolderID();
   }
 
-  async insertToUpdateSummary(folderID) {
-    if (process.env.DATABASE_TYPE.toLowerCase() === 'mysql') {
+  async insertToUpdateSummary(folderID: string) {
+    if ((process.env.DATABASE_TYPE as string).toLowerCase() === 'mysql') {
       return this.dba.insert('update_history', {'id': 'NULL', 'folder_id': `'${folderID}'`, 'updated_at': 'current_timestamp()'});
-    } else if (process.env.DATABASE_TYPE.toLowerCase() === 'nosql') {
+    } else if ((process.env.DATABASE_TYPE as string).toLowerCase() === 'nosql') {
       return this.dba.insert('update_history', {'folder_id': `${folderID}`, 'updated_at': `${new Date().toLocaleString('en-US', {
         timeZone: 'Asia/Shanghai',
       })}`});
@@ -42,4 +43,4 @@ class DBLogger {
   }
 }
 
-module.exports = DBLogger;
+export default DBLogger;

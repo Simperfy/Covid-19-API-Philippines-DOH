@@ -1,6 +1,8 @@
 /* eslint-disable require-jsdoc,max-len */
-const DOWNLOADED_FILE_ALIASES = require('./utils/enums').DOWNLOADED_FILE_ALIASES;
+import {DOWNLOADED_FILE_ALIASES} from './utils/enums';
 class CaseInformation {
+  [key: string]: any;
+
   set CaseCode(caseCode) {
     this.caseCode = caseCode;
   }
@@ -161,11 +163,9 @@ class CaseInformation {
     return this.validationStatus;
   }
 
-  constructor() {}
-
   static getFilename() {
     return DOWNLOADED_FILE_ALIASES.CASE_INFORMATION;
   }
 }
 
-module.exports = CaseInformation;
+export default CaseInformation;

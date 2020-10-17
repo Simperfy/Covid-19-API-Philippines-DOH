@@ -1,7 +1,8 @@
 /* eslint-disable max-len,no-throw-literal */
-const fs = require('fs');
-const pdfParse = require('pdf-parse');
-const path = require('path');
+import fs from 'fs';
+import pdfParse from 'pdf-parse';
+import path from 'path';
+
 const PATH_TO_PDF = path.join(__dirname, '../tmp/latest.pdf');
 const REGEX = 'https://bit.ly/([A-Za-z0-9]+)';
 
@@ -25,4 +26,4 @@ class PDFHandler {
   }
 }
 
-exports.PDFHandler = PDFHandler;
+export default PDFHandler;

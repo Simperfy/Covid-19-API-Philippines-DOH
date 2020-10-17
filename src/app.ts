@@ -1,31 +1,41 @@
 /* eslint-disable max-len */
-require('dotenv').config();
-const cors = require('cors');
-const morgan = require('morgan');
-const compression = require('compression');
-const apicache = require('apicache');
+import dotenv from 'dotenv';
+dotenv.config();
+import cors from 'cors';
+import morgan from 'morgan';
+import compression from 'compression';
+import apicache from 'apicache';
 // Swagger api docs
 // const swaggerUI = require('swagger-ui-express');
 // const openApiJson = require('./openapi.json');
 // GOOGLE DRIVE VARS
-const GoogleDriveApi = require('./src/GoogleDriveApiClient').GoogleDriveApi;
+import GoogleDriveApi from './GoogleDriveApiClient';
 const GDriveApi = new GoogleDriveApi();
 // SERVER VARS
-const express = require('express');
-const app = express();
+import express from 'express';
+const app: express.Application = express();
 // Database vars
-const DatabaseAdapter = require('./src/Database/DatabaseAdapter');
+import DatabaseAdapter from './Database/DatabaseAdapter';
 // Database Logger
-const DBLogger = require('./src/DBLogger');
+import DBLogger from './DBLogger';
 // Enums
-const downloadStatus = require('./src/utils/enums').DOWNLOAD_STATUS;
+import {DOWNLOAD_STATUS as downloadStatus} from './utils/enums';
 // helpers
-const {deleteTmpFolder} = require('./src/utils/helper');
+import {deleteTmpFolder} from './utils/helper';
 // Express related vars
-const updateInterval = parseFloat(process.env.UPDATE_INTERVAL) || 24;
+
+const updateInterval = parseFloat(process.env.UPDATE_INTERVAL as string) || 24;
 const maxLimit = 10000;
-let db;
-let jsonRespStructure = {
+let db : DatabaseAdapter;
+
+// INTERFACES
+interface jsonRespInterface {
+  data: any;
+  [propName: string]: any;
+}
+// ./INTERFACES
+
+let jsonRespStructure: jsonRespInterface = {
   'data': [],
 };
 
@@ -47,7 +57,7 @@ if (process.env.NODE_ENV !== 'development') { // only use cache in production
   }).middleware;
   app.use(cache('6 hours'));
 }
-app.use(morgan((tokens, req, res) => { // HTTP Logger
+app.use(morgan((tokens: any, req : express.Request, res : express.Response) => { // HTTP Logger
   return [
     '[' + new Date().toLocaleString('en-US', {
       timeZone: 'Asia/Shanghai',
@@ -61,7 +71,7 @@ app.use(morgan((tokens, req, res) => { // HTTP Logger
 }));
 // Custom middleware
 app.use(async (req, res, next) => {
-  const dbLogger = await new DBLogger();
+  const dbLogger = await new DBLogger().init();
   // Clear data before every request
   jsonRespStructure = {
     'data': [],
@@ -76,7 +86,7 @@ const router = express.Router();
 
 (async () => {
   // Initialize Database
-  db = await new DatabaseAdapter();
+  db = await new DatabaseAdapter().init();
   // Initialize Google Auth Token
   await GDriveApi.getAuth().then(async () => {
     if (process.env.NODE_ENV === 'production') {
@@ -103,7 +113,7 @@ async function autoUpdate() {
   console.log('Interval hr: ' + updateInterval);
   await GDriveApi.downloadLatestFile().then((data) => {
     if (data === downloadStatus.DOWNLOAD_SKIPPED) {
-      shouldSkip = process.env.DISABLE_SKIP_DATABASE_UPDATE.toLowerCase() !== 'true';
+      shouldSkip = (process.env.DISABLE_SKIP_DATABASE_UPDATE as string).toLowerCase() !== 'true';
       console.log('Skipping download of files');
     } else {
       console.log('download status: ', data);
@@ -122,7 +132,7 @@ async function autoUpdate() {
     });
   }
 
-  if (process.env.DISABLE_TMP_DELETION.toLowerCase() !== 'true') {
+  if ((process.env.DISABLE_TMP_DELETION as string).toLowerCase() !== 'true') {
     console.log('\nDeleting tmp folder...');
     deleteTmpFolder();
   } else {
@@ -167,22 +177,22 @@ router.get('/filter/:field/:value', async (req, res) => {
   });*/
 });
 
-router.get('/get', async (req, res) => {
+router.get('/get', async (req: express.Request, res: express.Response) => {
   const month = req.query.month;
   const day = req.query.day;
-  const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || maxLimit;
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || maxLimit;
 
   delete req.query.month;
   delete req.query.day;
   delete req.query.page;
   delete req.query.limit;
 
-  const queries = {limit: limit, month: month, day: day, page: page, maxLimit: maxLimit, filters: req.query};
+  const queries: any = {limit: limit, month: month, day: day, page: page, maxLimit: maxLimit, filters: req.query};
 
-  await db.get(queries).then(async (data) => {
+  await db.get(queries).then(async (data: any) => {
     jsonRespStructure.data = data;
-    const dbCount = await db.count('case_informations');
+    const dbCount: number = await db.count('case_informations');
     const maxPage = Math.ceil(dbCount / limit);
 
     if (dbCount === 0) {
@@ -191,7 +201,7 @@ router.get('/get', async (req, res) => {
     }
 
     if (page > maxPage) {
-      jsonRespStructure.error = `Error: page query can\'t be greater than max_page(${maxPage})`;
+      jsonRespStructure.error = `Error: page query can't be greater than max_page(${maxPage})`;
       return res.json(jsonRespStructure);
     }
 
@@ -211,27 +221,27 @@ router.get('/get', async (req, res) => {
 
     jsonRespStructure.result_count = data.length;
     res.json(jsonRespStructure);
-  }).catch((err) => {
+  }).catch((err: Error) => {
     jsonRespStructure.error = err.message;
     res.json(jsonRespStructure);
   });
 });
 
 router.get('/timeline', async (req, res) => {
-  await db.getTimeline(req.query).then((data) => {
+  await db.getTimeline(req.query).then((data: any) => {
     jsonRespStructure.data = data;
     res.json(jsonRespStructure);
-  }).catch((err) => {
+  }).catch((err: Error) => {
     jsonRespStructure.error = err.message;
     res.json(jsonRespStructure);
   });
 });
 
 router.get('/top-regions', async (req, res) => {
-  await db.getTopRegions().then((data) => {
+  await db.getTopRegions().then((data: any) => {
     jsonRespStructure.data = data;
     res.json(jsonRespStructure);
-  }).catch((err) => {
+  }).catch((err: Error) => {
     jsonRespStructure.error = err.message;
     res.json(jsonRespStructure);
   });
@@ -241,48 +251,49 @@ router.get('/summary', async (req, res) => {
   if (req.query.region === undefined && req.query.region_res !== undefined) {
     req.query.region = req.query.region_res;
   }
-  const region = req.query.region || null;
 
-  await db.getSummary(region).then((data) => {
+  const region: any = req.query.region || null;
+
+  await db.getSummary(region).then((data : any) => {
     ({result: jsonRespStructure.data,
       fatalityRate: jsonRespStructure.data.fatality_rate,
       recoveryRate: jsonRespStructure.data.recovery_rate} = data);
 
     res.json(jsonRespStructure);
-  }).catch((err) => {
+  }).catch((err: Error) => {
     jsonRespStructure.error = err.message;
     res.json(jsonRespStructure);
   });
 });
 
 router.get('/facilities', async (req, res) => {
-  await db.getFacilities(req.query).then((data) => {
+  await db.getFacilities(req.query).then((data: any) => {
     jsonRespStructure.data = data;
     res.json(jsonRespStructure);
-  }).catch((err) => {
+  }).catch((err: Error) => {
     jsonRespStructure.error = err.message;
     res.json(jsonRespStructure);
   });
 });
 
 router.get('/facilities/summary', async (req, res) => {
-  await db.getFacilitiesSummary(req.query).then((data) => {
+  await db.getFacilitiesSummary(req.query).then((data: any) => {
     jsonRespStructure.data = data;
     res.json(jsonRespStructure);
-  }).catch((err) => {
+  }).catch((err: Error) => {
     jsonRespStructure.error = err.message;
     res.json(jsonRespStructure);
   });
 });
 
 // API that lists values
-router.get('/list-of/:field', async (req, res) => {
+router.get('/list-of/:field', async (req: express.Request, res: express.Response) => {
   if (!req.query.dataset) req.query.dataset = 'case_information';
 
-  await db.getListOf(req.params.field, req.query.dataset).then((data) => {
+  await db.getListOf(req.params.field, req.query.dataset as string).then((data: any) => {
     jsonRespStructure.data = data;
     res.json(jsonRespStructure);
-  }).catch((err) => {
+  }).catch((err: Error) => {
     jsonRespStructure.error = err.message;
     res.json(jsonRespStructure);
   });
@@ -294,4 +305,4 @@ app.use('/api', router); // Add prefix "/api" to routes above
 
 app.use('/', (req, res) => res.redirect('https://documenter.getpostman.com/view/12463261/T1LV9jLU'));
 
-module.exports = app;
+export default app;

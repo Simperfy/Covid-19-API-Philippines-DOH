@@ -1,16 +1,19 @@
 /* eslint-disable require-jsdoc,max-len */
-const MongoDB = require('mongodb');
-const {getCSVInfoObj} = require('../utils/helper');
+import MongoDB from 'mongodb';
+import {getCSVInfoObj} from '../utils/helper';
 
-const CaseInformation = require('../CaseInformation');
-const FacilityInformation = require('../FacilityInformation');
+import CaseInformation from '../CaseInformation';
+import FacilityInformation from '../FacilityInformation';
 
 class MongoDBDatabase {
+  static instance: MongoDBDatabase;
+  connection!: Promise<MongoDB.MongoClient>;
+
   constructor() {
     if (!MongoDBDatabase.instance) {
       MongoDBDatabase.instance=this;
 
-      this.connection = MongoDB.MongoClient;
+      // this.connection = MongoDB.MongoClient;
     }
 
     return MongoDBDatabase.instance;
@@ -21,14 +24,18 @@ class MongoDBDatabase {
    */
   connect() {
     return new Promise(async (resolve, reject) => {
-      const dbUrl = process.env.DB_NOSQL_URI;
+      const dbUrl: string = process.env.DB_NOSQL_URI as string;
 
-      this.connection = this.connection.connect(dbUrl, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-      }).catch((err) => {
-        return reject(new Error('[MongoDBDatabase] ' + err));
-      });
+      if (!this.connection) {
+        try {
+          this.connection = MongoDB.MongoClient.connect(dbUrl, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+          });
+        } catch (err) {
+          return reject(new Error('[MongoDBDatabase] ' + err));
+        }
+      }
 
       if (await this.connection === undefined) return reject(new Error('[MongoDBDatabase] ' + 'Failed to connect.'));
 
@@ -47,18 +54,18 @@ class MongoDBDatabase {
    * @param {Object|undefined} queries.filters
    * @return {Promise} returns JSON of the result
    */
-  get(queries) {
+  get(queries: any) {
     return new Promise((resolve, reject) => {
       if (queries.month > 12) return reject(new Error('Error: the month cannot be greater than 12'));
       if (queries.day > 31) return reject(new Error('Error: the day cannot be greater than 31'));
       if (queries.page < 1 || queries.limit < 1) return reject(new Error('Error: page or limit query can\'t be less than 1.'));
-      if (queries.limit > queries.maxLimit) return reject(new Error(`Error: limit query can\'t be greater than ${queries.maxLimit}.`));
+      if (queries.limit > queries.maxLimit) return reject(new Error(`Error: limit query can't be greater than ${queries.maxLimit}.`));
 
-      this.connection.then(async (client) => {
+      this.connection.then(async (client: any) => {
         const db = client.db();
         const collection = db.collection('case_informations');
 
-        let filter = {};
+        let filter: any = {};
         const opt = {
           limit: queries.limit,
           skip: (queries.page - 1) * queries.limit,
@@ -117,8 +124,8 @@ class MongoDBDatabase {
    * @return {Promise<String>}
    */
   async getLatestFolderID() {
-    let res;
-    await this.connection.then(async (client) => {
+    let res: any;
+    await this.connection.then(async (client: MongoDB.MongoClient) => {
       const db = client.db();
       const collection = db.collection('update_history');
 
@@ -126,7 +133,7 @@ class MongoDBDatabase {
         const result = await collection.find({}, {limit: 1}).sort({_id: -1});
         res = await result.toArray();
       } catch (e) {
-        reject(new Error(e));
+        return (new Error(e));
       }
     });
 
@@ -142,7 +149,7 @@ class MongoDBDatabase {
    * @return {Promise<String>}
    */
   async getLastUpdateDate() {
-    let res;
+    let res: Array<any> = [];
     await this.connection.then(async (client) => {
       const db = client.db();
       const collection = db.collection('update_history');
@@ -151,7 +158,7 @@ class MongoDBDatabase {
         const result = await collection.find({}, {limit: 1}).sort({_id: -1});
         res = await result.toArray();
       } catch (e) {
-        reject(new Error(e));
+        return (new Error(e));
       }
     });
 
@@ -169,17 +176,17 @@ class MongoDBDatabase {
    * @param {Object} objFilters contains the field and value
    * @return {Promise} contains the result of the query
    */
-  async count(dbName, objFilters = null) {
+  async count(dbName: string, objFilters: any = null): Promise<number> {
     // console.log(this.connection);
     return new Promise((resolve, reject) => {
       this.connection.then((client) => {
         const db = client.db();
-        let collection = db.collection(dbName);
+        let collection: MongoDB.Collection<any>|MongoDB.Cursor<any> = db.collection(dbName);
 
         if (objFilters !== null) {
           const field = objFilters.field;
           const value = objFilters.value;
-          const tempObj = {};
+          const tempObj: any = {};
           tempObj[field] = value;
           collection = collection.find(tempObj);
 
@@ -203,13 +210,13 @@ class MongoDBDatabase {
    * @param {String|Number} value
    * @return {Promise} Contains JSON
    */
-  filter(field, value) {
+  filter(field: string, value: string|number) {
     return new Promise(async (resolve, reject) => {
       await this.connection.then(async (client) => {
         const db = client.db();
         const collection = db.collection('case_informations');
 
-        const filter = {};
+        const filter:any = {};
         const opts = {
           projection: {_id: 0},
         };
@@ -232,7 +239,7 @@ class MongoDBDatabase {
    * @return {Promise<Object>} result.fatalityRate
    * @return {Promise<Object>} result.recoveryRate
    */
-  getSummary(region = null) {
+  getSummary(region: string|null = null) {
     return new Promise(async (resolve, reject) => {
       await this.connection.then(async (client) => {
         const db = client.db();
@@ -242,7 +249,7 @@ class MongoDBDatabase {
         const recoveriesFilter = {removal_type: 'recovered'};
         const diedFilter = {removal_type: 'died'};
         const activeCasesFilter = {removal_type: '', date_rep_conf: {$exists: true}};
-        const filters = [totalFilter, recoveriesFilter, diedFilter, activeCasesFilter];
+        const filters: Array<{[key: string]: any}> = [totalFilter, recoveriesFilter, diedFilter, activeCasesFilter];
 
         if (region !== null) {
           filters.forEach((filter) => {
@@ -305,8 +312,8 @@ class MongoDBDatabase {
           res[0].deaths = res[0].deaths[0].count;
           res[0].active_cases = res[0].active_cases[0].count;
 
-          let fatalityRate = res[0].deaths / res[0].total;
-          let recoveryRate = res[0].recoveries / res[0].total;
+          let fatalityRate: number|string = res[0].deaths / res[0].total;
+          let recoveryRate: number|string = res[0].recoveries / res[0].total;
           fatalityRate = (fatalityRate * 100).toFixed(2);
           recoveryRate = (recoveryRate * 100).toFixed(2);
 
@@ -326,13 +333,13 @@ class MongoDBDatabase {
    * @param {Object} queries
    * @return {Promise}
    */
-  getTimeline(queries) {
+  getTimeline(queries: {[key: string]: string}) {
     return new Promise(async (resolve, reject) => {
       await this.connection.then(async (client) => {
         const db = client.db();
         const collection = db.collection('case_informations');
 
-        const filter = {};
+        const filter: {[key: string]: any} = {};
         // accept either region or region_res
         if (queries.region) filter['region_res'] = queries.region.toLowerCase();
         else if (queries.region_res) filter['region_res'] = queries.region_res.toLowerCase();
@@ -453,7 +460,7 @@ class MongoDBDatabase {
    * @param {Object} queries
    * @return {Promise}
    */
-  getFacilities(queries) {
+  getFacilities(queries: {[key: string]: any}) {
     return new Promise(async (resolve, reject) => {
       await this.connection.then(async (client) => {
         const db = client.db();
@@ -485,20 +492,20 @@ class MongoDBDatabase {
    * @param {Object} queries
    * @return {Promise}
    */
-  getFacilitiesSummary(queries) {
+  getFacilitiesSummary(queries: {[key: string]: any}) {
     return new Promise(async (resolve, reject) => {
       await this.connection.then(async (client) => {
         const db = client.db();
         const collection = db.collection('facility_informations');
 
-        const filter = {};
-        const output = {};
+        const filter: {[key: string]: any} = {};
+        const output: {[key: string]: any} = {};
 
         if (queries.region) filter['region'] = queries.region.toLowerCase();
         if (queries.hospital_name) {
           output['hospital_name'] = '$_id';
           filter['cf_name'] = queries.hospital_name.toLowerCase();
-        };
+        }
 
         // Copy the default output after adding hospital name if needed
         Object.assign(output, {
@@ -591,7 +598,7 @@ class MongoDBDatabase {
    * @param {String} dataset
    * @return {Promise}
    */
-  getListOf(field, dataset) {
+  getListOf(field: string, dataset: string) {
     return new Promise(async (resolve, reject) => {
       await this.connection.then(async (client) => {
         const db = client.db();
@@ -644,10 +651,10 @@ class MongoDBDatabase {
             return reject(new Error(`Invalid dataset: ${dataset}`));
         }
 
-        const project = {};
+        const project: {[key: string]: any} = {};
         project[field.toLowerCase()] = 1;
 
-        const output = {_id: 0};
+        const output: {[key: string]: any} = {_id: 0};
 
         // @TODO @DOGGO Make a separate function for this
         // ALIASES FOR JSON RESPONSE
@@ -675,7 +682,7 @@ class MongoDBDatabase {
             {$project: project},
             {
               $group: {
-                _id: `\$${field.toLowerCase()}`,
+                _id: `$${field.toLowerCase()}`,
               },
             },
             {$sort: {_id: 1}},
@@ -697,7 +704,7 @@ class MongoDBDatabase {
    * @param {String} tableName
    * @return {Promise<void>}
    */
-  truncate(tableName) {
+  truncate(tableName: string) {
     return new Promise(async (resolve, reject) => {
       let db;
       await this.connection.then(async (client) => {
@@ -729,7 +736,7 @@ class MongoDBDatabase {
    * @param {Object} fieldValueObj
    * @return {Promise<String>}
    */
-  insert(tableName, fieldValueObj) {
+  insert(tableName: string, fieldValueObj: {[key: string]: any}) {
     return new Promise(async (resolve, reject) => {
       await this.connection.then(async (client) => {
         const db = client.db();
@@ -760,7 +767,7 @@ class MongoDBDatabase {
    * @param {int} batchSize
    * @return {Promise<boolean>}
    */
-  async batchInsertDatabaseFromCSV(csArr, batchSize=10000) {
+  async batchInsertDatabaseFromCSV(csArr: Array<CaseInformation>|Array<FacilityInformation>, batchSize=10000) {
     console.log(`\nPerforming batch insert (batch size: ${batchSize}):`);
     const isSuccess = true;
     let lastRowIndex = 0;
@@ -793,19 +800,21 @@ class MongoDBDatabase {
    * @param {CSVDatabase} csvDatabase
    * @return {Promise<boolean>}
    */
-  async updateDatabaseFromCSV(csvDatabase) {
+  async updateDatabaseFromCSV(csvDatabase: any) {
     console.log('\nBegin Updating Database.');
 
     const cs = await csvDatabase.get();
-    let dbName;
+    let dbName: string;
 
     if (cs[0] instanceof CaseInformation) {
       dbName = 'case_informations';
     } else if (cs[0] instanceof FacilityInformation) {
       dbName = 'facility_informations';
+    } else {
+      throw new Error('[MongoDBDatabase]Cannot Determine DB NAME');
     }
 
-    console.log(`Truncating ${dbName} table, because it causes anomaly when we don\'t.`);
+    console.log(`Truncating ${dbName} table, because it causes anomaly when we don't.`);
     await this.truncate(dbName);
 
     console.log('\nBefore Updating Database: ');
@@ -823,4 +832,4 @@ class MongoDBDatabase {
   }
 }
 
-module.exports = MongoDBDatabase;
+export default MongoDBDatabase;
