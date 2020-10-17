@@ -422,7 +422,7 @@ GET api/facilities?hospital_name={hospital name}
 ### Prerequisites
 * [configured service account](https://developers.google.com/identity/protocols/oauth2/service-account)
 * [Node.js](https://nodejs.org/en/)
-* MySQL
+* [MongoDB](https://www.mongodb.com/)
 
 ### Steps
 
@@ -445,6 +445,8 @@ $ npm run dev
 ```
 
 5. Done
+
+NOTE: You use `/api/updatedatabase` to manually update database (in development mode)
 
 <br>
 
