@@ -89,7 +89,7 @@ const router = express.Router();
   db = await new DatabaseAdapter().init();
   // Initialize Google Auth Token
   await GDriveApi.getAuth().then(async () => {
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.AUTO_UPDATE === 'true') {
       await autoUpdate();
       setInterval(await autoUpdate, ( (1000 * 60) * 60) * updateInterval ); // 1min -> 1 hr -> 24 hrs
     }
