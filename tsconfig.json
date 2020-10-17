@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es5",
+    "sourceMap": true,
+    "allowJs": true,
+    "outDir": "./dist",
+    "strict": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "types": [
+      "node",
+      "jest"
+    ],
+    "typeRoots": [
+      "./types",
+      "./node_modules/@types"
+    ]
+  },
+  "mode": "development",
+  "exclude": [
+    "node_modules",
+    "**/__mocks__/**/*",
+    "**/__tests__/**/*"
+  ],
+  "include": [
+    "**/*.ts"
+  ]
+}

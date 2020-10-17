@@ -3,11 +3,10 @@
 // REFERENCES:
 // GOOGLE DRIVE API V3 DOCS https://developers.google.com/drive/api/v3/
 // Metadata of file https://developers.google.com/drive/api/v3/reference/files
-const {GoogleAuth} = require('google-auth-library');
-const DOH_DATA_DROP_FOLDER_ID = '1w_O-vweBFbqCgzgmCpux2F0HVB4P6ni2';
+import {GoogleAuth, JWT, UserRefreshClient} from 'google-auth-library';
+import GoogleDriveApiFileManager from './GoogleDriveApiFileManager';
 
-const googleDriveApiFileManager = require('./GoogleDriveApiFileManager.js');
-const GoogleDriveApiFileManager = googleDriveApiFileManager.GoogleDriveApiFileManager;
+const DOH_DATA_DROP_FOLDER_ID = '1w_O-vweBFbqCgzgmCpux2F0HVB4P6ni2';
 // If modifying these scopes, delete token.json.
 const SCOPES = ['https://www.googleapis.com/auth/drive.metadata.readonly', 'https://www.googleapis.com/auth/drive.file', 'https://www.googleapis.com/auth/drive'];
 
@@ -15,6 +14,9 @@ const SCOPES = ['https://www.googleapis.com/auth/drive.metadata.readonly', 'http
  * Handles Authorization to Google Drive
  */
 class GoogleDriveApi {
+  private static instance: GoogleDriveApi;
+  auth!: JWT | UserRefreshClient;
+  googleDriveApiFileManager!: GoogleDriveApiFileManager;
   /**
    * Initialize variables and make this class a singleton
    * @return {GoogleDriveApi}
@@ -47,16 +49,16 @@ class GoogleDriveApi {
         // console.log('output: ');
 
         // replace \\n with \n for heroku
-        const privateKey = process.env.PRIVATE_KEY.replace(new RegExp('\\\\n', '\g'), '\n');
+        const privateKey = (process.env.PRIVATE_KEY as string).replace(new RegExp('\\\\n', 'g'), '\n');
         this.auth = new GoogleAuth({
           scopes: SCOPES,
         }).fromJSON({
-          'type': process.env.TYPE,
-          'project_id': process.env.PROJECT_ID,
-          'private_key_id': process.env.PRIVATE_KEY_ID,
+          'type': (process.env.TYPE as string),
+          'project_id': (process.env.PROJECT_ID as string),
+          'private_key_id': (process.env.PRIVATE_KEY_ID as string),
           'private_key': privateKey,
-          'client_email': process.env.CLIENT_EMAIL,
-          'client_id': process.env.CLIENT_ID,
+          'client_email': (process.env.CLIENT_EMAIL as string),
+          'client_id': (process.env.CLIENT_ID as string),
         },
         );
 
@@ -76,12 +78,12 @@ class GoogleDriveApi {
    * @return {boolean}
    */
   isServiceKeysValid() {
-    return process.env.TYPE &&
-      process.env.PROJECT_ID &&
-      process.env.PRIVATE_KEY_ID &&
-      process.env.PRIVATE_KEY &&
-      process.env.CLIENT_EMAIL &&
-      process.env.CLIENT_ID;
+    return (process.env.TYPE as string) &&
+      (process.env.PROJECT_ID as string) &&
+      (process.env.PRIVATE_KEY_ID as string) &&
+      (process.env.PRIVATE_KEY as string) &&
+      (process.env.CLIENT_EMAIL as string) &&
+      (process.env.CLIENT_ID as string);
   }
 
   /**
@@ -102,4 +104,4 @@ class GoogleDriveApi {
   }
 }
 
-exports.GoogleDriveApi = GoogleDriveApi;
+export default GoogleDriveApi;
