@@ -450,11 +450,9 @@ NOTE: You use `/api/updatedatabase` to manually update database (in development 
 
 <br>
 
-API documentation uses:
+API documentation:
 
-[Swagger express ui](https://www.npmjs.com/package/swagger-ui-express) - renders openapi.json
-
-[Optic](https://useoptic.com/) - generates openapi.json
+[Documentation in POSTMAN are available here](https://documenter.getpostman.com/view/12463261/T1LV9jLU?version=latest)
 
 <br>
 
