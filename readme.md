@@ -436,8 +436,6 @@ $ npm install
 
 3. copy .env.example to .env and paste the service key and database credentials respectively
 
-- (Optional import .sql files inside the folder `./src/Database/sql`)
-
 4. Run the project in development:
 
 ```
@@ -486,7 +484,7 @@ API documentation:
 
 ## Authors
 
-* 🐶 **Simperfy(The Doggo)** - [Github](https://github.com/Simperfy)
+* 🐶 **Simperfy** - [Github](https://github.com/Simperfy)
 
 <br>
 
