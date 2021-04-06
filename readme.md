@@ -495,3 +495,7 @@ API documentation:
 ## Acknowledgments
 
 * 💗 [DOH - Philippines](https://www.doh.gov.ph/) - Data Source
+
+## Donate
+
+- ETH: 0x38f0278bB385ce5cce627C8E8085AbA774761169
