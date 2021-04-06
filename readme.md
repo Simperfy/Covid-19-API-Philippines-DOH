@@ -1,5 +1,6 @@
 # Covid-19-API-Philippines-DOH (Beta)
 
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Simperfy/Covid-19-API-Philippines-DOH/Node.js%20CI?style=plastic)
 ![License](https://img.shields.io/github/license/simperfy/Covid-19-API-Philippines-DOH?style=plastic&logo=github)
 ![Last Commit](https://img.shields.io/github/last-commit/simperfy/Covid-19-API-Philippines-DOH?style=plastic&logo=github)
 ![Stars](https://img.shields.io/github/stars/simperfy/Covid-19-API-Philippines-DOH?style=plastic&logo=github)
@@ -466,9 +467,6 @@ API documentation:
 
 <br>
 
----
-
-<br>
 
 ## 🔧 Built With
 * [Node.js](https://nodejs.org) - open source server environment.
@@ -478,23 +476,17 @@ API documentation:
 
 <br>
 
----
-
-<br>
-
 ## Authors
 
 * 🐶 **Simperfy** - [Github](https://github.com/Simperfy)
 
 <br>
 
----
-
-<br>
-
 ## Acknowledgments
 
 * 💗 [DOH - Philippines](https://www.doh.gov.ph/) - Data Source
+
+<br>
 
 ## Donate
 
