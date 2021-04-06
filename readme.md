@@ -1,6 +1,6 @@
 # Covid-19-API-Philippines-DOH (Beta)
 
-[![CodeFactor](https://www.codefactor.io/repository/github/simperfy/covid-19-api-philippines-doh/badge/master)](https://www.codefactor.io/repository/github/simperfy/covid-19-api-philippines-doh/overview/master)
+![CodeFactor Grade](https://img.shields.io/codefactor/grade/github/Simperfy/Covid-19-API-Philippines-DOH?style=plastic)
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Simperfy/Covid-19-API-Philippines-DOH/Node.js%20CI?style=plastic)
 ![License](https://img.shields.io/github/license/simperfy/Covid-19-API-Philippines-DOH?style=plastic&logo=github)
 ![Last Commit](https://img.shields.io/github/last-commit/simperfy/Covid-19-API-Philippines-DOH?style=plastic&logo=github)
