@@ -21,7 +21,6 @@ jest.mock('../../src/GoogleDriveApiClient', () => ({
   default: GoogleDriveApiClient,
 }));
 
-jest.setTimeout(300000);
 test('GET /api/summary', async () => {
   const res = await request(app).get('/api/summary');
 
