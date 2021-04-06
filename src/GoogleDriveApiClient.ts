@@ -3,7 +3,7 @@
 // REFERENCES:
 // GOOGLE DRIVE API V3 DOCS https://developers.google.com/drive/api/v3/
 // Metadata of file https://developers.google.com/drive/api/v3/reference/files
-import {GoogleAuth, JWT, UserRefreshClient} from 'google-auth-library';
+import { GoogleAuth, JWT, UserRefreshClient } from 'google-auth-library';
 import GoogleDriveApiFileManager from './GoogleDriveApiFileManager';
 
 const DOH_DATA_DROP_FOLDER_ID = '1w_O-vweBFbqCgzgmCpux2F0HVB4P6ni2';
@@ -15,8 +15,11 @@ const SCOPES = ['https://www.googleapis.com/auth/drive.metadata.readonly', 'http
  */
 class GoogleDriveApi {
   private static instance: GoogleDriveApi;
+
   auth!: JWT | UserRefreshClient;
+
   googleDriveApiFileManager!: GoogleDriveApiFileManager;
+
   /**
    * Initialize variables and make this class a singleton
    * @return {GoogleDriveApi}
@@ -27,7 +30,6 @@ class GoogleDriveApi {
     }
     return GoogleDriveApi.instance;
   }
-
 
   /**
      * Entry point for the class
@@ -53,14 +55,13 @@ class GoogleDriveApi {
         this.auth = new GoogleAuth({
           scopes: SCOPES,
         }).fromJSON({
-          'type': (process.env.TYPE as string),
-          'project_id': (process.env.PROJECT_ID as string),
-          'private_key_id': (process.env.PRIVATE_KEY_ID as string),
-          'private_key': privateKey,
-          'client_email': (process.env.CLIENT_EMAIL as string),
-          'client_id': (process.env.CLIENT_ID as string),
-        },
-        );
+          type: (process.env.TYPE as string),
+          project_id: (process.env.PROJECT_ID as string),
+          private_key_id: (process.env.PRIVATE_KEY_ID as string),
+          private_key: privateKey,
+          client_email: (process.env.CLIENT_EMAIL as string),
+          client_id: (process.env.CLIENT_ID as string),
+        });
 
         // console.log(this.auth);
         // create file manager as soon as OAuth2 is available
@@ -77,14 +78,12 @@ class GoogleDriveApi {
    * verify service keys are all set in .env file
    * @return {boolean}
    */
-  isServiceKeysValid() {
-    return (process.env.TYPE as string) &&
-      (process.env.PROJECT_ID as string) &&
-      (process.env.PRIVATE_KEY_ID as string) &&
-      (process.env.PRIVATE_KEY as string) &&
-      (process.env.CLIENT_EMAIL as string) &&
-      (process.env.CLIENT_ID as string);
-  }
+  isServiceKeysValid = () => (process.env.TYPE as string)
+      && (process.env.PROJECT_ID as string)
+      && (process.env.PRIVATE_KEY_ID as string)
+      && (process.env.PRIVATE_KEY as string)
+      && (process.env.CLIENT_EMAIL as string)
+      && (process.env.CLIENT_ID as string)
 
   /**
    * Downloads the latest file from DOH DATA DROP ARCHIVES

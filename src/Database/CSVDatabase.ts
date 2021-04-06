@@ -1,3 +1,4 @@
+/* eslint-disable eqeqeq */
 /* eslint-disable max-len,new-cap */
 /* eslint-disable require-jsdoc */
 import csv from 'csvtojson';
@@ -5,13 +6,17 @@ import path from 'path';
 import fs from 'fs';
 import CaseInformation from '../CaseInformation';
 import FacilityInformation from '../FacilityInformation';
-import {filterLatestFacilityData} from '../utils/helper';
+import { filterLatestFacilityData } from '../utils/helper';
 
 class CSVDatabase {
   isConverting!: boolean;
+
   csvClass: any;
+
   CSVDatabaseArray!: any[];
+
   csvFilePath!: string;
+
   converter: any;
 
   async init(CsvClass: any) {
@@ -39,7 +44,7 @@ class CSVDatabase {
       this.isConverting = true;
       const pathToCSV = this.csvFilePath;
       let dateThreshold: Date|number = new Date();
-      dateThreshold = dateThreshold.setDate(dateThreshold.getDate() - (parseInt(process.env.FACILITIES_THRESHOLD as string) || 360));
+      dateThreshold = dateThreshold.setDate(dateThreshold.getDate() - (parseInt(process.env.FACILITIES_THRESHOLD as string, 10) || 360));
 
       let msg = process.env.FACILITIES_THRESHOLD || 'facilities threshold not found in .env, setting to 360';
       msg += '\nIf this causes Out of memory error lower the value to 7 or 30';
@@ -51,63 +56,64 @@ class CSVDatabase {
 
       if (fs.existsSync(pathToCSV)) {
         // Invoking csv returns a promise
-        return this.converter = csv({
+        this.converter = csv({
           trim: true,
         })
-            .fromFile(pathToCSV)
-            .preFileLine((fileLineString: string|string[]) => {
-              return new Promise(async (resolve, reject)=>{
-                if (isFacilityInfo) {
-                  fileLineString = (fileLineString as string).split(',');
-                  // console.log(fileLineString[3] + '\n');
-                  const upDate = new Date(fileLineString[updatedDateIndex]);
-                  if (upDate < (dateThreshold)) resolve('');
-                  else resolve(fileLineString.join(','));
-                } else if (isCaseInfo) {
-                  resolve(<string>fileLineString);
-                } else {
-                  throw new Error('Cannot determine csv data type while parsing csv file.');
-                }
-              });
-            })
-            .then((json) => {
-              let c;
-              json.forEach((row) => {
-                // eslint-disable-next-line new-cap
-                c = new this.csvClass();
-                if (c instanceof FacilityInformation) {
-                  // filter out empty updateddate
-                  if (row.updateddate !== '') {
-                    Object.assign(c, row);
-                    this.CSVDatabaseArray.push(c);
-                  }
-                } else if (c instanceof CaseInformation) {
+          .fromFile(pathToCSV)
+          .preFileLine(async (fileLineString: string) => {
+            if (isFacilityInfo) {
+              const newFileLineString = (fileLineString).split(',');
+              // console.log(fileLineString[3] + '\n');
+              const upDate = new Date(newFileLineString[updatedDateIndex]);
+              if (upDate < (dateThreshold)) return ('');
+              return (newFileLineString.join(','));
+            }
+
+            if (isCaseInfo) {
+              return (fileLineString);
+            }
+            throw new Error('Cannot determine csv data type while parsing csv file.');
+          })
+          .then((json) => {
+            let c;
+            json.forEach((row) => {
+              // eslint-disable-next-line new-cap
+              c = new this.csvClass();
+              if (c instanceof FacilityInformation) {
+                // filter out empty updateddate
+                if (row.updateddate !== '') {
                   Object.assign(c, row);
                   this.CSVDatabaseArray.push(c);
-                } else {
-                  throw new Error('Cannot determine csv type for updateddate');
                 }
-              });
-            })
-            .then(() => {
-              if (this.CSVDatabaseArray[0] instanceof CaseInformation) {
-                console.log('CaseInformation CSV loaded');
-                return true;
-              } else if (this.CSVDatabaseArray[0] instanceof FacilityInformation) {
-                console.log('FacilityInformation CSV loaded');
-                console.log('Grouping results by latest updateddate...');
-                this.CSVDatabaseArray = filterLatestFacilityData(this.CSVDatabaseArray);
-                console.log('Grouping done!');
-                return true;
+              } else if (c instanceof CaseInformation) {
+                Object.assign(c, row);
+                this.CSVDatabaseArray.push(c);
               } else {
-                throw new Error('[CSVDatabase.js]Cannot determine csv data type.');
+                throw new Error('Cannot determine csv type for updateddate');
               }
-            }, (err) => console.log(err));
-      } else {
-        this.isConverting = false;
-        console.error(`Cannot find ${this.csvFilePath}, Did you visit "/api/updateDatabase"?`);
+            });
+          })
+          .then(() => {
+            if (this.CSVDatabaseArray[0] instanceof CaseInformation) {
+              console.log('CaseInformation CSV loaded');
+              return true;
+            } if (this.CSVDatabaseArray[0] instanceof FacilityInformation) {
+              console.log('FacilityInformation CSV loaded');
+              console.log('Grouping results by latest updateddate...');
+              this.CSVDatabaseArray = filterLatestFacilityData(this.CSVDatabaseArray);
+              console.log('Grouping done!');
+              return true;
+            }
+            throw new Error('[CSVDatabase.js]Cannot determine csv data type.');
+          }, (err) => console.log(err));
+
+        return this.converter;
       }
+      this.isConverting = false;
+      console.error(`Cannot find ${this.csvFilePath}, Did you visit "/api/updateDatabase"?`);
     }
+
+    return null;
   }
 
   /**
@@ -134,6 +140,7 @@ class CSVDatabase {
      */
   async filter(field: string, value: string) {
     await this.assureCSIsLoaded();
+    // eslint-disable-next-line eqeqeq
     return this.CSVDatabaseArray.filter((ci) => ci[field] == value);
   }
 
@@ -142,7 +149,7 @@ class CSVDatabase {
      * @param {int} size Max number of entries to return
      * @return {Promise<[CaseInformation]|[FacilityInformation]>}
      */
-  async get(size=this.getSize()) {
+  async get(size = this.getSize()) {
     await this.assureCSIsLoaded();
     return this.CSVDatabaseArray.slice(0, await size);
   }
@@ -168,25 +175,21 @@ class CSVDatabase {
    * @param {String} property Property of Case Information
    * @return {Function}
    */
-  getSortOrder(property: string) {
-    return function(a: any, b: any) {
-      if (a[property] > b[property]) {
-        return 1;
-      } else if (a[property] < b[property]) {
-        return -1;
-      }
-      return 0;
-    };
-  }
+  getSortOrder = (property: string) => (a: any, b: any) => {
+    if (a[property] > b[property]) {
+      return 1;
+    } if (a[property] < b[property]) {
+      return -1;
+    }
+    return 0;
+  };
 
   /**
    * @param {[CaseInformation]} csArr
    * @param {String} caseCode
    * @return {int} position of the case code in the array
    */
-  findIndex(csArr: CaseInformation[], caseCode: string) {
-    return csArr.findIndex((cs) => cs.CaseCode == caseCode);
-  }
+  findIndex = (csArr: CaseInformation[], caseCode: string) => csArr.findIndex((cs) => cs.CaseCode == caseCode)
 }
 
 export default CSVDatabase;

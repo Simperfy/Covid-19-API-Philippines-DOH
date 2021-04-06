@@ -3,6 +3,7 @@ import DatabaseAdapter from './Database/DatabaseAdapter';
 
 class DBLogger {
   private static instance: DBLogger;
+
   dba!: DatabaseAdapter;
 
   async init() {
@@ -24,14 +25,16 @@ class DBLogger {
 
   async insertToUpdateSummary(folderID: string) {
     if ((process.env.DATABASE_TYPE as string).toLowerCase() === 'mysql') {
-      return this.dba.insert('update_history', {'id': 'NULL', 'folder_id': `'${folderID}'`, 'updated_at': 'current_timestamp()'});
-    } else if ((process.env.DATABASE_TYPE as string).toLowerCase() === 'nosql') {
-      return this.dba.insert('update_history', {'folder_id': `${folderID}`, 'updated_at': `${new Date().toLocaleString('en-US', {
-        timeZone: 'Asia/Shanghai',
-      })}`});
-    } else {
-      throw new Error('No DATABASE_TYPE specified');
+      return this.dba.insert('update_history', { id: 'NULL', folder_id: `'${folderID}'`, updated_at: 'current_timestamp()' });
+    } if ((process.env.DATABASE_TYPE as string).toLowerCase() === 'nosql') {
+      return this.dba.insert('update_history', {
+        folder_id: `${folderID}`,
+        updated_at: `${new Date().toLocaleString('en-US', {
+          timeZone: 'Asia/Shanghai',
+        })}`,
+      });
     }
+    throw new Error('No DATABASE_TYPE specified');
   }
 
   /**

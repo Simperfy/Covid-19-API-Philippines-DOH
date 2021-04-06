@@ -11,34 +11,32 @@ import MongoDBDatabase from './MongoDBDatabase';
  */
 class DatabaseAdapter {
   private static instance: DatabaseAdapter;
+
   private db!: MongoDBDatabase;
 
   /**
    * return {DatabaseAdapter} instance of the database adapter
    */
   async init(): Promise<DatabaseAdapter> {
-    return new Promise(async (resolve, reject) => {
-      if (!DatabaseAdapter.instance) {
-        DatabaseAdapter.instance= this;
+    if (!DatabaseAdapter.instance) {
+      DatabaseAdapter.instance = this;
 
-        console.log('Connecting to database');
-        let msg;
-        console.log('Database Type: ' + process.env.DATABASE_TYPE);
-        if (String(process.env.DATABASE_TYPE).toLowerCase() === 'nosql') {
-          msg = await this.connect(new MongoDBDatabase());
-        } else if (String(process.env.DATABASE_TYPE).toLowerCase() === 'mysql') {
-          // msg = await this.connect(new MySQLDatabase());
-          reject(new Error('MYSQL Database is deprecated'));
-        } else {
-          reject(new Error('Please specify "DATABASE_TYPE" in environment variables'));
-        }
-        console.log(msg);
+      console.log('Connecting to database');
+      let msg;
+      console.log(`Database Type: ${process.env.DATABASE_TYPE}`);
+      if (String(process.env.DATABASE_TYPE).toLowerCase() === 'nosql') {
+        msg = await this.connect(new MongoDBDatabase());
+      } else if (String(process.env.DATABASE_TYPE).toLowerCase() === 'mysql') {
+        // msg = await this.connect(new MySQLDatabase());
+        throw new Error('MYSQL Database is deprecated');
+      } else {
+        throw new Error('Please specify "DATABASE_TYPE" in environment variables');
       }
+      console.log(msg);
+    }
 
-      return resolve(DatabaseAdapter.instance);
-    });
+    return DatabaseAdapter.instance;
   }
-
 
   /**
    * @param {*} database Database Class
@@ -186,23 +184,23 @@ class DatabaseAdapter {
     let lowMemory = true;
 
     await this.db.updateDatabaseFromCSV(await new CSVDatabase().init(CaseInformation))
-        .then(async (res: any) => {
-          if (!res) result = false;
+      .then(async (res: any) => {
+        if (!res) result = false;
 
-          while (lowMemory) {
-            const memUsed = process.memoryUsage().heapTotal / 1000000;
-            if (memUsed < 150) lowMemory = false;
-            global.gc();
-          }
-
-          return this.db.updateDatabaseFromCSV(await new CSVDatabase().init(FacilityInformation));
-        })
-        .then((res: any) => {
-          if (!res) result = false;
+        while (lowMemory) {
+          const memUsed = process.memoryUsage().heapTotal / 1000000;
+          if (memUsed < 150) lowMemory = false;
           global.gc();
-        }).catch((err: any) => {
-          throw new Error(err);
-        });
+        }
+
+        return this.db.updateDatabaseFromCSV(await new CSVDatabase().init(FacilityInformation));
+      })
+      .then((res: any) => {
+        if (!res) result = false;
+        global.gc();
+      }).catch((err: any) => {
+        throw new Error(err);
+      });
 
     lowMemory = true;
     while (lowMemory) {
