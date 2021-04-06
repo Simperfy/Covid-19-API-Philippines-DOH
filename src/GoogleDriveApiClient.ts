@@ -69,7 +69,7 @@ class GoogleDriveApi {
         resolve(this.auth);
       } else {
         console.log('Service key is NOT valid!');
-        reject(new Error('There was a problem at service key in .env'));
+        reject(Error('There was a problem at service key in .env'));
       }
     });
   }

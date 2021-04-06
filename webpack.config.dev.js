@@ -1,11 +1,11 @@
 const path = require('path');
 const Dotenv = require('dotenv-webpack');
-const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
 module.exports = {
   target: 'node',
-  mode: 'production',
+  mode: 'development',
   entry: './src/index.ts',
+  devtool: 'source-map',
   output: {
     clean: true,
     path: path.resolve(__dirname, 'dist'),
@@ -14,22 +14,13 @@ module.exports = {
   plugins: [
     new Dotenv({
       path: './.env',
-      systemvars: true,
-      allowEmptyValues: true,
-      safe: true,
     }),
-    new ForkTsCheckerWebpackPlugin(),
   ],
   module: {
     rules: [
       {
         test: /\.ts?$/,
-        use: {
-          loader: 'ts-loader',
-          options: {
-            transpileOnly: true,
-          },
-        },
+        use: 'ts-loader',
         exclude: /node_modules/,
       },
     ],
@@ -37,12 +28,10 @@ module.exports = {
   resolve: {
     extensions: ['.js', '.ts'],
   },
-  externals: {
-    'mongodb-client-encryption': 'mongodb-client-encryption',
+  externalsPresets: {
+    node: true,
   },
   optimization: {
-    minimize: true,
-    moduleIds: 'deterministic',
     runtimeChunk: 'single',
     splitChunks: {
       chunks: 'all',

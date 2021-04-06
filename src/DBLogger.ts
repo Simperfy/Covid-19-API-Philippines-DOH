@@ -34,7 +34,7 @@ class DBLogger {
         })}`,
       });
     }
-    throw new Error('No DATABASE_TYPE specified');
+    throw Error('No DATABASE_TYPE specified');
   }
 
   /**

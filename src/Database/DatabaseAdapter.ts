@@ -28,9 +28,9 @@ class DatabaseAdapter {
         msg = await this.connect(new MongoDBDatabase());
       } else if (String(process.env.DATABASE_TYPE).toLowerCase() === 'mysql') {
         // msg = await this.connect(new MySQLDatabase());
-        throw new Error('MYSQL Database is deprecated');
+        throw Error('MYSQL Database is deprecated');
       } else {
-        throw new Error('Please specify "DATABASE_TYPE" in environment variables');
+        throw Error('Please specify "DATABASE_TYPE" in environment variables');
       }
       console.log(msg);
     }
@@ -55,10 +55,10 @@ class DatabaseAdapter {
    * @param {int} queries.limit
    * @param {int} queries.maxLimit
    * @param {Object|undefined} queries.filters
-   * @return {Promise}
+   * @return {Promise<*>}
    */
   get(queries: {[key: string]: string|number|undefined}) {
-    return this.db.get(queries);
+    return this.db.get(queries) as Promise<any>;
   }
 
   /**
@@ -183,24 +183,20 @@ class DatabaseAdapter {
     let result = true;
     let lowMemory = true;
 
-    await this.db.updateDatabaseFromCSV(await new CSVDatabase().init(CaseInformation))
-      .then(async (res: any) => {
-        if (!res) result = false;
+    let res = await this.db.updateDatabaseFromCSV((await new CSVDatabase().init(new CaseInformation())), 'case_informations');
 
-        while (lowMemory) {
-          const memUsed = process.memoryUsage().heapTotal / 1000000;
-          if (memUsed < 150) lowMemory = false;
-          global.gc();
-        }
+    if (!res) result = false;
 
-        return this.db.updateDatabaseFromCSV(await new CSVDatabase().init(FacilityInformation));
-      })
-      .then((res: any) => {
-        if (!res) result = false;
-        global.gc();
-      }).catch((err: any) => {
-        throw new Error(err);
-      });
+    while (lowMemory) {
+      const memUsed = process.memoryUsage().heapTotal / 1000000;
+      if (memUsed < 150) lowMemory = false;
+      global.gc();
+    }
+
+    res = await this.db.updateDatabaseFromCSV((await new CSVDatabase().init(new FacilityInformation())), 'facility_informations');
+
+    if (!res) result = false;
+    global.gc();
 
     lowMemory = true;
     while (lowMemory) {

@@ -4,6 +4,7 @@ import { getCSVInfoObj } from '../utils/helper';
 
 import CaseInformation from '../CaseInformation';
 import FacilityInformation from '../FacilityInformation';
+import CSVDatabase from './CSVDatabase';
 
 class MongoDBDatabase {
   static instance: MongoDBDatabase;
@@ -32,12 +33,12 @@ class MongoDBDatabase {
           useNewUrlParser: true,
           useUnifiedTopology: true,
         });
-      } catch (err) {
-        throw new Error(`[MongoDBDatabase] ${err}`);
+      } catch (e) {
+        throw Error(`[MongoDBDatabase] ${e.message}`);
       }
     }
 
-    if (await this.connection === undefined) throw new Error('[MongoDBDatabase] Failed to connect.');
+    if (await this.connection === undefined) throw Error('[MongoDBDatabase] Failed to connect.');
 
     return 'Successfully connected to the Mongo Database';
   }
@@ -50,13 +51,13 @@ class MongoDBDatabase {
    * @param {int} queries.limit
    * @param {int} queries.maxLimit
    * @param {Object|undefined} queries.filters
-   * @return {Promise} returns JSON of the result
+   * @return {Promise<*>} returns JSON of the result
    */
   async get(queries: any) {
-    if (queries.month > 12) throw new Error('Error: the month cannot be greater than 12');
-    if (queries.day > 31) throw new Error('Error: the day cannot be greater than 31');
-    if (queries.page < 1 || queries.limit < 1) throw new Error('Error: page or limit query can\'t be less than 1.');
-    if (queries.limit > queries.maxLimit) throw new Error(`Error: limit query can't be greater than ${queries.maxLimit}.`);
+    if (queries.month > 12) throw Error('Error: the month cannot be greater than 12');
+    if (queries.day > 31) throw Error('Error: the day cannot be greater than 31');
+    if (queries.page < 1 || queries.limit < 1) throw Error('Error: page or limit query can\'t be less than 1.');
+    if (queries.limit > queries.maxLimit) throw Error(`Error: limit query can't be greater than ${queries.maxLimit}.`);
 
     this.connection.then(async (client: any) => {
       const db = client.db();
@@ -114,7 +115,7 @@ class MongoDBDatabase {
         const result = collection.find(filter, opt).sort(sortOpt);
         return await result.toArray();
       } catch (e) {
-        throw new Error(e);
+        throw Error(e.message);
       }
     });
   }
@@ -180,7 +181,7 @@ class MongoDBDatabase {
           collection = collection.find(tempObj);
 
           return collection.toArray((err, docs) => {
-            if (err) reject(new Error(err.message));
+            if (err) reject(Error(err.message));
             resolve(docs.length);
           });
         }
@@ -188,7 +189,7 @@ class MongoDBDatabase {
         return collection.countDocuments().then((data) => {
           resolve(data);
           // client.close();
-        }).catch((err) => reject(new Error(err)));
+        }).catch((err) => reject(Error(err)));
       });
     });
   }
@@ -214,7 +215,7 @@ class MongoDBDatabase {
       const result = collection.find(filter, opts);
       return await result.toArray();
     } catch (e) {
-      throw new Error(e.message);
+      throw Error(e.message);
     }
   }
 
@@ -317,7 +318,7 @@ class MongoDBDatabase {
         recoveryRate,
       };
     } catch (e) {
-      throw new Error(e.message);
+      throw Error(e.message);
     }
   }
 
@@ -386,7 +387,7 @@ class MongoDBDatabase {
       ]);
       return await result.toArray();
     } catch (e) {
-      throw new Error(e.message);
+      throw Error(e.message);
     }
   }
 
@@ -442,7 +443,7 @@ class MongoDBDatabase {
       ]);
       return await result.toArray();
     } catch (e) {
-      throw new Error(e.message);
+      throw Error(e.message);
     }
   }
 
@@ -473,7 +474,7 @@ class MongoDBDatabase {
       const result = collection.find(filter, opt).sort({ cf_name: 1 });
       return await result.toArray();
     } catch (e) {
-      throw new Error(e.message);
+      throw Error(e.message);
     }
   }
 
@@ -566,14 +567,14 @@ class MongoDBDatabase {
       ]);
       const res = await result.toArray();
 
-      if (res[0] === undefined) throw new Error('Your query didn\'t match any records.');
+      if (res[0] === undefined) throw Error('Your query didn\'t match any records.');
 
       res[0].occupancy_rate = res[0].beds.total_occupied / (res[0].beds.total_occupied + res[0].beds.total_vacant);
       res[0].occupancy_rate = parseFloat(res[0].occupancy_rate.toFixed(2)) || 0;
 
       return res[0];
     } catch (e) {
-      throw new Error(e.message);
+      throw Error(e.message);
     }
   }
 
@@ -642,7 +643,7 @@ class MongoDBDatabase {
         break;
 
       default:
-        throw new Error(`Invalid dataset: ${dataset}`);
+        throw Error(`Invalid dataset: ${dataset}`);
     }
 
     const project: {[key: string]: any} = {};
@@ -687,7 +688,7 @@ class MongoDBDatabase {
       // console.log(res);
       return res;
     } catch (e) {
-      throw new Error(e.message);
+      throw Error(e.message);
     }
   }
 
@@ -711,7 +712,7 @@ class MongoDBDatabase {
     try {
       await Promise.all(promises);
     } catch (e) {
-      throw new Error(`[MySQLDatabase.js] ${e.message}`);
+      throw Error(`[MySQLDatabase.js] ${e.message}`);
     }
     console.log('Tables Dropped.');
 
@@ -736,7 +737,7 @@ class MongoDBDatabase {
       await collection.insertOne(fieldValueObj, { forceServerObjectId: true });
       return 'Successfully inserted data';
     } catch (e) {
-      throw new Error(e.message);
+      throw Error(e.message);
     }
   }
 
@@ -755,7 +756,7 @@ class MongoDBDatabase {
    * @param {int} batchSize
    * @return {Promise<boolean>}
    */
-  async batchInsertDatabaseFromCSV(csArr: Array<CaseInformation>|Array<FacilityInformation>, batchSize = 10000) {
+  async batchInsertDatabaseFromCSV(csArr: (CaseInformation|FacilityInformation)[], batchSize = 10000) {
     console.log(`\nPerforming batch insert (batch size: ${batchSize}):`);
     const isSuccess = true;
     let lastRowIndex = 0;
@@ -789,19 +790,10 @@ class MongoDBDatabase {
    * @param {CSVDatabase} csvDatabase
    * @return {Promise<boolean>}
    */
-  async updateDatabaseFromCSV(csvDatabase: any) {
+  async updateDatabaseFromCSV(csvDatabase: CSVDatabase, dbName: string) {
     console.log('\nBegin Updating Database.');
 
     const cs = await csvDatabase.get();
-    let dbName: string;
-
-    if (cs[0] instanceof CaseInformation) {
-      dbName = 'case_informations';
-    } else if (cs[0] instanceof FacilityInformation) {
-      dbName = 'facility_informations';
-    } else {
-      throw new Error('[MongoDBDatabase]Cannot Determine DB NAME');
-    }
 
     console.log(`Truncating ${dbName} table, because it causes anomaly when we don't.`);
     await this.truncate(dbName);

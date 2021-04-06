@@ -117,7 +117,7 @@ export function getCSVInfoObj(csBatchArr: any): any {
       });
     });
   } else {
-    throw new Error('Cannot determine CSV Database name');
+    throw Error('Cannot determine CSV Database name');
   }
 
   return csvOBJ;
@@ -154,7 +154,11 @@ export function filterLatestFacilityData(facilityArr: any[]): any {
 }
 
 export function deleteTmpFolder(): any {
-  const filePath = path.join(__dirname, '/../../tmp');
+  // resolve webpack path issues
+  let tmpPath = '../../tmp';
+  if (process.env.NODE_ENV === 'production') tmpPath = '../tmp';
+
+  const filePath = path.join(__dirname, tmpPath);
   fs.stat(filePath, (err, stats) => {
     if (err) return console.log(`tmp folder stat: ${err.message}`);
     fs.rmdir(filePath, { recursive: true }, (err2) => {

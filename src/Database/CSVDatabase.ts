@@ -11,19 +11,30 @@ import { filterLatestFacilityData } from '../utils/helper';
 class CSVDatabase {
   isConverting!: boolean;
 
-  csvClass: any;
+  csvClass: CaseInformation|FacilityInformation|unknown;
 
-  CSVDatabaseArray!: any[];
+  CSVDatabaseArray!: (CaseInformation|FacilityInformation)[];
 
   csvFilePath!: string;
 
   converter: any;
 
-  async init(CsvClass: any) {
+  async init(CsvClass: CaseInformation|FacilityInformation) {
     this.isConverting = false;
     this.csvClass = CsvClass;
     this.CSVDatabaseArray = [];
-    this.csvFilePath = path.join(__dirname, `../../tmp/${this.csvClass.getFilename()}`);
+
+    // resolve webpack path issues
+    let tmpPath = '../../tmp';
+    if (process.env.NODE_ENV === 'production') tmpPath = '../tmp';
+
+    if (this.csvClass instanceof CaseInformation) {
+      this.csvFilePath = path.join(__dirname, `${tmpPath}/${CaseInformation.getFilename()}`);
+    } else if (this.csvClass instanceof FacilityInformation) {
+      this.csvFilePath = path.join(__dirname, `${tmpPath}/${FacilityInformation.getFilename()}`);
+    } else {
+      throw Error('CSVDatabase type not found');
+    }
 
     await this.convertCsvToJson();
     return this;
@@ -50,8 +61,8 @@ class CSVDatabase {
       msg += '\nIf this causes Out of memory error lower the value to 7 or 30';
       console.log('Facilities Threshold: ', msg);
 
-      const isFacilityInfo = ((await new this.csvClass()) instanceof FacilityInformation);
-      const isCaseInfo = ((await new this.csvClass()) instanceof CaseInformation);
+      const isFacilityInfo = (this.csvClass instanceof FacilityInformation);
+      const isCaseInfo = (this.csvClass instanceof CaseInformation);
       const updatedDateIndex = 3;
 
       if (fs.existsSync(pathToCSV)) {
@@ -72,24 +83,25 @@ class CSVDatabase {
             if (isCaseInfo) {
               return (fileLineString);
             }
-            throw new Error('Cannot determine csv data type while parsing csv file.');
+            throw Error('Cannot determine csv data type while parsing csv file.');
           })
           .then((json) => {
-            let c;
             json.forEach((row) => {
+              let c;
               // eslint-disable-next-line new-cap
-              c = new this.csvClass();
-              if (c instanceof FacilityInformation) {
+              if (this.csvClass instanceof FacilityInformation) {
+                c = new FacilityInformation();
                 // filter out empty updateddate
                 if (row.updateddate !== '') {
                   Object.assign(c, row);
                   this.CSVDatabaseArray.push(c);
                 }
-              } else if (c instanceof CaseInformation) {
+              } else if (this.csvClass instanceof CaseInformation) {
+                c = new CaseInformation();
                 Object.assign(c, row);
                 this.CSVDatabaseArray.push(c);
               } else {
-                throw new Error('Cannot determine csv type for updateddate');
+                throw Error('Cannot determine csv type for updateddate');
               }
             });
           })
@@ -104,7 +116,7 @@ class CSVDatabase {
               console.log('Grouping done!');
               return true;
             }
-            throw new Error('[CSVDatabase.js]Cannot determine csv data type.');
+            throw Error('[CSVDatabase.js]Cannot determine csv data type.');
           }, (err) => console.log(err));
 
         return this.converter;

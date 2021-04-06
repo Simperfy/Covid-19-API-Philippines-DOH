@@ -35,5 +35,7 @@ module.exports = {
         tsx: 'never',
       },
     ],
+    'no-shadow': 'off',
+    '@typescript-eslint/no-shadow': ['error'],
   },
 };

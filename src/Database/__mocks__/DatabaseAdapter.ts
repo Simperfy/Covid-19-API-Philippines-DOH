@@ -36,10 +36,10 @@ class DatabaseAdapter {
    * @return {Promise}
    */
   get = async (queries: any) => {
-    if (queries.month > 12) throw new Error('Error: the month cannot be greater than 12');
-    if (queries.day > 31) throw new Error('Error: the day cannot be greater than 31');
-    if (queries.page < 1 || queries.limit < 1) throw new Error('Error: page or limit query can\'t be less than 1.');
-    if (queries.limit > queries.maxLimit) throw new Error(`Error: limit query can't be greater than ${queries.maxLimit}.`);
+    if (queries.month > 12) throw Error('Error: the month cannot be greater than 12');
+    if (queries.day > 31) throw Error('Error: the day cannot be greater than 31');
+    if (queries.page < 1 || queries.limit < 1) throw Error('Error: page or limit query can\'t be less than 1.');
+    if (queries.limit > queries.maxLimit) throw Error(`Error: limit query can't be greater than ${queries.maxLimit}.`);
 
     const res = [];
 

@@ -3,17 +3,15 @@ import * as readline from 'readline';
 import fs from 'fs';
 import path from 'path';
 import { google } from 'googleapis';
-import { JWT, OAuth2Client, UserRefreshClient } from 'google-auth-library';
+import { OAuth2Client } from 'google-auth-library';
+import { tall } from 'tall';
 import PDFHandler from './PDFHandler';
 import { DOWNLOAD_STATUS, DOWNLOADED_FILE_ALIASES } from './utils/enums';
 import { filesToSearch as FILES_TO_SEARCH } from './utils/constants';
 import { getRequiredFiles } from './utils/helper';
 import DBLogger from './DBLogger';
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const urlExpander = require('expand-url');
-
-const TMP_PATH = path.join(__dirname, '/../tmp');
+const TMP_PATH = path.join(__dirname, '../tmp');
 const DATA_DROP_LINK = 'http://bit.ly/DataDropPH';
 
 /**
@@ -102,16 +100,15 @@ class GoogleDriveApiFileManager {
     });
 
     const { files } = res.data;
-    if (files.length) {
-      console.log('\nFiles in root folder:');
-      files.forEach((file: any) => {
-        console.log(`${file.name} ${file.id}`);
-      });
 
-      return files;
-    }
+    if (files.length === 0) throw Error('No Files Found');
 
-    throw new Error('No Files Found');
+    console.log('\nFiles in root folder:');
+    files.forEach((file: any) => {
+      console.log(`${file.name} ${file.id}`);
+    });
+
+    return files;
   }
 
   /**
@@ -132,7 +129,7 @@ class GoogleDriveApiFileManager {
     if (res.length === 1) {
       return res[0].id;
     }
-    throw new Error('[googleDriveApiFileManager.js] Folder this month couldn\'t be found');
+    throw Error('[googleDriveApiFileManager.js] Folder this month couldn\'t be found');
   }
 
   /**
@@ -148,27 +145,23 @@ class GoogleDriveApiFileManager {
     const { auth } = this;
     const drive = google.drive({ version: 'v3', auth });
 
-    return new Promise((resolve, reject) => {
-      drive.files.list({
-        q: `'${id}' in parents`,
-        orderBy: 'name desc',
-        fields: 'nextPageToken, files(id, name)',
-      }, (err, res: any) => {
-        if (err) return reject(new Error(`The API returned an error: ${err}`));
-        const { files } = res.data;
-        if (files.length) {
-          console.log('\nFiles inside this month\'s folder:');
-          files.forEach((file: any) => {
-            console.log(`${file.name} ${file.id}`);
-          });
-          resolve(files[0]);
-        } else {
-          console.log('No files found.');
-          return reject(new Error('[googleDriveApiFileManager.js] No files found in this month\'s folder'));
-        }
+    drive.files.list({
+      q: `'${id}' in parents`,
+      orderBy: 'name desc',
+      fields: 'nextPageToken, files(id, name)',
+    }, (err, res: any) => {
+      if (err) throw Error(`The API returned an error: ${err}`);
+      const { files } = res.data;
+      if (files.length) {
+        console.log('\nFiles inside this month\'s folder:');
+        files.forEach((file: any) => {
+          console.log(`${file.name} ${file.id}`);
+        });
+        return files[0];
+      }
 
-        return null;
-      });
+      console.log('No files found.');
+      throw Error('[googleDriveApiFileManager.js] No files found in this month\'s folder');
     });
   }
 
@@ -185,33 +178,28 @@ class GoogleDriveApiFileManager {
     const drive = google.drive({ version: 'v3', auth });
     const searchString = 'Case Information.csv';
 
-    return new Promise((resolve, reject) => {
-      drive.files.list({
-        q: `'${id}' in parents`,
-        orderBy: 'name',
-        fields: 'nextPageToken, files(id, name)',
-      }, (err, { data }: any) => {
-        if (err) return reject(new Error(`The API returned an error: ${err}`));
-        const { files } = data;
-        if (files.length) {
-          console.log(`\nFiltering "${searchString}":`);
-          const res = files.filter((file: any) => {
-            console.log(`${(file.name.search(searchString)) !== -1} : ${file.name}`);
-            return ((file.name.search(searchString)) !== -1);
-          });
+    drive.files.list({
+      q: `'${id}' in parents`,
+      orderBy: 'name',
+      fields: 'nextPageToken, files(id, name)',
+    }, (err, { data }: any) => {
+      if (err) throw Error(`The API returned an error: ${err}`);
+      const { files } = data;
+      if (files.length) {
+        console.log(`\nFiltering "${searchString}":`);
+        const res = files.filter((file: any) => {
+          console.log(`${(file.name.search(searchString)) !== -1} : ${file.name}`);
+          return ((file.name.search(searchString)) !== -1);
+        });
 
-          if (res.length === 1) {
-            resolve(res[0]);
-          } else {
-            return reject(new Error(`[googleDriveApiFileManager.js] No results from search. Search String = ${searchString}`));
-          }
-        } else {
-          console.log('No files found.');
-          return reject(new Error('[googleDriveApiFileManager.js] No files found in latest folder'));
+        if (res.length === 1) {
+          return res[0];
         }
+        throw Error(`[googleDriveApiFileManager.js] No results from search. Search String = ${searchString}`);
+      }
 
-        return null;
-      });
+      console.log('No files found.');
+      throw Error('[googleDriveApiFileManager.js] No files found in latest folder');
     });
   }
 
@@ -222,44 +210,48 @@ class GoogleDriveApiFileManager {
    * @param {String} name Name of the file that will be downloaded
    * @return {Promise<String>} filePath to the downloaded file
    */
-  async downloadFile(fileObj: any, name = 'Data.csv') {
-    console.log(`\nDOWNLOADING FILE: ${fileObj.name}`);
+  async downloadFile(fileObj: any, name = 'Data.csv'): Promise<string> {
+    try {
+      console.log(`\nDOWNLOADING FILE: ${fileObj.name}`);
 
-    const { auth } = this;
-    const drive = google.drive({ version: 'v3', auth });
-    const res: any = await drive.files
-      .get({ fileId: fileObj.id, alt: 'media' }, { responseType: 'stream' }).catch((err) => console.log(err));
-    await fs.promises.mkdir(TMP_PATH, { recursive: true });
-    const filePath = `${TMP_PATH}/${name}`;
+      const { auth } = this;
+      const drive = google.drive({ version: 'v3', auth });
+      const res: any = await drive.files
+        .get({ fileId: fileObj.id, alt: 'media' }, { responseType: 'stream' }).catch((err) => console.log(err));
+      await fs.promises.mkdir(TMP_PATH, { recursive: true });
+      const filePath = `${TMP_PATH}/${name}`;
 
-    console.log(`\nSaving to ${filePath}`);
-    const dest = fs.createWriteStream(filePath);
-    let progress = 0;
+      console.log(`\nSaving to ${filePath}`);
+      const dest = fs.createWriteStream(filePath);
+      let progress = 0;
 
-    return new Promise((resolve, reject) => {
-      res.data
-        .on('end', () => {
-          console.log(`\nDone downloading file. ${fileObj.name}`);
-          resolve(filePath);
-        })
-        .on('error', (err: Error) => {
-          console.error('Error downloading file.');
-          return reject(new Error(`[googleDriveApiFileManager.js] ${err}`));
-        })
-        .on('data', (d: any) => {
-          progress += d.length;
-          if (process.stdout.isTTY) {
-            readline.clearLine(process.stdout, 0);
-            readline.cursorTo(process.stdout, 0);
-            process.stdout.write(`Downloaded ${progress} bytes`);
-          }
-        })
-        .pipe(dest);
+      return new Promise((resolve, reject) => {
+        res.data
+          .on('end', () => {
+            console.log(`\nDone downloading file. ${fileObj.name}`);
+            resolve(filePath);
+          })
+          .on('error', (err: Error) => {
+            console.error('Error downloading file.');
+            reject(Error(`[googleDriveApiFileManager.js] ${err}`));
+          })
+          .on('data', (d: any) => {
+            progress += d.length;
+            if (process.stdout.isTTY) {
+              readline.clearLine(process.stdout, 0);
+              readline.cursorTo(process.stdout, 0);
+              process.stdout.write(`Downloaded ${progress} bytes`);
+            }
+          })
+          .pipe(dest);
 
-      dest.on('finish', () => {
-        dest.close();
+        dest.on('finish', () => {
+          dest.close();
+        });
       });
-    });
+    } catch (e) {
+      throw Error(`Error occured while downloading ${fileObj.name}`);
+    }
   }
 
   /**
@@ -312,18 +304,16 @@ class GoogleDriveApiFileManager {
    * @return {Promise<void>}
    */
   async downloadLatestPDF() {
-    urlExpander.expand(DATA_DROP_LINK, async (err: Error, longUrl: string) => {
-      if (err) throw new Error(`[GoogleDriveApiFileManager.js] ${err}`);
+    try {
+      const longUrl = await tall(DATA_DROP_LINK);
       const folderID = this.extractFolderIDFromURL(longUrl);
       console.log(`Downloading latest pdf from folder id: ${folderID}`);
-      try {
-        const files = await this.getFilesInRootFolder(folderID);
-        console.log(files);
-        await this.downloadFile(files[0], 'latest.pdf');
-      } catch (err2) {
-        console.log('[GoogleDriveApiFileManager.js] error while downloading latest pdf');
-      }
-    });
+      const files = await this.getFilesInRootFolder(folderID);
+      console.log(files);
+      return await this.downloadFile(files[0], 'latest.pdf');
+    } catch (e) {
+      throw Error('[GoogleDriveApiFileManager.js] error while downloading latest pdf');
+    }
   }
 
   /**
@@ -336,49 +326,47 @@ class GoogleDriveApiFileManager {
       const p = new PDFHandler();
       const shortLink = await p.getLatestFolderLink();
       console.log(`\nshortUrl: ${shortLink}`);
-      urlExpander.expand(shortLink, async (err: Error, longUrl: string) => {
-        if (err) throw new Error(`[GoogleDriveApiFileManager.js] ${err}`);
-        console.log(`Long url: ${longUrl}`);
-        const folderID = this.extractFolderIDFromURL(longUrl);
-        const dbLogger = await new DBLogger().init();
-        const previousFolderID = await dbLogger.getLatestFolderID();
 
-        if (folderID === previousFolderID && (process.env.BYPASS_FOLDERID_CHECK as string).toLowerCase() === 'false') {
-          console.log('\nPrevious folder ID is the same as target folder ID');
-          console.log('Skipping the download of csv file');
-          return DOWNLOAD_STATUS.DOWNLOAD_SKIPPED;
+      const longUrl = await tall(shortLink);
+      console.log(`Long url: ${longUrl}`);
+      const folderID = this.extractFolderIDFromURL(longUrl);
+      const dbLogger = await new DBLogger().init();
+      const previousFolderID = await dbLogger.getLatestFolderID();
+
+      if (folderID === previousFolderID && (process.env.BYPASS_FOLDERID_CHECK as string).toLowerCase() === 'false') {
+        console.log('\nPrevious folder ID is the same as target folder ID');
+        console.log('Skipping the download of csv file');
+        return DOWNLOAD_STATUS.DOWNLOAD_SKIPPED;
+      }
+
+      console.log(`\nFolder ID: ${folderID}`);
+      console.log('Logging folder id...');
+      await dbLogger.insertToUpdateSummary(folderID);
+
+      const files = await this.getFilesInRootFolder(folderID);
+      const reqFiles = getRequiredFiles(files, FILES_TO_SEARCH);
+
+      // @TODO @DOGGO Make a function for adding alias
+      const reqFilesWithAliases = reqFiles.map((file: any) => {
+        let { alias } = file;
+
+        if (file.name.search(FILES_TO_SEARCH[0]) !== -1) { // case information
+          alias = DOWNLOADED_FILE_ALIASES.CASE_INFORMATION;
+        } else if (file.name.search(FILES_TO_SEARCH[1]) !== -1) { // DOH data collect - daily report
+          alias = DOWNLOADED_FILE_ALIASES.DAILY_REPORT;
         }
 
-        console.log(`\nFolder ID: ${folderID}`);
-        console.log('Logging folder id...');
-        await dbLogger.insertToUpdateSummary(folderID);
-
-        const files = await this.getFilesInRootFolder(folderID);
-        const reqFiles = getRequiredFiles(files, FILES_TO_SEARCH);
-
-        // @TODO @DOGGO Make a function for adding alias
-        const reqFilesWithAliases = reqFiles.map((file: any) => {
-          let { alias } = file;
-
-          if (file.name.search(FILES_TO_SEARCH[0]) !== -1) { // case information
-            alias = DOWNLOADED_FILE_ALIASES.CASE_INFORMATION;
-          } else if (file.name.search(FILES_TO_SEARCH[1]) !== -1) { // DOH data collect - daily report
-            alias = DOWNLOADED_FILE_ALIASES.DAILY_REPORT;
-          }
-
-          return { ...file, alias };
-        });
-
-        if (files.length < 0) return new Error('[GoogleDriveApiFileManager.js] Error no files found.');
-
-        await this.downloadFiles(reqFilesWithAliases);
-        return DOWNLOAD_STATUS.DOWNLOADED_LATEST_FILE_SUCCESS;
+        return { ...file, alias };
       });
+
+      if (files.length < 0) return Error('[GoogleDriveApiFileManager.js] Error no files found.');
+
+      await this.downloadFiles(reqFilesWithAliases);
+      return DOWNLOAD_STATUS.DOWNLOADED_LATEST_FILE_SUCCESS;
     } catch (err) {
+      console.log(`Error downloading latest file from data drop ${err.message}`);
       return DOWNLOAD_STATUS.DOWNLOADED_LATEST_FILE_FAILED;
     }
-
-    return DOWNLOAD_STATUS.DOWNLOADED_LATEST_FILE_FAILED;
   }
 
   /**
@@ -398,7 +386,7 @@ class GoogleDriveApiFileManager {
       case DOWNLOAD_STATUS.DOWNLOADED_LATEST_FILE_SUCCESS:
         return DOWNLOAD_STATUS.DOWNLOADED_LATEST_FILE_SUCCESS;
       default:
-        throw new Error('Download Status Undefined');
+        throw Error('Download Status Undefined');
     }
   }
 

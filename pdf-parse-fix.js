@@ -1,9 +1,4 @@
-/* crack strapi
- strapi enterprise cracker script
-*/
-
-// node_modules\strapi\lib\utils\ee.js
-
+// fix pdf-parse for webpack
 const fs = require('fs');
 
 const eePath = './node_modules/pdf-parse/index.js';
