@@ -1,16 +1,13 @@
+/* eslint-disable no-undef */
 /* eslint-disable max-len,require-jsdoc */
-console.log = () => null; // disable logs
 
 import dotenv from 'dotenv';
-dotenv.config();
 
 import DatabaseAdapter from '../../../src/Database/DatabaseAdapter';
 
-/* jest.mock('../../../src/Database/MySQLDatabase');
-
-const mockConnect = jest.fn();
-MySQLDatabase.prototype.connect = mockConnect;
-mockConnect.mockReturnValue(Promise.resolve('DB Connection Mocked!'));*/
+// disable logs
+console.log = () => null;
+dotenv.config();
 
 test('Should be a singleton', async () => {
   const databaseAdapter1: DatabaseAdapter = await new DatabaseAdapter().init();
@@ -18,5 +15,4 @@ test('Should be a singleton', async () => {
 
   expect(databaseAdapter1).toBe(databaseAdapter2);
   databaseAdapter1.endConnection();
-  // expect(mockConnect).toHaveBeenCalled();
 });

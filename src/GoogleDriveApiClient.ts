@@ -44,34 +44,31 @@ class GoogleDriveApi {
      * given callback function.
      */
   async authorize() {
-    return new Promise((resolve, reject) => {
-      console.log('\nCheck if Service key exists...');
-      if (this.isServiceKeysValid()) {
-        console.log('Service key is valid!');
-        // console.log('output: ');
+    console.log('\nCheck if Service key exists...');
+    if (this.isServiceKeysValid()) {
+      console.log('Service key is valid!');
+      // console.log('output: ');
 
-        // replace \\n with \n for heroku
-        const privateKey = (process.env.PRIVATE_KEY as string).replace(new RegExp('\\\\n', 'g'), '\n');
-        this.auth = new GoogleAuth({
-          scopes: SCOPES,
-        }).fromJSON({
-          type: (process.env.TYPE as string),
-          project_id: (process.env.PROJECT_ID as string),
-          private_key_id: (process.env.PRIVATE_KEY_ID as string),
-          private_key: privateKey,
-          client_email: (process.env.CLIENT_EMAIL as string),
-          client_id: (process.env.CLIENT_ID as string),
-        });
+      // replace \\n with \n for heroku
+      const privateKey = (process.env.PRIVATE_KEY as string).replace(new RegExp('\\\\n', 'g'), '\n');
+      this.auth = new GoogleAuth({
+        scopes: SCOPES,
+      }).fromJSON({
+        type: (process.env.TYPE as string),
+        project_id: (process.env.PROJECT_ID as string),
+        private_key_id: (process.env.PRIVATE_KEY_ID as string),
+        private_key: privateKey,
+        client_email: (process.env.CLIENT_EMAIL as string),
+        client_id: (process.env.CLIENT_ID as string),
+      });
 
-        // console.log(this.auth);
-        // create file manager as soon as OAuth2 is available
-        this.googleDriveApiFileManager = new GoogleDriveApiFileManager(this.auth, DOH_DATA_DROP_FOLDER_ID);
-        resolve(this.auth);
-      } else {
-        console.log('Service key is NOT valid!');
-        reject(Error('There was a problem at service key in .env'));
-      }
-    });
+      // console.log(this.auth);
+      // create file manager as soon as OAuth2 is available
+      this.googleDriveApiFileManager = new GoogleDriveApiFileManager(this.auth, DOH_DATA_DROP_FOLDER_ID);
+      return this.auth;
+    }
+    console.log('Service key is NOT valid!');
+    throw Error('There was a problem at service key in .env');
   }
 
   /**
