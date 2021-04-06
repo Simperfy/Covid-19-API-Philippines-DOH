@@ -20,7 +20,7 @@ class PDFHandler {
     const { text } = parsedPDF;
 
     const symbol = text.match(REGEX);
-    if (symbol === null) throw '[PDFHandler.js] Regex Didn\'t matched anything';
+    if (symbol === null) throw Error('[PDFHandler.js] Regex Didn\'t matched anything');
     console.log(`Regex Matches: ${symbol[0]}`);
     return symbol[0];
   }
