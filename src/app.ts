@@ -1,27 +1,23 @@
 /* eslint-disable max-len */
-import dotenv from 'dotenv';
-dotenv.config();
 import cors from 'cors';
 import morgan from 'morgan';
 import compression from 'compression';
 import apicache from 'apicache';
-// Swagger api docs
-// const swaggerUI = require('swagger-ui-express');
-// const openApiJson = require('./openapi.json');
 // GOOGLE DRIVE VARS
-import GoogleDriveApi from './GoogleDriveApiClient';
-const GDriveApi = new GoogleDriveApi();
-// SERVER VARS
 import express from 'express';
-const app: express.Application = express();
+import GoogleDriveApi from './GoogleDriveApiClient';
+// SERVER VARS
 // Database vars
 import DatabaseAdapter from './Database/DatabaseAdapter';
 // Database Logger
 import DBLogger from './DBLogger';
 // Enums
-import {DOWNLOAD_STATUS as downloadStatus} from './utils/enums';
+import { DOWNLOAD_STATUS as downloadStatus } from './utils/enums';
 // helpers
-import {deleteTmpFolder} from './utils/helper';
+import { deleteTmpFolder } from './utils/helper';
+
+const GDriveApi = new GoogleDriveApi();
+const app: express.Application = express();
 // Express related vars
 
 const updateInterval = parseFloat(process.env.UPDATE_INTERVAL as string) || 24;
@@ -36,14 +32,8 @@ interface jsonRespInterface {
 // ./INTERFACES
 
 let jsonRespStructure: jsonRespInterface = {
-  'data': [],
+  data: [],
 };
-
-// swaggerUI.setup Options
-// const options = {
-//   customCss: '.swagger-ui .topbar { display: none }',
-//   customSiteTitle: 'Covid-19 Philippines API DOH',
-// };
 
 // Middlewares
 app.use(cors());
@@ -57,24 +47,27 @@ if (process.env.NODE_ENV !== 'development') { // only use cache in production
   }).middleware;
   app.use(cache('6 hours'));
 }
-app.use(morgan((tokens: any, req : express.Request, res : express.Response) => { // HTTP Logger
-  return [
-    '[' + new Date().toLocaleString('en-US', {
-      timeZone: 'Asia/Shanghai',
-    }) + ']',
-    `\x1b[35m${tokens.method(req, res)}\x1b[0m`,
-    `\x1b[4m"${tokens.url(req, res)}\x1b[0m"`,
-    `\x1b[36m${tokens.status(req, res)}\x1b[0m`,
-    tokens.res(req, res, 'content-length'), '-',
-    tokens['response-time'](req, res), 'ms',
-  ].join(' ');
+
+// HTTP Logger
+app.use(morgan((tokens: any, req : express.Request, res : express.Response) => {
+  const morganFormat = [`[${new Date().toLocaleString('en-US', {
+    timeZone: 'Asia/Shanghai',
+  })}]`,
+  `\x1b[35m${tokens.method(req, res)}\x1b[0m`,
+  `\x1b[4m"${tokens.url(req, res)}\x1b[0m"`,
+  `\x1b[36m${tokens.status(req, res)}\x1b[0m`,
+  tokens.res(req, res, 'content-length'), '-',
+  tokens['response-time'](req, res), 'ms',
+  ];
+
+  return morganFormat.join(' ');
 }));
 // Custom middleware
 app.use(async (req, res, next) => {
   const dbLogger = await new DBLogger().init();
   // Clear data before every request
   jsonRespStructure = {
-    'data': [],
+    data: [],
   };
   // add last_update to json response
   jsonRespStructure.last_update = await dbLogger.getLastUpdateDate();
@@ -84,24 +77,6 @@ app.use(async (req, res, next) => {
 // eslint-disable-next-line new-cap
 const router = express.Router();
 
-(async () => {
-  // Initialize Database
-  db = await new DatabaseAdapter().init();
-  // Initialize Google Auth Token
-  await GDriveApi.getAuth().then(async () => {
-    if (process.env.AUTO_UPDATE === 'true') {
-      await autoUpdate();
-      setInterval(await autoUpdate, ( (1000 * 60) * 60) * updateInterval ); // 1min -> 1 hr -> 24 hrs
-    }
-  }).catch((err) => {
-    if (err.err) {
-      console.log('\n' + err.err);
-    } else {
-      console.log('\n' + err);
-    }
-  });
-})();
-
 /**
  * Auto update function
  * @return {Promise<void>}
@@ -110,26 +85,22 @@ async function autoUpdate() {
   // @TODO @DOGGO this needs heavy refactoring
   let shouldSkip = false;
   console.log('\nAuto Update Initialized');
-  console.log('Interval hr: ' + updateInterval);
-  await GDriveApi.downloadLatestFile().then((data) => {
-    if (data === downloadStatus.DOWNLOAD_SKIPPED) {
-      shouldSkip = (process.env.DISABLE_SKIP_DATABASE_UPDATE as string).toLowerCase() !== 'true';
-      console.log('Skipping download of files');
-    } else {
-      console.log('download status: ', data);
-    }
-  }).catch((err) => {
-    console.log('Error Downloading Latest Files: ' + err);
-  });
+  console.log(`Interval hr: ${updateInterval}`);
+
+  const data = await GDriveApi.downloadLatestFile();
+  if (!data) throw Error('Error downloading latest files');
+  if (data === downloadStatus.DOWNLOAD_SKIPPED) {
+    shouldSkip = (process.env.DISABLE_SKIP_DATABASE_UPDATE as string).toLowerCase() !== 'true';
+    console.log('Skipping download of files');
+  } else {
+    console.log('download status: ', data);
+  }
 
   console.log('\nSKIP? ', shouldSkip);
   if (!shouldSkip) {
-    await db.updateDatabaseFromCSV().then((data) => {
-      if (data === true) console.log('Database Updated Successfully');
-      else console.log('Something went wrong while updating database');
-    }).catch((err) => {
-      console.log('Error Updating Database: ' + err);
-    });
+    const data2 = await db.updateDatabaseFromCSV();
+    if (data2 === true) console.log('Database Updated Successfully');
+    else throw Error('Something went wrong while updating database');
   }
 
   if ((process.env.DISABLE_TMP_DELETION as string).toLowerCase() !== 'true') {
@@ -140,13 +111,21 @@ async function autoUpdate() {
   }
 }
 
+(async () => {
+  // Initialize Database
+  db = await new DatabaseAdapter().init();
+  // Initialize Google Auth Token
+  await GDriveApi.getAuth();
+  if (process.env.AUTO_UPDATE === 'true') {
+    await autoUpdate();
+    setInterval(await autoUpdate, ((1000 * 60) * 60) * updateInterval); // 1min -> 1 hr -> 24 hrs
+  }
+})();
+
 router.get('/updateDatabase', async (req, res) => {
   if (process.env.NODE_ENV === 'development') {
-    await autoUpdate().then(() => {
-      res.json({'success': true});
-    }).catch((err) => {
-      res.json({'success': false});
-    });
+    await autoUpdate();
+    res.json({ success: true });
   } else {
     res.send('You cannot manually update database in production.');
   }
@@ -157,46 +136,31 @@ router.get('/filter/:field/:value', async (req, res) => {
   jsonRespStructure.WARNING = 'DEPRECATED please use /api/get?field=value instead';
   jsonRespStructure.result_count = jsonRespStructure.data.length;
   res.json(jsonRespStructure);
-  /* let field = req.params.field.trim();
-  let value = req.params.value.trim();
-
-  if (field === 'age') value = parseInt(value);
-  if (field === 'region') {
-    field = 'region_res';
-    value = value.toLowerCase();
-  }
-
-  await db.filter(field, value).then((data) => {
-    jsonRespStructure.data = data;
-    jsonRespStructure.WARNING = 'DEPRECATED please use /api/get?field=value instead';
-    jsonRespStructure.result_count = data.length;
-    res.json(jsonRespStructure);
-  }).catch((err) => {
-    jsonRespStructure.error = err.message;
-    res.json(jsonRespStructure);
-  });*/
 });
 
 router.get('/get', async (req: express.Request, res: express.Response) => {
-  const month = req.query.month;
-  const day = req.query.day;
-  const page = parseInt(req.query.page as string) || 1;
-  const limit = parseInt(req.query.limit as string) || maxLimit;
+  const { month } = req.query;
+  const { day } = req.query;
+  const page = parseInt(req.query.page as string, 10) || 1;
+  const limit = parseInt(req.query.limit as string, 10) || maxLimit;
 
   delete req.query.month;
   delete req.query.day;
   delete req.query.page;
   delete req.query.limit;
 
-  const queries: any = {limit: limit, month: month, day: day, page: page, maxLimit: maxLimit, filters: req.query};
+  const queries: any = {
+    limit, month, day, page, maxLimit, filters: req.query,
+  };
 
-  await db.get(queries).then(async (data: any) => {
+  try {
+    const data = await db.get(queries);
     jsonRespStructure.data = data;
     const dbCount: number = await db.count('case_informations');
     const maxPage = Math.ceil(dbCount / limit);
 
     if (dbCount === 0) {
-      jsonRespStructure.error = `Error: There's no data found found.`;
+      jsonRespStructure.error = 'Error: There\'s no data found found.';
       return res.json(jsonRespStructure);
     }
 
@@ -206,10 +170,10 @@ router.get('/get', async (req: express.Request, res: express.Response) => {
     }
 
     jsonRespStructure.pagination = {
-      'previous_page': page - 1,
-      'next_page': page + 1,
-      'limit': limit,
-      'max_page': maxPage,
+      previous_page: page - 1,
+      next_page: page + 1,
+      limit,
+      max_page: maxPage,
     };
 
     if (jsonRespStructure.pagination.previous_page <= 0) {
@@ -221,30 +185,34 @@ router.get('/get', async (req: express.Request, res: express.Response) => {
 
     jsonRespStructure.result_count = data.length;
     res.json(jsonRespStructure);
-  }).catch((err: Error) => {
-    jsonRespStructure.error = err.message;
+  } catch (e) {
+    jsonRespStructure.error = e.message;
     res.json(jsonRespStructure);
-  });
+  }
+
+  return null;
 });
 
 router.get('/timeline', async (req, res) => {
-  await db.getTimeline(req.query).then((data: any) => {
+  try {
+    const data = await db.getTimeline(req.query);
     jsonRespStructure.data = data;
     res.json(jsonRespStructure);
-  }).catch((err: Error) => {
-    jsonRespStructure.error = err.message;
+  } catch (e) {
+    jsonRespStructure.error = e.message;
     res.json(jsonRespStructure);
-  });
+  }
 });
 
 router.get('/top-regions', async (req, res) => {
-  await db.getTopRegions().then((data: any) => {
+  try {
+    const data = await db.getTopRegions();
     jsonRespStructure.data = data;
     res.json(jsonRespStructure);
-  }).catch((err: Error) => {
-    jsonRespStructure.error = err.message;
+  } catch (e) {
+    jsonRespStructure.error = e.message;
     res.json(jsonRespStructure);
-  });
+  }
 });
 
 router.get('/summary', async (req, res) => {
@@ -254,54 +222,57 @@ router.get('/summary', async (req, res) => {
 
   const region: any = req.query.region || null;
 
-  await db.getSummary(region).then((data : any) => {
-    ({result: jsonRespStructure.data,
+  try {
+    const data = await db.getSummary(region);
+    ({
+      result: jsonRespStructure.data,
       fatalityRate: jsonRespStructure.data.fatality_rate,
-      recoveryRate: jsonRespStructure.data.recovery_rate} = data);
-
+      recoveryRate: jsonRespStructure.data.recovery_rate,
+    } = data);
     res.json(jsonRespStructure);
-  }).catch((err: Error) => {
-    jsonRespStructure.error = err.message;
+  } catch (e) {
+    jsonRespStructure.error = e.message;
     res.json(jsonRespStructure);
-  });
+  }
 });
 
 router.get('/facilities', async (req, res) => {
-  await db.getFacilities(req.query).then((data: any) => {
+  try {
+    const data = await db.getFacilities(req.query);
     jsonRespStructure.data = data;
     res.json(jsonRespStructure);
-  }).catch((err: Error) => {
-    jsonRespStructure.error = err.message;
+  } catch (e) {
+    jsonRespStructure.error = e.message;
     res.json(jsonRespStructure);
-  });
+  }
 });
 
 router.get('/facilities/summary', async (req, res) => {
-  await db.getFacilitiesSummary(req.query).then((data: any) => {
+  try {
+    const data = await db.getFacilitiesSummary(req.query);
     jsonRespStructure.data = data;
     res.json(jsonRespStructure);
-  }).catch((err: Error) => {
-    jsonRespStructure.error = err.message;
+  } catch (e) {
+    jsonRespStructure.error = e.message;
     res.json(jsonRespStructure);
-  });
+  }
 });
 
 // API that lists values
 router.get('/list-of/:field', async (req: express.Request, res: express.Response) => {
   if (!req.query.dataset) req.query.dataset = 'case_information';
 
-  await db.getListOf(req.params.field, req.query.dataset as string).then((data: any) => {
+  try {
+    const data = await db.getListOf(req.params.field, req.query.dataset as string);
     jsonRespStructure.data = data;
     res.json(jsonRespStructure);
-  }).catch((err: Error) => {
-    jsonRespStructure.error = err.message;
+  } catch (e) {
+    jsonRespStructure.error = e.message;
     res.json(jsonRespStructure);
-  });
+  }
 });
 
 app.use('/api', router); // Add prefix "/api" to routes above
-
-// app.use('/', swaggerUI.serve, swaggerUI.setup(openApiJson, options));
 
 app.use('/', (req, res) => res.redirect('https://documenter.getpostman.com/view/12463261/T1LV9jLU'));
 

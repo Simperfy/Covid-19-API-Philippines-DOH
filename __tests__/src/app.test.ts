@@ -1,22 +1,26 @@
+/* eslint-disable import/first */
+/* eslint-disable no-undef */
 /* eslint-disable max-len */
-console.log = () => null; // disable logs
+// disable logs
+console.log = () => null;
 
 import request from 'supertest';
 import DatabaseAdapter from '../../src/Database/__mocks__/DatabaseAdapter';
-
-jest.mock('../../src/Database/DatabaseAdapter', () => {
-  return {
-    __esModule: true,
-    default: DatabaseAdapter,
-  };
-});
-
+import GoogleDriveApiClient from '../../src/__mocks__/GoogleDriveApiClient';
 
 // disable logs
 import app from '../../src/app';
 
+jest.mock('../../src/Database/DatabaseAdapter', () => ({
+  __esModule: true,
+  default: DatabaseAdapter,
+}));
 
-jest.setTimeout(300000);
+jest.mock('../../src/GoogleDriveApiClient', () => ({
+  __esModule: true,
+  default: GoogleDriveApiClient,
+}));
+
 test('GET /api/summary', async () => {
   const res = await request(app).get('/api/summary');
 

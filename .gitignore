@@ -1,3 +1,4 @@
+.vscode
 .idea
 node_modules/
 DOH_Covid_Data/
@@ -8,3 +9,4 @@ old/
 .env
 service-key.json
 coverage/
+dist/

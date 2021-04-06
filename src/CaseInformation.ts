@@ -1,6 +1,8 @@
 /* eslint-disable require-jsdoc,max-len */
-import {DOWNLOADED_FILE_ALIASES} from './utils/enums';
+import { DOWNLOADED_FILE_ALIASES } from './utils/enums';
+
 class CaseInformation {
+  // eslint-disable-next-line no-undef
   [key: string]: any;
 
   set CaseCode(caseCode) {
@@ -12,7 +14,7 @@ class CaseInformation {
   }
 
   set Age(age) {
-    this.age = (age === '') ? 0 : parseInt(age);
+    this.age = (age === '') ? 0 : parseInt(age, 10);
   }
 
   get Age() {
