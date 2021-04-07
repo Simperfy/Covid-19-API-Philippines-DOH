@@ -100,7 +100,12 @@ class MongoDBDatabase {
       });
     }
 
-    return CaseInformationModel.find(filter, '-_id').limit(opt.limit).skip(opt.skip).exec();
+    return CaseInformationModel
+      .find(filter, '-_id')
+      .limit(opt.limit)
+      .skip(opt.skip)
+      .sort(sortOpt)
+      .exec();
   }
 
   // @TODO @Doggo merge getLatestFolderID and getLastUpdateDate to one function
