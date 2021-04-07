@@ -5,9 +5,7 @@ import { getCSVInfoObj } from '../utils/helper';
 import CaseInformation from '../CaseInformation';
 import FacilityInformation from '../FacilityInformation';
 import CSVDatabase from './CSVDatabase';
-import CaseInformationModel from './Models/CaseInformationModel';
-import FacilityInformationModel from './Models/FacilityInformationModel';
-import UpdateHistoryModel from './Models/UpdateHistoryModel';
+import { CaseInformationModel, FacilityInformationModel, UpdateHistoryModel } from './Models';
 import { DB_NAMES } from '../utils/enums';
 
 class MongoDBDatabase {
@@ -55,17 +53,18 @@ class MongoDBDatabase {
     if (queries.limit > queries.maxLimit) throw Error(`Error: limit query can't be greater than ${queries.maxLimit}.`);
 
     let filter: any = {};
+
     const opt = {
       limit: queries.limit,
       skip: (queries.page - 1) * queries.limit,
-      projection: { _id: 0 },
     };
+
     const sortOpt = {
       case_code: 1,
     };
 
     if (queries.month && !queries.day) {
-      const date = `/2020-${queries.month}.*/`;
+      const date = { $regex: `2020-${queries.month}.*`, $options: 'i' };
       filter = {
         $or: [
           {
@@ -94,7 +93,6 @@ class MongoDBDatabase {
 
     // add filters
     if (queries.filters) {
-      console.log(queries.filters);
       Object.keys(queries.filters).forEach((key) => {
         let newFilter = queries.filters[key];
         if (!Number.isNaN(newFilter)) newFilter = Number(newFilter);
@@ -102,7 +100,7 @@ class MongoDBDatabase {
       });
     }
 
-    return CaseInformationModel.find(filter, opt).sort(sortOpt).exec();
+    return CaseInformationModel.find(filter, '-_id').limit(opt.limit).skip(opt.skip).exec();
   }
 
   // @TODO @Doggo merge getLatestFolderID and getLastUpdateDate to one function
