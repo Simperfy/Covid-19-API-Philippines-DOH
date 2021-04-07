@@ -94,7 +94,7 @@ class CaseInformation {
   }
 
   set RegionRes(regionRes) {
-    this.regionRes = regionRes.toLowerCase();
+    this.regionRes = regionRes?.toLowerCase() || '';
   }
 
   get RegionRes() {

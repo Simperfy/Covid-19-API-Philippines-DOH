@@ -55,7 +55,7 @@ class DatabaseAdapter {
    * @param {Object|undefined} queries.filters
    * @return {Promise<*>}
    */
-  get(queries: {[key: string]: string|number|undefined}) {
+  async get(queries: {[key: string]: string|number|undefined}) {
     return this.db.get(queries);
   }
 
