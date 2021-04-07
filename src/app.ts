@@ -12,7 +12,7 @@ import DatabaseAdapter from './Database/DatabaseAdapter';
 // Database Logger
 import DBLogger from './DBLogger';
 // Enums
-import { DOWNLOAD_STATUS as downloadStatus } from './utils/enums';
+import { DB_NAMES, DOWNLOAD_STATUS as downloadStatus } from './utils/enums';
 // helpers
 import { deleteTmpFolder } from './utils/helper';
 
@@ -156,7 +156,7 @@ router.get('/get', async (req: express.Request, res: express.Response) => {
   try {
     const data = await db.get(queries);
     jsonRespStructure.data = data;
-    const dbCount: number = await db.count('case_informations');
+    const dbCount: number = await db.count(DB_NAMES.CASE_INFORMATION);
     const maxPage = Math.ceil(dbCount / limit);
 
     if (dbCount === 0) {
@@ -260,7 +260,7 @@ router.get('/facilities/summary', async (req, res) => {
 
 // API that lists values
 router.get('/list-of/:field', async (req: express.Request, res: express.Response) => {
-  if (!req.query.dataset) req.query.dataset = 'case_information';
+  if (!req.query.dataset) req.query.dataset = DB_NAMES.CASE_INFORMATION.toString();
 
   try {
     const data = await db.getListOf(req.params.field, req.query.dataset as string);

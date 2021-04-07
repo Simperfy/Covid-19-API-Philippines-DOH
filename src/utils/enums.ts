@@ -10,3 +10,9 @@ export const DOWNLOADED_FILE_ALIASES = {
   CASE_INFORMATION: 'Case information.csv',
   DAILY_REPORT: 'DOH Data collect - daily report.csv',
 };
+
+export enum DB_NAMES {
+  CASE_INFORMATION = 'case_information',
+  FACILITY_INFORMATION = 'facility_information',
+  UPDATE_HISTORY = 'update_history',
+}
