@@ -1,21 +1,21 @@
-/* eslint-disable require-jsdoc,max-len */
-import MongoDB from 'mongodb';
+/* eslint-disable require-jsdoc */
+import mongoose, { Mongoose } from 'mongoose';
 import { getCSVInfoObj } from '../utils/helper';
 
 import CaseInformation from '../CaseInformation';
 import FacilityInformation from '../FacilityInformation';
 import CSVDatabase from './CSVDatabase';
+import { CaseInformationModel, FacilityInformationModel, UpdateHistoryModel } from './Models';
+import { DB_NAMES } from '../utils/enums';
 
 class MongoDBDatabase {
   static instance: MongoDBDatabase;
 
-  connection!: Promise<MongoDB.MongoClient>;
+  connection!: Mongoose;
 
   constructor() {
     if (!MongoDBDatabase.instance) {
       MongoDBDatabase.instance = this;
-
-      // this.connection = MongoDB.MongoClient;
     }
 
     return MongoDBDatabase.instance;
@@ -25,20 +25,13 @@ class MongoDBDatabase {
    * @return {Promise<string>}
    */
   async connect() {
-    const dbUrl: string = process.env.DB_NOSQL_URI as string;
-
     if (!this.connection) {
-      try {
-        this.connection = MongoDB.MongoClient.connect(dbUrl, {
-          useNewUrlParser: true,
-          useUnifiedTopology: true,
-        });
-      } catch (e) {
-        throw Error(`[MongoDBDatabase] ${e.message}`);
-      }
+      const dbUrl: string = process.env.DB_NOSQL_URI as string;
+      this.connection = await mongoose.connect(dbUrl, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+      });
     }
-
-    if (await this.connection === undefined) throw Error('[MongoDBDatabase] Failed to connect.');
 
     return 'Successfully connected to the Mongo Database';
   }
@@ -53,71 +46,66 @@ class MongoDBDatabase {
    * @param {Object|undefined} queries.filters
    * @return {Promise<*>} returns JSON of the result
    */
-  async get(queries: any) {
+  get = async (queries: any) => {
     if (queries.month > 12) throw Error('Error: the month cannot be greater than 12');
     if (queries.day > 31) throw Error('Error: the day cannot be greater than 31');
     if (queries.page < 1 || queries.limit < 1) throw Error('Error: page or limit query can\'t be less than 1.');
     if (queries.limit > queries.maxLimit) throw Error(`Error: limit query can't be greater than ${queries.maxLimit}.`);
 
-    this.connection.then(async (client: any) => {
-      const db = client.db();
-      const collection = db.collection('case_informations');
+    let filter: any = {};
 
-      let filter: any = {};
-      const opt = {
-        limit: queries.limit,
-        skip: (queries.page - 1) * queries.limit,
-        projection: { _id: 0 },
+    const opt = {
+      limit: queries.limit,
+      skip: (queries.page - 1) * queries.limit,
+    };
+
+    const sortOpt = {
+      case_code: 1,
+    };
+
+    if (queries.month && !queries.day) {
+      const date = { $regex: `2020-${queries.month}.*`, $options: 'i' };
+      filter = {
+        $or: [
+          {
+            $and: [
+              { date_specimen: date },
+              { date_onset: '' },
+            ],
+          },
+          { date_onset: date },
+        ],
       };
-      const sortOpt = {
-        case_code: 1,
+    } else if (queries.month && queries.day) {
+      const date = `2020-${queries.month}-${queries.day}`;
+      filter = {
+        $or: [
+          {
+            $and: [
+              { date_specimen: date },
+              { date_onset: '' },
+            ],
+          },
+          { date_onset: date },
+        ],
       };
+    }
 
-      if (queries.month && !queries.day) {
-        const date = `/2020-${queries.month}.*/`;
-        filter = {
-          $or: [
-            {
-              $and: [
-                { date_specimen: date },
-                { date_onset: '' },
-              ],
-            },
-            { date_onset: date },
-          ],
-        };
-      } else if (queries.month && queries.day) {
-        const date = `2020-${queries.month}-${queries.day}`;
-        filter = {
-          $or: [
-            {
-              $and: [
-                { date_specimen: date },
-                { date_onset: '' },
-              ],
-            },
-            { date_onset: date },
-          ],
-        };
-      }
+    // add filters
+    if (queries.filters) {
+      Object.keys(queries.filters).forEach((key) => {
+        let newFilter = queries.filters[key];
+        if (!Number.isNaN(newFilter)) newFilter = Number(newFilter);
+        filter[key] = newFilter || '';
+      });
+    }
 
-      // add filters
-      if (queries.filters) {
-        console.log(queries.filters);
-        Object.keys(queries.filters).forEach((key) => {
-          let newFilter = queries.filters[key];
-          if (!Number.isNaN(newFilter)) newFilter = Number(newFilter);
-          filter[key] = newFilter || '';
-        });
-      }
-
-      try {
-        const result = collection.find(filter, opt).sort(sortOpt);
-        return await result.toArray();
-      } catch (e) {
-        throw Error(e.message);
-      }
-    });
+    return CaseInformationModel
+      .find(filter, '-_id')
+      .limit(opt.limit)
+      .skip(opt.skip)
+      .sort(sortOpt)
+      .exec();
   }
 
   // @TODO @Doggo merge getLatestFolderID and getLastUpdateDate to one function
@@ -125,13 +113,8 @@ class MongoDBDatabase {
    *
    * @return {Promise<String>}
    */
-  async getLatestFolderID() {
-    const client: MongoDB.MongoClient = await this.connection;
-    const db = client.db();
-    const collection = db.collection('update_history');
-
-    const result = collection.find({}, { limit: 1 }).sort({ _id: -1 });
-    const res = await result.toArray();
+  getLatestFolderID = async () => {
+    const res = await UpdateHistoryModel.find({}, { limit: 1 }).sort({ _id: -1 }).exec();
 
     if (res.length === 0) {
       return '';
@@ -144,14 +127,8 @@ class MongoDBDatabase {
    *
    * @return {Promise<String>}
    */
-  async getLastUpdateDate() {
-    let res: Array<any> = [];
-    const client = await this.connection;
-    const db = client.db();
-    const collection = db.collection('update_history');
-
-    const result = collection.find({}, { limit: 1 }).sort({ _id: -1 });
-    res = await result.toArray();
+  getLastUpdateDate = async () => {
+    const res = await UpdateHistoryModel.find({}, { limit: 1 }).sort({ _id: -1 }).exec();
 
     if (res.length === 0) return '';
 
@@ -162,36 +139,47 @@ class MongoDBDatabase {
   }
 
   /**
-   * @param {String} dbName database name
+   * @param {DB_NAMES} dbName database name
    * @param {Object} objFilters contains the field and value
    * @return {Promise} contains the result of the query
    */
-  async count(dbName: string, objFilters: any = null): Promise<number> {
-    // console.log(this.connection);
-    return new Promise((resolve, reject) => {
-      this.connection.then((client) => {
-        const db = client.db();
-        let collection: MongoDB.Collection<any>|MongoDB.Cursor<any> = db.collection(dbName);
+  // eslint-disable-next-line arrow-body-style
+  count = async (dbName: DB_NAMES, objFilters: any = null): Promise<number> => {
+    const tempObj: any = {};
 
-        if (objFilters !== null) {
-          const { field } = objFilters;
-          const { value } = objFilters;
-          const tempObj: any = {};
-          tempObj[field] = value;
-          collection = collection.find(tempObj);
+    if (objFilters !== null) {
+      const { field } = objFilters;
+      const { value } = objFilters;
+      tempObj[field] = value;
+    }
 
-          return collection.toArray((err, docs) => {
-            if (err) reject(Error(err.message));
-            resolve(docs.length);
-          });
-        }
+    switch (dbName) {
+      case DB_NAMES.CASE_INFORMATION:
+        return CaseInformationModel.countDocuments(tempObj);
+      case DB_NAMES.FACILITY_INFORMATION:
+        return FacilityInformationModel.countDocuments(tempObj);
+      case DB_NAMES.UPDATE_HISTORY:
+        return UpdateHistoryModel.countDocuments(tempObj);
+      default:
+        throw Error('Invalid DB_NAME');
+    }
+    /* let collection = mongoose.connection.db.collection(dbName);
 
-        return collection.countDocuments().then((data) => {
-          resolve(data);
-          // client.close();
-        }).catch((err) => reject(Error(err)));
+    if (objFilters !== null) {
+      const { field } = objFilters;
+      const { value } = objFilters;
+      const tempObj: any = {};
+      tempObj[field] = value;
+      collection = collection.find(tempObj);
+
+      return collection.toArray((err, docs) => {
+        if (err) throw Error(err.message);
+        return docs.length;
       });
-    });
+    }
+
+    const data = await collection.countDocuments();
+    return data; */
   }
 
   /**
@@ -200,23 +188,14 @@ class MongoDBDatabase {
    * @param {String|Number} value
    * @return {Promise} Contains JSON
    */
-  async filter(field: string, value: string|number) {
-    const client = await this.connection;
-    const db = client.db();
-    const collection = db.collection('case_informations');
-
+  filter = async (field: string, value: string|number) => {
     const filter:any = {};
     const opts = {
       projection: { _id: 0 },
     };
     filter[field] = value;
 
-    try {
-      const result = collection.find(filter, opts);
-      return await result.toArray();
-    } catch (e) {
-      throw Error(e.message);
-    }
+    return CaseInformationModel.find(filter, opts);
   }
 
   /**
@@ -226,16 +205,14 @@ class MongoDBDatabase {
    * @return {Promise<Object>} result.fatalityRate
    * @return {Promise<Object>} result.recoveryRate
    */
-  async getSummary(region: string|null = null) {
-    const client = await this.connection;
-    const db = client.db();
-    const collection = db.collection('case_informations');
-
+  getSummary = async (region: string|null = null) => {
     const totalFilter = {};
     const recoveriesFilter = { removal_type: 'recovered' };
     const diedFilter = { removal_type: 'died' };
     const activeCasesFilter = { removal_type: '', date_rep_conf: { $exists: true } };
-    const filters: Array<{[key: string]: any}> = [totalFilter, recoveriesFilter, diedFilter, activeCasesFilter];
+    const filters: Array<{[key: string]: any}> = [
+      totalFilter, recoveriesFilter, diedFilter, activeCasesFilter,
+    ];
 
     if (region !== null) {
       filters.forEach((filter) => {
@@ -244,208 +221,183 @@ class MongoDBDatabase {
       });
     }
 
-    try {
-      const result = collection.aggregate([
-        {
-          $lookup:
-            {
-              from: 'case_informations',
-              pipeline: [
-                { $match: totalFilter },
-                { $group: { _id: '$case_informations', count: { $sum: 1 } } },
-                { $project: { _id: 0 } },
-              ],
-              as: 'total',
-            },
-        },
-        {
-          $lookup:
-            {
-              from: 'case_informations',
-              pipeline: [
-                { $match: recoveriesFilter },
-                { $group: { _id: '$removal_type', count: { $sum: 1 } } },
-                { $project: { _id: 0 } },
-              ],
-              as: 'recoveries',
-            },
-        },
-        {
-          $lookup:
-            {
-              from: 'case_informations',
-              pipeline: [
-                { $match: diedFilter },
-                { $group: { _id: '$removal_type', count: { $sum: 1 } } },
-                { $project: { _id: 0 } },
-              ],
-              as: 'deaths',
-            },
-        },
-        {
-          $lookup:
-            {
-              from: 'case_informations',
-              pipeline: [
-                { $match: activeCasesFilter },
-                { $group: { _id: '$case_informations', count: { $sum: 1 } } },
-                { $project: { _id: 0 } },
-              ],
-              as: 'active_cases',
-            },
-        },
-        {
-          $project: {
-            _id: 0, recoveries: 1, deaths: 1, total: 1, active_cases: 1,
+    const res = await CaseInformationModel.aggregate([
+      {
+        $lookup:
+          {
+            from: DB_NAMES.CASE_INFORMATION.toString(),
+            pipeline: [
+              { $match: totalFilter },
+              { $group: { _id: '$case_informations', count: { $sum: 1 } } },
+              { $project: { _id: 0 } },
+            ],
+            as: 'total',
           },
+      },
+      {
+        $lookup:
+          {
+            from: DB_NAMES.CASE_INFORMATION.toString(),
+            pipeline: [
+              { $match: recoveriesFilter },
+              { $group: { _id: '$removal_type', count: { $sum: 1 } } },
+              { $project: { _id: 0 } },
+            ],
+            as: 'recoveries',
+          },
+      },
+      {
+        $lookup:
+          {
+            from: DB_NAMES.CASE_INFORMATION.toString(),
+            pipeline: [
+              { $match: diedFilter },
+              { $group: { _id: '$removal_type', count: { $sum: 1 } } },
+              { $project: { _id: 0 } },
+            ],
+            as: 'deaths',
+          },
+      },
+      {
+        $lookup:
+          {
+            from: DB_NAMES.CASE_INFORMATION.toString(),
+            pipeline: [
+              { $match: activeCasesFilter },
+              { $group: { _id: '$case_informations', count: { $sum: 1 } } },
+              { $project: { _id: 0 } },
+            ],
+            as: 'active_cases',
+          },
+      },
+      {
+        $project: {
+          _id: 0, recoveries: 1, deaths: 1, total: 1, active_cases: 1,
         },
-      ]).limit(1);
+      },
+    ]).limit(1);
 
-      const res = await result.toArray();
-      res[0].total = res[0].total[0].count;
-      res[0].recoveries = res[0].recoveries[0].count;
-      res[0].deaths = res[0].deaths[0].count;
-      res[0].active_cases = res[0].active_cases[0].count;
+    res[0].total = res[0].total[0].count;
+    res[0].recoveries = res[0].recoveries[0].count;
+    res[0].deaths = res[0].deaths[0].count;
+    res[0].active_cases = res[0].active_cases[0].count;
 
-      let fatalityRate: number|string = res[0].deaths / res[0].total;
-      let recoveryRate: number|string = res[0].recoveries / res[0].total;
-      fatalityRate = (fatalityRate * 100).toFixed(2);
-      recoveryRate = (recoveryRate * 100).toFixed(2);
+    let fatalityRate: number|string = res[0].deaths / res[0].total;
+    let recoveryRate: number|string = res[0].recoveries / res[0].total;
+    fatalityRate = (fatalityRate * 100).toFixed(2);
+    recoveryRate = (recoveryRate * 100).toFixed(2);
 
-      return {
-        result: res[0],
-        fatalityRate,
-        recoveryRate,
-      };
-    } catch (e) {
-      throw Error(e.message);
-    }
+    return {
+      result: res[0],
+      fatalityRate,
+      recoveryRate,
+    };
   }
 
   /**
    * @param {Object} queries
    * @return {Promise}
    */
-  async getTimeline(queries: {[key: string]: string}) {
-    const client = await this.connection;
-    const db = client.db();
-    const collection = db.collection('case_informations');
-
+  getTimeline = async (queries: {[key: string]: string}) => {
     const filter: {[key: string]: any} = {};
     // accept either region or region_res
     if (queries.region) filter.region_res = queries.region.toLowerCase();
     else if (queries.region_res) filter.region_res = queries.region_res.toLowerCase();
 
-    try {
-      const result = collection.aggregate([
-        { $match: filter },
-        { $match: { $or: [{ date_onset: { $ne: '' } }, { date_specimen: { $ne: '' } }] } },
-        {
-          $group: {
-            _id: {
-              date: {
-                $cond: {
-                  if: { $eq: ['$date_onset', ''] }, then: '$date_specimen', else: '$date_onset',
-                },
+    return CaseInformationModel.aggregate([
+      { $match: filter },
+      { $match: { $or: [{ date_onset: { $ne: '' } }, { date_specimen: { $ne: '' } }] } },
+      {
+        $group: {
+          _id: {
+            date: {
+              $cond: {
+                if: { $eq: ['$date_onset', ''] }, then: '$date_specimen', else: '$date_onset',
               },
             },
-            cases: { $sum: 1 },
-            recovered: {
-              $sum: {
-                $switch: {
-                  branches: [
-                    {
-                      case: { $eq: ['$removal_type', 'recovered'] },
-                      then: 1,
-                    },
-                  ],
-                  default: 0,
-                },
+          },
+          cases: { $sum: 1 },
+          recovered: {
+            $sum: {
+              $switch: {
+                branches: [
+                  {
+                    case: { $eq: ['$removal_type', 'recovered'] },
+                    then: 1,
+                  },
+                ],
+                default: 0,
               },
             },
-            died: {
-              $sum: {
-                $switch: {
-                  branches: [
-                    {
-                      case: { $eq: ['$removal_type', 'died'] },
-                      then: 1,
-                    },
-                  ],
-                  default: 0,
-                },
+          },
+          died: {
+            $sum: {
+              $switch: {
+                branches: [
+                  {
+                    case: { $eq: ['$removal_type', 'died'] },
+                    then: 1,
+                  },
+                ],
+                default: 0,
               },
             },
           },
         },
-        { $sort: { '_id.date': 1 } },
-        {
-          $project: {
-            _id: 0, date: '$_id.date', cases: 1, recovered: 1, died: 1,
-          },
+      },
+      { $sort: { '_id.date': 1 } },
+      {
+        $project: {
+          _id: 0, date: '$_id.date', cases: 1, recovered: 1, died: 1,
         },
-      ]);
-      return await result.toArray();
-    } catch (e) {
-      throw Error(e.message);
-    }
+      },
+    ]);
   }
 
   /**
    * @return {Promise}
    */
-  async getTopRegions() {
-    const client = await this.connection;
-    const db = client.db();
-    const collection = db.collection('case_informations');
-
-    try {
-      const result = collection.aggregate([
-        { $match: { region_res: { $ne: '' } } },
-        {
-          $group: {
-            _id: '$region_res',
-            cases: { $sum: 1 },
-            recovered: {
-              $sum: {
-                $switch: {
-                  branches: [
-                    {
-                      case: { $eq: ['$removal_type', 'recovered'] },
-                      then: 1,
-                    },
-                  ],
-                  default: 0,
+  getTopRegions = async () => CaseInformationModel.aggregate([
+    { $match: { region_res: { $ne: '' } } },
+    {
+      $group: {
+        _id: '$region_res',
+        cases: { $sum: 1 },
+        recovered: {
+          $sum: {
+            $switch: {
+              branches: [
+                {
+                  case: { $eq: ['$removal_type', 'recovered'] },
+                  then: 1,
                 },
-              },
-            },
-            deaths: {
-              $sum: {
-                $switch: {
-                  branches: [
-                    {
-                      case: { $eq: ['$removal_type', 'died'] },
-                      then: 1,
-                    },
-                  ],
-                  default: 0,
-                },
-              },
+              ],
+              default: 0,
             },
           },
         },
-        { $sort: { cases: -1 } },
-        {
-          $project: {
-            _id: 0, region: '$_id', cases: '$cases', recovered: '$recovered', deaths: '$deaths',
+        deaths: {
+          $sum: {
+            $switch: {
+              branches: [
+                {
+                  case: { $eq: ['$removal_type', 'died'] },
+                  then: 1,
+                },
+              ],
+              default: 0,
+            },
           },
         },
-      ]);
-      return await result.toArray();
-    } catch (e) {
-      throw Error(e.message);
-    }
-  }
+      },
+    },
+    { $sort: { cases: -1 } },
+    {
+      $project: {
+        _id: 0, region: '$_id', cases: '$cases', recovered: '$recovered', deaths: '$deaths',
+      },
+    },
+  ])
 
   // FACILITIES
 
@@ -453,11 +405,7 @@ class MongoDBDatabase {
    * @param {Object} queries
    * @return {Promise}
    */
-  async getFacilities(queries: {[key: string]: any}) {
-    const client = await this.connection;
-    const db = client.db();
-    const collection = db.collection('facility_informations');
-
+  getFacilities = async (queries: {[key: string]: any}) => {
     Object.keys(queries).forEach((key) => {
       if (!Number.isNaN(queries[key])) {
         // eslint-disable-next-line no-param-reassign
@@ -470,23 +418,14 @@ class MongoDBDatabase {
       projection: { _id: 0 },
     };
 
-    try {
-      const result = collection.find(filter, opt).sort({ cf_name: 1 });
-      return await result.toArray();
-    } catch (e) {
-      throw Error(e.message);
-    }
+    return FacilityInformationModel.find(filter, opt).sort({ cf_name: 1 });
   }
 
   /**
    * @param {Object} queries
    * @return {Promise}
    */
-  async getFacilitiesSummary(queries: {[key: string]: any}) {
-    const client = await this.connection;
-    const db = client.db();
-    const collection = db.collection('facility_informations');
-
+  getFacilitiesSummary = async (queries: {[key: string]: any}) => {
     const filter: {[key: string]: any} = {};
     const output: {[key: string]: any} = {};
 
@@ -538,44 +477,40 @@ class MongoDBDatabase {
       },
     });
 
-    try {
-      const result = collection.aggregate([
-        { $match: filter },
-        {
-          $group: {
-            _id: (queries.hospital_name ? '$cf_name' : null),
-            total_facilities: { $sum: 1 },
-            icu_v: { $sum: '$icu_v' },
-            icu_o: { $sum: '$icu_o' },
-            isolbed_v: { $sum: '$isolbed_v' },
-            isolbed_o: { $sum: '$isolbed_o' },
-            beds_ward_v: { $sum: '$beds_ward_v' },
-            beds_ward_o: { $sum: '$beds_ward_o' },
-            mechvent_v: { $sum: '$mechvent_v' },
-            mechvent_o: { $sum: '$mechvent_o' },
+    const res = await FacilityInformationModel.aggregate([
+      { $match: filter },
+      {
+        $group: {
+          _id: (queries.hospital_name ? '$cf_name' : null),
+          total_facilities: { $sum: 1 },
+          icu_v: { $sum: '$icu_v' },
+          icu_o: { $sum: '$icu_o' },
+          isolbed_v: { $sum: '$isolbed_v' },
+          isolbed_o: { $sum: '$isolbed_o' },
+          beds_ward_v: { $sum: '$beds_ward_v' },
+          beds_ward_o: { $sum: '$beds_ward_o' },
+          mechvent_v: { $sum: '$mechvent_v' },
+          mechvent_o: { $sum: '$mechvent_o' },
 
-            // for non-covid patients
-            icu_v_nc: { $sum: '$icu_v_nc' },
-            icu_o_nc: { $sum: '$icu_o_nc' },
-            nonicu_v_nc: { $sum: '$nonicu_v_nc' },
-            nonicu_o_nc: { $sum: '$nonicu_o_nc' },
-            mechvent_v_nc: { $sum: '$mechvent_v_nc' },
-            mechvent_o_nc: { $sum: '$mechvent_v_nc' },
-          },
+          // for non-covid patients
+          icu_v_nc: { $sum: '$icu_v_nc' },
+          icu_o_nc: { $sum: '$icu_o_nc' },
+          nonicu_v_nc: { $sum: '$nonicu_v_nc' },
+          nonicu_o_nc: { $sum: '$nonicu_o_nc' },
+          mechvent_v_nc: { $sum: '$mechvent_v_nc' },
+          mechvent_o_nc: { $sum: '$mechvent_v_nc' },
         },
-        { $project: output },
-      ]);
-      const res = await result.toArray();
+      },
+      { $project: output },
+    ]);
 
-      if (res[0] === undefined) throw Error('Your query didn\'t match any records.');
+    if (res[0] === undefined) throw Error('Your query didn\'t match any records.');
 
-      res[0].occupancy_rate = res[0].beds.total_occupied / (res[0].beds.total_occupied + res[0].beds.total_vacant);
-      res[0].occupancy_rate = parseFloat(res[0].occupancy_rate.toFixed(2)) || 0;
+    const vacantAndOccupied = res[0].beds.total_occupied + res[0].beds.total_vacant;
+    res[0].occupancy_rate = res[0].beds.total_occupied / vacantAndOccupied;
+    res[0].occupancy_rate = parseFloat(res[0].occupancy_rate.toFixed(2)) || 0;
 
-      return res[0];
-    } catch (e) {
-      throw Error(e.message);
-    }
+    return res[0];
   }
 
   // ./FACILITIES
@@ -585,14 +520,12 @@ class MongoDBDatabase {
    * @param {String} dataset
    * @return {Promise}
    */
-  async getListOf(field: string, dataset: string) {
-    const client = await this.connection;
-    const db = client.db();
-    let collection;
+  getListOf = async (field: string, dataset: string) => {
+    let collection: typeof CaseInformationModel|typeof FacilityInformationModel;
 
     switch (dataset.toLowerCase()) {
-      case 'case_information':
-        collection = db.collection('case_informations');
+      case DB_NAMES.CASE_INFORMATION.toString():
+        collection = CaseInformationModel;
 
         switch (field.toLowerCase()) {
           case 'regions':
@@ -619,7 +552,7 @@ class MongoDBDatabase {
         break;
 
       case 'facilities_information':
-        collection = db.collection('facility_informations');
+        collection = FacilityInformationModel;
 
         switch (field.toLowerCase()) {
           case 'regions':
@@ -672,55 +605,32 @@ class MongoDBDatabase {
     }
 
     console.log(field);
-    try {
-      const result = collection.aggregate([
-        { $project: project },
-        {
-          $group: {
-            _id: `$${field.toLowerCase()}`,
-          },
+    return collection.aggregate([
+      { $project: project },
+      {
+        $group: {
+          _id: `$${field.toLowerCase()}`,
         },
-        { $sort: { _id: 1 } },
-        { $project: output },
-      ]);
-      const res = await result.toArray();
-
-      // console.log(res);
-      return res;
-    } catch (e) {
-      throw Error(e.message);
-    }
+      },
+      { $sort: { _id: 1 } },
+      { $project: output },
+    ]);
   }
 
   /**
    * Truncates Database table
-   * @param {String} tableName
+   * @param {String} collectionName
    * @return {Promise<void>}
    */
-  async truncate(tableName: string) {
-    const client = await this.connection;
-    const db = client.db();
-    const items = await db.listCollections().toArray();
-    const promises = items.map((item) => {
-      if (item.name === tableName) {
-        console.log(`Dropping: ${item.name}`);
-        return db.collection(tableName).drop();
-      }
-      return Promise.resolve();
-    });
+  truncate = async (collectionName: string) => {
+    const collections = (await mongoose.connection.db.listCollections().toArray())
+      .map((collection) => collection.name);
 
-    try {
-      await Promise.all(promises);
-    } catch (e) {
-      throw Error(`[MySQLDatabase.js] ${e.message}`);
+    if (collections.indexOf(collectionName) !== -1) {
+      await mongoose.connection.db.dropCollection(collectionName);
     }
+
     console.log('Tables Dropped.');
-
-    if (items.length === 0) {
-      console.log('No collections in database');
-      return 'No collections in database';
-    }
-    return 'Table not found';
   }
 
   /**
@@ -728,26 +638,14 @@ class MongoDBDatabase {
    * @param {Object} fieldValueObj
    * @return {Promise<String>}
    */
-  async insert(tableName: string, fieldValueObj: {[key: string]: any}) {
-    const client = await this.connection;
-    const db = client.db();
-    const collection = db.collection('update_history');
-
-    try {
-      await collection.insertOne(fieldValueObj, { forceServerObjectId: true });
-      return 'Successfully inserted data';
-    } catch (e) {
-      throw Error(e.message);
-    }
-  }
+  insert = async (tableName: string, fieldValueObj: {[key: string]: any}) => UpdateHistoryModel
+    .create(fieldValueObj)
 
   /**
    * End Database connection
    */
-  async endConnection() {
-    await this.connection.then(async (client) => {
-      client.close();
-    });
+  endConnection = async () => {
+    await mongoose.connection.close();
   }
 
   // @TODO @DOGGO This function violates open/closed principle for now
@@ -756,7 +654,8 @@ class MongoDBDatabase {
    * @param {int} batchSize
    * @return {Promise<boolean>}
    */
-  async batchInsertDatabaseFromCSV(csArr: (CaseInformation|FacilityInformation)[], batchSize = 10000) {
+  batchInsertDatabaseFromCSV = async (csArr: (CaseInformation|FacilityInformation)[],
+    batchSize = 10000) => {
     console.log(`\nPerforming batch insert (batch size: ${batchSize}):`);
     const isSuccess = true;
     let lastRowIndex = 0;
@@ -775,10 +674,9 @@ class MongoDBDatabase {
       const csvInfo = getCSVInfoObj(csBatchArr);
 
       // eslint-disable-next-line no-await-in-loop
-      const client = await this.connection;
-      const db = client.db();
-      // eslint-disable-next-line no-await-in-loop
-      await db.collection(csvInfo.csvDbName).insertMany(csvInfo.csvArr, { forceServerObjectId: true });
+      await mongoose.connection.db.collection(csvInfo.csvDbName)
+        .insertMany(csvInfo.csvArr, { forceServerObjectId: true });
+
       console.log(`Inserted: ${csvInfo.csvArr.length} rows`);
     }
 
@@ -790,7 +688,7 @@ class MongoDBDatabase {
    * @param {CSVDatabase} csvDatabase
    * @return {Promise<boolean>}
    */
-  async updateDatabaseFromCSV(csvDatabase: CSVDatabase, dbName: string) {
+  async updateDatabaseFromCSV(csvDatabase: CSVDatabase, dbName: DB_NAMES) {
     console.log('\nBegin Updating Database.');
 
     const cs = await csvDatabase.get();

@@ -1,10 +1,8 @@
-/* eslint-disable max-len */
 import CSVDatabase from './CSVDatabase';
 import CaseInformation from '../CaseInformation';
 import FacilityInformation from '../FacilityInformation';
 import MongoDBDatabase from './MongoDBDatabase';
-// import MySQLDatabase from './MySQLDatabase';
-// const CaseInformation = require('../CaseInformation');
+import { DB_NAMES } from '../utils/enums';
 
 /**
  * Handles Database
@@ -57,16 +55,16 @@ class DatabaseAdapter {
    * @param {Object|undefined} queries.filters
    * @return {Promise<*>}
    */
-  get(queries: {[key: string]: string|number|undefined}) {
-    return this.db.get(queries) as Promise<any>;
+  async get(queries: {[key: string]: string|number|undefined}) {
+    return this.db.get(queries);
   }
 
   /**
-   * @param {String} dbName database name
+   * @param {DB_NAMES} dbName database name
    * @param {Object|null} objFilters contains the field and value
    * @return {Promise} contains the result of the query
    */
-  count(dbName: string, objFilters: any = null): Promise<number> {
+  count(dbName: DB_NAMES, objFilters: any = null): Promise<number> {
     return this.db.count(dbName, objFilters);
   }
 
@@ -183,7 +181,8 @@ class DatabaseAdapter {
     let result = true;
     let lowMemory = true;
 
-    let res = await this.db.updateDatabaseFromCSV((await new CSVDatabase().init(new CaseInformation())), 'case_informations');
+    // eslint-disable-next-line max-len
+    let res = await this.db.updateDatabaseFromCSV((await new CSVDatabase().init(new CaseInformation())), DB_NAMES.CASE_INFORMATION);
 
     if (!res) result = false;
 
@@ -193,7 +192,8 @@ class DatabaseAdapter {
       global.gc();
     }
 
-    res = await this.db.updateDatabaseFromCSV((await new CSVDatabase().init(new FacilityInformation())), 'facility_informations');
+    // eslint-disable-next-line max-len
+    res = await this.db.updateDatabaseFromCSV((await new CSVDatabase().init(new FacilityInformation())), DB_NAMES.FACILITY_INFORMATION);
 
     if (!res) result = false;
     global.gc();

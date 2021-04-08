@@ -211,47 +211,43 @@ class GoogleDriveApiFileManager {
    * @return {Promise<String>} filePath to the downloaded file
    */
   async downloadFile(fileObj: any, name = 'Data.csv'): Promise<string> {
-    try {
-      console.log(`\nDOWNLOADING FILE: ${fileObj.name}`);
+    console.log(`\nDOWNLOADING FILE: ${fileObj.name}`);
 
-      const { auth } = this;
-      const drive = google.drive({ version: 'v3', auth });
-      const res: any = await drive.files
-        .get({ fileId: fileObj.id, alt: 'media' }, { responseType: 'stream' }).catch((err) => console.log(err));
-      await fs.promises.mkdir(TMP_PATH, { recursive: true });
-      const filePath = `${TMP_PATH}/${name}`;
+    const { auth } = this;
+    const drive = google.drive({ version: 'v3', auth });
+    const res: any = await drive.files
+      .get({ fileId: fileObj.id, alt: 'media' }, { responseType: 'stream' }).catch((err) => console.log(err));
+    await fs.promises.mkdir(TMP_PATH, { recursive: true });
+    const filePath = `${TMP_PATH}/${name}`;
 
-      console.log(`\nSaving to ${filePath}`);
-      const dest = fs.createWriteStream(filePath);
-      let progress = 0;
+    console.log(`\nSaving to ${filePath}`);
+    const dest = fs.createWriteStream(filePath);
+    let progress = 0;
 
-      return new Promise((resolve, reject) => {
-        res.data
-          .on('end', () => {
-            console.log(`\nDone downloading file. ${fileObj.name}`);
-            resolve(filePath);
-          })
-          .on('error', (err: Error) => {
-            console.error('Error downloading file.');
-            reject(Error(`[googleDriveApiFileManager.js] ${err}`));
-          })
-          .on('data', (d: any) => {
-            progress += d.length;
-            if (process.stdout.isTTY) {
-              readline.clearLine(process.stdout, 0);
-              readline.cursorTo(process.stdout, 0);
-              process.stdout.write(`Downloaded ${progress} bytes`);
-            }
-          })
-          .pipe(dest);
+    return new Promise((resolve, reject) => {
+      res.data
+        .on('end', () => {
+          console.log(`\nDone downloading file. ${fileObj.name}`);
+          resolve(filePath);
+        })
+        .on('error', (err: Error) => {
+          console.error('Error downloading file.');
+          reject(Error(`[googleDriveApiFileManager.js] ${err}`));
+        })
+        .on('data', (d: any) => {
+          progress += d.length;
+          if (process.stdout.isTTY) {
+            readline.clearLine(process.stdout, 0);
+            readline.cursorTo(process.stdout, 0);
+            process.stdout.write(`Downloaded ${progress} bytes`);
+          }
+        })
+        .pipe(dest);
 
-        dest.on('finish', () => {
-          dest.close();
-        });
+      dest.on('finish', () => {
+        dest.close();
       });
-    } catch (e) {
-      throw Error(`Error occured while downloading ${fileObj.name}`);
-    }
+    });
   }
 
   /**
@@ -261,26 +257,17 @@ class GoogleDriveApiFileManager {
    * @param {String|undefined} files[].alias Alternative name of the file
    */
   async downloadFiles(files: any[]) {
-    if ((process.env.SKIP_DOWNLOADS as string).toLowerCase() === 'true') {
-      console.log('[DEBUG] SKIPPING DOWNLOAD OF CSV FILES');
-      console.log('Make sure you downloaded the csv files.');
-    } else {
-      console.log('Downloading multiple files:');
-      console.log(files);
+    if ((process.env.SKIP_DOWNLOADS as string).toLowerCase() === 'true') return null;
 
-      const promises = files.map((file) => {
-        const fileName = file.alias || file.name;
-        return this.downloadFile(file, fileName);
-      });
+    console.log('Downloading multiple files:');
+    console.log(files);
 
-      try {
-        await Promise.all(promises);
-      } catch (err) {
-        console.log('Something went wrong while downloading files.');
-      }
+    const promises = files.map((file) => {
+      const fileName = file.alias || file.name;
+      return this.downloadFile(file, fileName);
+    });
 
-      console.log('\nDone downloading multiple files.');
-    }
+    return Promise.all(promises);
   }
 
   /**
@@ -304,16 +291,12 @@ class GoogleDriveApiFileManager {
    * @return {Promise<void>}
    */
   async downloadLatestPDF() {
-    try {
-      const longUrl = await tall(DATA_DROP_LINK);
-      const folderID = this.extractFolderIDFromURL(longUrl);
-      console.log(`Downloading latest pdf from folder id: ${folderID}`);
-      const files = await this.getFilesInRootFolder(folderID);
-      console.log(files);
-      return await this.downloadFile(files[0], 'latest.pdf');
-    } catch (e) {
-      throw Error('[GoogleDriveApiFileManager.js] error while downloading latest pdf');
-    }
+    const longUrl = await tall(DATA_DROP_LINK);
+    const folderID = this.extractFolderIDFromURL(longUrl);
+    console.log(`Downloading latest pdf from folder id: ${folderID}`);
+    const files = await this.getFilesInRootFolder(folderID);
+    console.log(files);
+    return this.downloadFile(files[0], 'latest.pdf');
   }
 
   /**
@@ -361,7 +344,15 @@ class GoogleDriveApiFileManager {
 
       if (files.length < 0) return Error('[GoogleDriveApiFileManager.js] Error no files found.');
 
-      await this.downloadFiles(reqFilesWithAliases);
+      const result = await this.downloadFiles(reqFilesWithAliases);
+
+      if (result === null) {
+        console.log('[DEBUG] SKIPPING DOWNLOAD OF CSV FILES');
+        console.log('Make sure you downloaded the csv files.');
+      } else {
+        console.log('\nDone downloading multiple files.');
+      }
+
       return DOWNLOAD_STATUS.DOWNLOADED_LATEST_FILE_SUCCESS;
     } catch (err) {
       console.log(`Error downloading latest file from data drop ${err.message}`);

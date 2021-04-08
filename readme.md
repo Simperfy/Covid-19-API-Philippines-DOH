@@ -19,17 +19,17 @@
 <br>
 
 ## 📌 Endpoints
-Base URL 
+Base URL
 
 (MAIN): https://covid19-api-philippines.herokuapp.com/
 
-(Optional) https://covid19-ph-api.herokuapp.com/ 🆕
+(Optional) https://covid19-ph-api.herokuapp.com/
 
 [Documentation in POSTMAN are available here](https://documenter.getpostman.com/view/12463261/T1LV9jLU?version=latest)
 
 <br>
 
-**Get list of all possible values for the specified field 🆕**
+**Get list of all possible values for the specified field**
 
 *datasets: `case_information`, `facilities_information`*
 
@@ -222,7 +222,7 @@ GET api/get?region_res=ncr&age_group=20-24
 
 </details>
 
-## Facilities Information <sup>🆕</sup>
+## Facilities Information
 
 <details>
   <summary><b><i>View Endpoints </i></b></summary>
@@ -467,7 +467,6 @@ API documentation:
 * The data wasn't tampered and was directly converted to json from csv without heavy modification.
 
 <br>
-
 
 ## 🔧 Built With
 * [Node.js](https://nodejs.org) - open source server environment.

@@ -12,7 +12,7 @@ import DatabaseAdapter from './Database/DatabaseAdapter';
 // Database Logger
 import DBLogger from './DBLogger';
 // Enums
-import { DOWNLOAD_STATUS as downloadStatus } from './utils/enums';
+import { DB_NAMES, DOWNLOAD_STATUS as downloadStatus } from './utils/enums';
 // helpers
 import { deleteTmpFolder } from './utils/helper';
 
@@ -49,7 +49,7 @@ if (process.env.NODE_ENV !== 'development') { // only use cache in production
 }
 
 // HTTP Logger
-app.use(morgan((tokens: any, req : express.Request, res : express.Response) => {
+const httpLogger = morgan((tokens: any, req : express.Request, res : express.Response) => {
   const morganFormat = [`[${new Date().toLocaleString('en-US', {
     timeZone: 'Asia/Shanghai',
   })}]`,
@@ -61,7 +61,8 @@ app.use(morgan((tokens: any, req : express.Request, res : express.Response) => {
   ];
 
   return morganFormat.join(' ');
-}));
+});
+
 // Custom middleware
 app.use(async (req, res, next) => {
   const dbLogger = await new DBLogger().init();
@@ -122,7 +123,7 @@ async function autoUpdate() {
   }
 })();
 
-router.get('/updateDatabase', async (req, res) => {
+router.get('/updateDatabase', httpLogger, async (req, res) => {
   if (process.env.NODE_ENV === 'development') {
     await autoUpdate();
     res.json({ success: true });
@@ -131,14 +132,14 @@ router.get('/updateDatabase', async (req, res) => {
   }
 });
 
-router.get('/filter/:field/:value', async (req, res) => {
+router.get('/filter/:field/:value', httpLogger, async (req, res) => {
   jsonRespStructure.data = [];
   jsonRespStructure.WARNING = 'DEPRECATED please use /api/get?field=value instead';
   jsonRespStructure.result_count = jsonRespStructure.data.length;
   res.json(jsonRespStructure);
 });
 
-router.get('/get', async (req: express.Request, res: express.Response) => {
+router.get('/get', httpLogger, async (req, res) => {
   const { month } = req.query;
   const { day } = req.query;
   const page = parseInt(req.query.page as string, 10) || 1;
@@ -156,7 +157,7 @@ router.get('/get', async (req: express.Request, res: express.Response) => {
   try {
     const data = await db.get(queries);
     jsonRespStructure.data = data;
-    const dbCount: number = await db.count('case_informations');
+    const dbCount: number = await db.count(DB_NAMES.CASE_INFORMATION);
     const maxPage = Math.ceil(dbCount / limit);
 
     if (dbCount === 0) {
@@ -193,7 +194,7 @@ router.get('/get', async (req: express.Request, res: express.Response) => {
   return null;
 });
 
-router.get('/timeline', async (req, res) => {
+router.get('/timeline', httpLogger, async (req, res) => {
   try {
     const data = await db.getTimeline(req.query);
     jsonRespStructure.data = data;
@@ -204,7 +205,7 @@ router.get('/timeline', async (req, res) => {
   }
 });
 
-router.get('/top-regions', async (req, res) => {
+router.get('/top-regions', httpLogger, async (req, res) => {
   try {
     const data = await db.getTopRegions();
     jsonRespStructure.data = data;
@@ -215,7 +216,7 @@ router.get('/top-regions', async (req, res) => {
   }
 });
 
-router.get('/summary', async (req, res) => {
+router.get('/summary', httpLogger, async (req, res) => {
   if (req.query.region === undefined && req.query.region_res !== undefined) {
     req.query.region = req.query.region_res;
   }
@@ -236,7 +237,7 @@ router.get('/summary', async (req, res) => {
   }
 });
 
-router.get('/facilities', async (req, res) => {
+router.get('/facilities', httpLogger, async (req, res) => {
   try {
     const data = await db.getFacilities(req.query);
     jsonRespStructure.data = data;
@@ -247,7 +248,7 @@ router.get('/facilities', async (req, res) => {
   }
 });
 
-router.get('/facilities/summary', async (req, res) => {
+router.get('/facilities/summary', httpLogger, async (req, res) => {
   try {
     const data = await db.getFacilitiesSummary(req.query);
     jsonRespStructure.data = data;
@@ -259,8 +260,8 @@ router.get('/facilities/summary', async (req, res) => {
 });
 
 // API that lists values
-router.get('/list-of/:field', async (req: express.Request, res: express.Response) => {
-  if (!req.query.dataset) req.query.dataset = 'case_information';
+router.get('/list-of/:field', httpLogger, async (req, res) => {
+  if (!req.query.dataset) req.query.dataset = DB_NAMES.CASE_INFORMATION.toString();
 
   try {
     const data = await db.getListOf(req.params.field, req.query.dataset as string);
@@ -273,7 +274,5 @@ router.get('/list-of/:field', async (req: express.Request, res: express.Response
 });
 
 app.use('/api', router); // Add prefix "/api" to routes above
-
-app.use('/', (req, res) => res.redirect('https://documenter.getpostman.com/view/12463261/T1LV9jLU'));
 
 export default app;

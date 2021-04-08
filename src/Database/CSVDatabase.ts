@@ -1,5 +1,4 @@
 /* eslint-disable eqeqeq */
-/* eslint-disable max-len,new-cap */
 /* eslint-disable require-jsdoc */
 import csv from 'csvtojson';
 import path from 'path';
@@ -55,10 +54,11 @@ class CSVDatabase {
       this.isConverting = true;
       const pathToCSV = this.csvFilePath;
       let dateThreshold: Date|number = new Date();
-      dateThreshold = dateThreshold.setDate(dateThreshold.getDate() - (parseInt(process.env.FACILITIES_THRESHOLD as string, 10) || 360));
+      const facilitiesThreshold = parseInt(process.env.FACILITIES_THRESHOLD as string, 10) || 360;
+      dateThreshold = dateThreshold.setDate(dateThreshold.getDate() - facilitiesThreshold);
 
       let msg = process.env.FACILITIES_THRESHOLD || 'facilities threshold not found in .env, setting to 360';
-      msg += '\nIf this causes Out of memory error lower the value to 7 or 30';
+      if (facilitiesThreshold === 360) msg += '\nIf this causes Out of memory error lower the value to 7 or 30';
       console.log('Facilities Threshold: ', msg);
 
       const isFacilityInfo = (this.csvClass instanceof FacilityInformation);
@@ -201,7 +201,8 @@ class CSVDatabase {
    * @param {String} caseCode
    * @return {int} position of the case code in the array
    */
-  findIndex = (csArr: CaseInformation[], caseCode: string) => csArr.findIndex((cs) => cs.CaseCode == caseCode)
+  findIndex = (csArr: CaseInformation[], caseCode: string) => csArr
+    .findIndex((cs) => cs.CaseCode == caseCode)
 }
 
 export default CSVDatabase;
