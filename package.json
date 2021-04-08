@@ -29,6 +29,7 @@
     "graphql-compose": "^7.25.1",
     "graphql-compose-mongoose": "^9.2.2",
     "graphql-fields": "^2.0.3",
+    "mongodb": "^3.6.6",
     "mongoose": "^5.12.3",
     "morgan": "^1.10.0",
     "pdf-parse": "^1.1.1",
