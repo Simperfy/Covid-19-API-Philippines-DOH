@@ -2,8 +2,8 @@ import { gql } from 'apollo-server-express';
 
 const typeDefs = gql`
 type Query {
-  hello: String
-  caseInformation(limit: Int!, offset: Int!): [CaseInformation!]!
+  caseInformation(first: Int, offset: Int): [CaseInformation!]!
+  facilityInformation(first: Int, offset: Int): [FacilityInformation!]!
 }
 
 type CaseInformation {
@@ -26,6 +26,33 @@ type CaseInformation {
   quarantined: String
   date_onset: String
   pregnant_tab: String
+}
+
+type FacilityInformation {
+  hfhudcode: String
+  cf_name: String
+  updated_date: String
+  added_date: String
+  report_date: String
+  icu_v: Int
+  icu_o: Int
+  isolbed_v: Int
+  isolbed_o: Int
+  beds_ward_v: Int
+  beds_ward_o: Int
+  mechvent_v: Int
+  mechvent_o: Int
+  icu_v_nc: Int
+  icu_o_nc: Int
+  nonicu_v_nc: Int
+  nonicu_o_nc: Int
+  mechvent_v_nc: Int
+  mechvent_o_nc: Int
+  q_nurse: Int
+  q_doctor: Int
+  q_other: Int
+  nurse_adm: Int
+  doctor_adm: Int
 }
 `;
 
